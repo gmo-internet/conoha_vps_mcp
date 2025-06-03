@@ -1,0 +1,26 @@
+{
+	"name": "script",
+	"version": "1.0.0",
+	"description": "",
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"start": "tsx src/index.ts",
+		"check:ci": "biome ci .",
+		"check:fix": "biome check --write ."
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.6.5",
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.10.1",
+		"dotenv": "^16.5.0",
+		"tsx": "^4.19.3",
+		"zod": "^3.24.2"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@types/node": "^22.14.1"
+	}
+}
