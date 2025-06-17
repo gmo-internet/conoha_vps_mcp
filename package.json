@@ -8,9 +8,14 @@
 	"author": "GMO Internet",
 	"license": "Apache-2.0",
 	"scripts": {
+		"dev": "tsx src/index.ts",
+		"build": "FIXME: ",
 		"start": "tsx src/index.ts",
+		"typecheck": "tsc --noEmit",
 		"biome:ci": "biome ci .",
 		"biome:fix": "biome check --write .",
+		"dev:inspector": "npx @modelcontextprotocol/inspector pnpm start",
+		"start:inspector": "npx @modelcontextprotocol/inspector pnpm start",
 		"commit": "cz"
 	},
 	"dependencies": {
@@ -23,6 +28,9 @@
 		"@biomejs/biome": "^1.9.4",
 		"@types/node": "^22.14.1",
 		"cz-conventional-changelog": "^3.3.0"
+	},
+	"engines": {
+		"node": ">=18.0.0"
 	},
 	"config": {
 		"commitizen": {
