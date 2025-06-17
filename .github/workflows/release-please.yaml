@@ -20,7 +20,7 @@ jobs:
 
       - name: Generate GitHub Apps token
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
         with:
           app-id: ${{ secrets.APP_PUSH_TO_PUBLIC_ID }}
           private-key: ${{ secrets.APP_PUSH_TO_PUBLIC_PRIVATE_KEY }}
