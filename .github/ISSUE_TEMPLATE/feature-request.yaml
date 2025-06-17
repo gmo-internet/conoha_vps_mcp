@@ -1,0 +1,58 @@
+name: 機能要望
+description: ライブラリへの新機能や改善案を提案する場合はこちらをご利用ください。
+labels: ['feature request']
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **バグ報告ではありません**  
+        不具合を報告する場合は「バグの報告」テンプレートをご利用ください。
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: チェックリスト
+      options:
+        - label: ①[README](https://github.com/gmo-internet/conoha_vps_mcp/blob/main/README.md) やその他関連ページを確認しましたが、解決策または回答は見つかりませんでした。
+          required: true
+        - label: ②[Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues/) を検索しましたが、解決策または回答は見つかりませんでした。
+          required: true
+        - label: ③[サポートページ](https://support.conoha.jp/) で検索しましたが、解決策または回答は見つかりませんでした。
+          required: true
+        - label: ④[ConoHa VPS MCP Code of Conduct](https://github.com/gmo-internet/conoha_vps_mcp/blob/main/CODE-OF-CONDUCT.md) の内容に同意します。
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 解決したい問題の概要
+      description: どのような問題を解決したいか、わかりやすく簡潔に記載してください。
+      placeholder: |
+        例）◯◯の設定が煩雑で、運用が難しい。
+    validations:
+      required: true
+
+  - type: textarea
+    id: ideal-solution
+    attributes:
+      label: 理想的な解決策
+      description: どのような機能や挙動を望んでいるか、具体的に記載してください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives-and-workarounds
+    attributes:
+      label: 代替案や現在の回避策
+      description: これまでに試した代替案や、現状のワークアラウンドがあれば記載してください。
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 追加情報
+      description: この機能要望に関連するスクリーンショットやその他の補足情報があれば記載してください。
+    validations:
+      required: false
