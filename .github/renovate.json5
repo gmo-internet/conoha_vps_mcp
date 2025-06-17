@@ -1,0 +1,89 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  timezone: 'Asia/Tokyo',
+  baseBranches: [
+    'main',
+  ],
+  extends: [
+    'config:recommended',
+    'config:best-practices',
+    ':semanticCommitTypeAll(chore)',
+    'customManagers:biomeVersions',
+  ],
+  reviewers: [
+    's-hirano-ist',
+  ],
+  enabledManagers: [
+    'npm',
+    'github-actions',
+    'docker-compose',
+    'dockerfile',
+  ],
+  dependencyDashboard: true,
+  schedule: [
+    'before 11am on monday',
+  ],
+  labels: [
+    'dependencies',
+  ],
+  rangeStrategy: 'bump',
+  lockFileMaintenance: {
+    enabled: true,
+  },
+  vulnerabilityAlerts: {
+    labels: [
+      'security',
+    ],
+  },
+  packageRules: [
+    {
+      matchPackageNames: [
+        'node',
+      ],
+      matchManagers: [
+        'dockerfile',
+      ],
+      allowedVersions: '/^[0-9]*[02468]([.-].*)?$/',
+    },
+    {
+      matchManagers: [
+        'npm',
+      ],
+      matchUpdateTypes: [
+        'patch',
+      ],
+      matchPackageNames: [
+        '*',
+      ],
+      matchDepTypes: [
+        'dependencies',
+        'devDependencies',
+        'peerDependencies',
+      ],
+      groupName: 'npm patch',
+    },
+    {
+      matchManagers: [
+        'npm',
+      ],
+      matchUpdateTypes: [
+        'minor',
+      ],
+      matchPackageNames: [
+        '*',
+      ],
+      matchDepTypes: [
+        'dependencies',
+        'devDependencies',
+        'peerDependencies',
+      ],
+      groupName: 'npm minor',
+    },
+    {
+      'matchManagers': [
+        'github-actions',
+      ],
+      'groupName': 'github actions',
+    }
+  ],
+}
