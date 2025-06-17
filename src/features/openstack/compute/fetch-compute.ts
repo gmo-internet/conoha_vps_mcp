@@ -1,4 +1,4 @@
-import { type JsonObject, fetchOpenstackApi } from "./api-client";
+import { type JsonObject, fetchOpenstackApi } from "../common/api-client";
 
 const OPENSTACK_COMPUTE_BASE_URL = process.env.OPENSTACK_COMPUTE_BASE_URL;
 

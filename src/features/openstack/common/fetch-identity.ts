@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 const IDENTITY_BASE_URL = process.env.OPENSTACK_IDENTITY_BASE_URL;
 const USER_ID = process.env.OPENSTACK_USER_ID;
 const PASSWORD = process.env.OPENSTACK_PASSWORD;
