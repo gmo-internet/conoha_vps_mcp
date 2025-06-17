@@ -13,10 +13,8 @@ jobs:
     steps:
       - name: Extract repository name
         run: |
-          priv_repo=$(echo "${GITHUB_REPOSITORY}" | cut -d '/' -f 2)
-          public_repo=${priv_repo#priv_}
-          echo "priv_repo=${priv_repo}" >> "$GITHUB_ENV"
-          echo "public_repo=${public_repo}" >> "$GITHUB_ENV"
+          repository_name=$(echo "${GITHUB_REPOSITORY}" | cut -d '/' -f 2)
+          echo "repository_name=${repository_name}" >> "$GITHUB_ENV"
 
       - name: Generate GitHub Apps token
         id: app-token
@@ -26,8 +24,7 @@ jobs:
           private-key: ${{ secrets.APP_PUSH_TO_PUBLIC_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: |
-            ${{ env.priv_repo }}
-            ${{ env.public_repo }}
+            ${{ env.repository_name }}
 
       - name: Release Please action
         uses: googleapis/release-please-action@1155c2c8dcbd6b15e85bae6bc6d1fed9552663cb
