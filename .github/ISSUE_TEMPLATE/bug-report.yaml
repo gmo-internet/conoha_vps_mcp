@@ -1,0 +1,73 @@
+name: バグの報告
+description: バグや不具合を見つけた際は、バグレポートを作成してください。
+labels: ['bug']
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **セキュリティ脆弱性はここで報告しないでください**。
+        セキュリティ問題の開示手順については [サポートページ](https://support.conoha.jp/inquiry/) をご覧ください。
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: チェックリスト
+      options:
+        - label: ①[README](https://github.com/gmo-internet/conoha_vps_mcp/blob/main/README.md) やその他関連するページを確認したが、解決策または回答は見つかりませんでした。
+          required: true
+        - label: ②[Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues) を検索しましたが、解決策または回答は見つかりませんでした。
+          required: true
+        - label: ③[サポートページ](https://support.conoha.jp) で検索しましたが、解決策または回答は見つかりませんでした。
+          required: true
+        - label: ④[ConoHa VPS MCP 行動規範](https://github.com/gmo-internet/conoha_vps_mcp/blob/main/CODE-OF-CONDUCT.md) の内容に同意します。
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 不具合の概要
+      description: 発生した事象と期待した結果を、わかりやすく簡潔に記載してください。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 再現手順
+      description: エラーを再現する手順を詳しく記載してください。毎回再現するか、断続的に発生するかも明記してください。
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 追加情報
+      description: 関連する他ライブラリや、参考になりそうな情報があれば記載してください。
+    validations:
+      required: false
+
+  - type: input
+    id: conoha-vps-mcp-version
+    attributes:
+      label: ConoHa VPS MCP のバージョン
+    validations:
+      required: true
+
+  - type: input
+    id: nodejs-version
+    attributes:
+      label: Node.js のバージョン
+    validations:
+      required: false
+
+  - type: input
+    id: docker-version
+    attributes:
+      label: Docker (Compose) のバージョン
+    validations:
+      required: false
