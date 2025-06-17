@@ -1,6 +1,6 @@
 name: バグの報告
 description: バグや不具合を見つけた際は、バグレポートを作成してください。
-labels: ['bug']
+labels: ['bug report']
 
 body:
   - type: markdown
@@ -16,11 +16,11 @@ body:
       options:
         - label: ①[README](https://github.com/gmo-internet/conoha_vps_mcp/blob/main/README.md) やその他関連するページを確認したが、解決策または回答は見つかりませんでした。
           required: true
-        - label: ②[Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues) を検索しましたが、解決策または回答は見つかりませんでした。
+        - label: ②[Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues/) を検索しましたが、解決策または回答は見つかりませんでした。
           required: true
-        - label: ③[サポートページ](https://support.conoha.jp) で検索しましたが、解決策または回答は見つかりませんでした。
+        - label: ③[サポートページ](https://support.conoha.jp/) で検索しましたが、解決策または回答は見つかりませんでした。
           required: true
-        - label: ④[ConoHa VPS MCP 行動規範](https://github.com/gmo-internet/conoha_vps_mcp/blob/main/CODE-OF-CONDUCT.md) の内容に同意します。
+        - label: ④[ConoHa VPS MCP Code of Conduct](https://github.com/gmo-internet/conoha_vps_mcp/blob/main/CODE-OF-CONDUCT.md) の内容に同意します。
           required: true
 
   - type: textarea
