@@ -1,0 +1,16 @@
+name: release-please
+on:
+  push:
+    branches:
+      - main
+jobs:
+  release-please:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@1155c2c8dcbd6b15e85bae6bc6d1fed9552663cb
+        with:
+          release-type: node
