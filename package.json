@@ -4,7 +4,13 @@
 	"description": "ConoHa VPS MCP (Model Context Protocol) server for Node.js",
 	"type": "module",
 	"main": "index.js",
-	"keywords": ["conoha", "vps", "mcp", "modelcontextprotocol", "openstack"],
+	"keywords": [
+		"conoha",
+		"vps",
+		"mcp",
+		"modelcontextprotocol",
+		"openstack"
+	],
 	"author": "GMO Internet",
 	"license": "Apache-2.0",
 	"scripts": {
