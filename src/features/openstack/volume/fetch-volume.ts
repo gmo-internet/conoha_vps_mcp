@@ -1,4 +1,4 @@
-import { type JsonObject, fetchOpenstackApi } from "./api-client";
+import { type JsonObject, fetchOpenstackApi } from "../common/api-client";
 
 const OPENSTACK_VOLUME_BASE_URL = process.env.OPENSTACK_VOLUME_BASE_URL;
 const TENANT_ID = process.env.OPENSTACK_TENANT_ID;

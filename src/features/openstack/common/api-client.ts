@@ -30,21 +30,30 @@ export async function fetchOpenstackApi(
 
 		const apiToken = await fetchOpenstackToken();
 
-		const response = await fetch(
-			`
-            ${baseUrl}${path}`,
-			{
-				method,
-				headers: {
-					Accept: "application/json",
-					"X-Auth-Token": apiToken,
-					...(body ? { "Content-Type": "application/json" } : {}),
-				},
-				...(body ? { body: JSON.stringify(body) } : {}),
+		const response = await fetch(`${baseUrl}${path}`, {
+			method,
+			headers: {
+				Accept: "application/json",
+				"X-Auth-Token": apiToken,
+				...(body ? { "Content-Type": "application/json" } : {}),
 			},
-		);
+			...(body ? { body: JSON.stringify(body) } : {}),
+		});
 
-		return await response.text();
+		async function formatResponse(response: Response) {
+			const raw = await response.text();
+			try {
+				return JSON.parse(raw);
+			} catch (error) {
+				return raw;
+			}
+		}
+		const responseBody = await formatResponse(response);
+		return JSON.stringify({
+			status: response.status,
+			statusText: response.statusText,
+			body: responseBody,
+		});
 	} catch (error) {
 		if (error instanceof Error) {
 			return `Error: ${error.message}`;

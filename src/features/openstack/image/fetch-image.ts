@@ -1,4 +1,4 @@
-import { fetchOpenstackApi } from "./api-client";
+import { fetchOpenstackApi } from "../common/api-client";
 
 const OPENSTACK_IMAGE_BASE_URL = process.env.OPENSTACK_IMAGE_BASE_URL;
 
