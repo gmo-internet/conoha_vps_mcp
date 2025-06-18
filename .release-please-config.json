@@ -1,8 +1,23 @@
 {
 	"changelogSections": {
-		"Features": ["feat"],
-		"Bug Fixes": ["fix", "revert"],
-		"Documentation": ["docs", "test"],
-		"Maintenance": ["chore", "refactor", "style", "perf", "build", "ci"]
+		"Features": [
+			"feat"
+		],
+		"Bug Fixes": [
+			"fix",
+			"revert"
+		],
+		"Documentation": [
+			"docs",
+			"test"
+		],
+		"Maintenance": [
+			"chore",
+			"refactor",
+			"style",
+			"perf",
+			"build",
+			"ci"
+		]
 	}
 }
