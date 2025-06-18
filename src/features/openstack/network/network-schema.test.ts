@@ -32,7 +32,6 @@ describe("Network Schema Tests", () => {
 				security_group_rule: {
 					security_group_id: "sg-12345",
 					direction: "egress" as const,
-					ethertype: "IPv6" as const,
 				},
 			};
 
@@ -160,7 +159,6 @@ describe("Network Schema Tests", () => {
 			const incompleteRequest = {
 				security_group_rule: {
 					direction: "ingress",
-					ethertype: "IPv4",
 					// security_group_id が欠けている
 				},
 			};
@@ -181,6 +179,17 @@ describe("Network Schema Tests", () => {
 			};
 
 			const result = CreateSecurityGroupRequestSchema.safeParse(validRequest);
+			expect(result.success).toBe(true);
+		});
+
+		it("必須フィールドのみでリクエストを検証する", () => {
+			const minimalRequest = {
+				security_group: {
+					name: "test-security-group",
+				},
+			};
+
+			const result = CreateSecurityGroupRequestSchema.safeParse(minimalRequest);
 			expect(result.success).toBe(true);
 		});
 
@@ -216,8 +225,7 @@ describe("Network Schema Tests", () => {
 		it("必須フィールドの欠如を拒否する", () => {
 			const incompleteRequest = {
 				security_group: {
-					name: "test-security-group",
-					// description が欠けている
+					// name が欠けている
 				},
 			};
 

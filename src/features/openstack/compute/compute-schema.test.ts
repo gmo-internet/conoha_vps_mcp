@@ -44,9 +44,7 @@ describe("Compute Schema Tests", () => {
 							uuid: "volume-uuid-456",
 						},
 					],
-					metadata: {
-						instance_name_tag: "minimal-server",
-					},
+					metadata: {},
 				},
 			};
 
@@ -122,7 +120,7 @@ describe("Compute Schema Tests", () => {
 				"MySecure123$",
 				"Another1Pass#",
 				"ValidPass9&",
-				"A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6A7b8C9d0E1f2G3h4", // 70文字
+				"A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6A7b8C9d0E1f2G3h4!@", // 70文字
 			];
 
 			for (const password of validPasswords) {
@@ -153,7 +151,7 @@ describe("Compute Schema Tests", () => {
 				"NOLOWERCASE123!", // 小文字なし
 				"NoNumbers!", // 数字なし
 				"NoSymbols123", // 記号なし
-				"A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6A7b8C9d0E1f2G3h4I", // 71文字（長すぎ）
+				"A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6A7b8C9d0E1f2G3h4I!@", // 71文字（長すぎ）
 				"", // 空文字
 				"Test Pass123!", // スペース含む
 				"TestPass123あ", // 日本語含む

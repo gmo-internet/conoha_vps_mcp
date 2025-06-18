@@ -64,7 +64,7 @@ export const conohaOpenstackPostRequestBodyDescription = `
                         {  "uuid": string  }             // Volume UUID to boot from
                      ],
                      "metadata": {
-                        "instance_name_tag": string      // Display name of the server (1-255 alphanumeric characters, underscores, or hyphens)
+                        "instance_name_tag": string      // Display name of the server (1-255 alphanumeric characters, underscores, or hyphens) (optional)
                      },
                      "security_groups": [                // List of security groups (optional)
                         {  "name": string  }             // Name of the security group
@@ -101,7 +101,7 @@ export const conohaOpenstackPostRequestBodyDescription = `
                {  "security_group_rule": {
                      "security_group_id": string,                 // ID of the security group
                      "direction": "ingress" | "egress",           // Direction of the rule (ingress or egress)
-                     "ethertype": "IPv4" | "IPv6",                // Ethertype (IPv4 or IPv6)
+                     "ethertype": "IPv4" | "IPv6",                // Ethertype (IPv4 or IPv6) (optional, default is IPv4)
                      "port_range_min": number,                    // Minimum port range (optional): Must be specified by the user. Do not set automatically.
                      "port_range_max": number,                    // Maximum port range (optional): Must be specified by the user. Do not set automatically.
                      "protocol": "tcp" | "udp" | "icmp" | null,   // Protocol (optional)
