@@ -14,6 +14,7 @@
 		"typecheck": "tsc --noEmit",
 		"biome:ci": "biome ci .",
 		"biome:fix": "biome check --write .",
+		"test": "vitest run --coverage",
 		"dev:inspector": "npx @modelcontextprotocol/inspector pnpm start",
 		"start:inspector": "npx @modelcontextprotocol/inspector pnpm start",
 		"commit": "cz"
@@ -27,7 +28,9 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
 		"@types/node": "^22.14.1",
-		"cz-conventional-changelog": "^3.3.0"
+		"cz-conventional-changelog": "^3.3.0",
+		"@vitest/coverage-v8": "^3.2.3",
+		"vitest": "^3.2.3"
 	},
 	"engines": {
 		"node": ">=18.0.0"
