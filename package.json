@@ -1,7 +1,7 @@
 {
 	"name": "conoha-vps-mcp",
 	"version": "0.0.1",
-	"description": "ConoHa VPS MCP (Model Context Protocol) server for Node.js",
+	"description": "ConoHa VPS MCP (Model Context Protocol) server written with Node.js",
 	"type": "module",
 	"main": "index.js",
 	"keywords": [
