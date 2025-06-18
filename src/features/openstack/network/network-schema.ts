@@ -11,11 +11,13 @@ export const CreateSecurityGroupRuleRequestSchema = z
 							"通信の向きは 'ingress' または 'egress' を指定してください",
 					}),
 				}),
-				ethertype: z.enum(["IPv4", "IPv6"], {
-					errorMap: () => ({
-						message: "イーサタイプは 'IPv4' または 'IPv6' を指定してください",
-					}),
-				}),
+				ethertype: z
+					.enum(["IPv4", "IPv6"], {
+						errorMap: () => ({
+							message: "イーサタイプは 'IPv4' または 'IPv6' を指定してください",
+						}),
+					})
+					.optional(),
 				port_range_min: z.number().int().nonnegative().optional(),
 				port_range_max: z.number().int().nonnegative().optional(),
 				protocol: z
@@ -33,7 +35,7 @@ export const CreateSecurityGroupRequestSchema = z
 		security_group: z
 			.object({
 				name: z.string(),
-				description: z.string(),
+				description: z.string().optional(),
 			})
 			.strict(),
 	})

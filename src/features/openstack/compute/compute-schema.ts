@@ -17,7 +17,10 @@ export const CreateServerRequestSchema = z
 				),
 				metadata: z
 					.object({
-						instance_name_tag: z.string().regex(/^[A-Za-z0-9_-]{1,255}$/), // 1文字以上255文字以下の英数字、アンダースコア、ハイフン
+						instance_name_tag: z
+							.string()
+							.regex(/^[A-Za-z0-9_-]{1,255}$/)
+							.optional(), // 1文字以上255文字以下の英数字、アンダースコア、ハイフン
 					})
 					.strict(),
 				security_groups: z
@@ -73,7 +76,7 @@ export const RemoteConsoleRequestSchema = z
 				}),
 				type: z.enum(["novnc", "serial"], {
 					errorMap: () => ({
-						message: "type は 'novnc' または 'serial' を指定してください",
+						message: "type は 'novnc' または 'serial' を指定してください", //protocolで指定したプロトコル名の組み合わせと一致している必要あり
 					}),
 				}),
 			})
