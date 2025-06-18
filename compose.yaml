@@ -1,0 +1,11 @@
+services:
+  mcp-server:
+    build: .
+    container_name: conoha-vps-mcp
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["npm", "start"]
+    stdin_open: true
+    tty: true
