@@ -1,44 +1,43 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import "dotenv/config";
 import {
-	deleteOpenstackComputeApiId,
-	getOpenstackComputeApi,
-	getOpenstackComputeApiId,
-	postOpenstackComputeApiRequestBody,
-	postOpenstackComputeApiRequestBody1Id,
-} from "./features/openstack/compute/fetch-compute";
+	createCompute,
+	createComputeById,
+	deleteComputeById,
+	getCompute,
+	getComputeById,
+} from "./features/openstack/compute/compute-client";
 import {
 	CreateSSHKeyPairRequestSchema,
 	CreateServerRequestSchema,
 	OperateServerRequestSchema,
 	RemoteConsoleRequestSchema,
-} from "./features/openstack/compute/schema-compute";
-import { getOpenstackImageApi } from "./features/openstack/image/fetch-image";
+} from "./features/openstack/compute/compute-schema";
+import { getImage } from "./features/openstack/image/image-client";
 import {
-	deleteOpenstackNetworkApiId,
-	getOpenstackNetworkApi,
-	getOpenstackNetworkApiId,
-	postOpenstackNetworkApiRequestBody,
-	putOpenstackNetworkApiRequestBody1Id,
-} from "./features/openstack/network/fetch-network";
+	createNetwork,
+	deleteNetworkById,
+	getNetwork,
+	getNetworkById,
+	updateNetworkById,
+} from "./features/openstack/network/network-client";
 import {
 	CreateSecurityGroupRequestSchema,
 	CreateSecurityGroupRuleRequestSchema,
 	UpdatePortRequestSchema,
 	UpdateSecurityGroupRequestSchema,
-} from "./features/openstack/network/schema-network";
+} from "./features/openstack/network/network-schema";
 import {
-	deleteOpenstackVolumeApiId,
-	getOpenstackVolumeApi,
-	postOpenstackVolumeApiRequestBody,
-	putOpenstackVolumeApiRequestBody1Id,
-} from "./features/openstack/volume/fetch-volume";
+	createVolume,
+	deleteVolumeById,
+	getVolume,
+	updateVolumeById,
+} from "./features/openstack/volume/volume-client";
 import {
 	CreateVolumeRequestSchema,
 	UpdateVolumeRequestSchema,
-} from "./features/openstack/volume/schema-volume";
+} from "./features/openstack/volume/volume-schema";
 import {
 	conohaOpenstackDeleteIdDescription,
 	conohaOpenstackGetIdDescription,
@@ -48,7 +47,7 @@ import {
 	createServerDescription,
 } from "./tool-descriptions";
 
-const server = new McpServer({ name: "conoha-stdio", version: "0.2.0" });
+const server = new McpServer({ name: "ConoHa VPS MCP", version: "0.1.0" }); // FIXME: package.jsonからバージョンを取得するようにする
 
 server.tool(
 	"conoha_openstack_get_no_id",
@@ -73,22 +72,22 @@ server.tool(
 			case "/servers/detail":
 			case "/flavors/detail":
 			case "/os-keypairs":
-				response = await getOpenstackComputeApi(path);
+				response = await getCompute(path);
 				break;
 
 			case "/types":
 			case "/volumes/detail":
-				response = await getOpenstackVolumeApi(path);
+				response = await getVolume(path);
 				break;
 
 			case "/v2/images?limit=200":
-				response = await getOpenstackImageApi(path);
+				response = await getImage(path);
 				break;
 
 			case "/v2.0/security-groups":
 			case "/v2.0/security-group-rules":
 			case "/v2.0/ports":
-				response = await getOpenstackNetworkApi(path);
+				response = await getNetwork(path);
 				break;
 
 			default:
@@ -120,12 +119,12 @@ server.tool(
 			case "/os-security-groups":
 			case "/rrd/cpu":
 			case "/rrd/disk":
-				response = await getOpenstackComputeApiId(path, id);
+				response = await getComputeById(path, id);
 				break;
 
 			case "/v2.0/security-groups":
 			case "/v2.0/security-group-rules":
-				response = await getOpenstackNetworkApiId(path, id);
+				response = await getNetworkById(path, id);
 				break;
 
 			default:
@@ -170,16 +169,16 @@ server.tool(
 		switch (path) {
 			case "/servers":
 			case "/os-keypairs":
-				response = await postOpenstackComputeApiRequestBody(path, requestBody);
+				response = await createCompute(path, requestBody);
 				break;
 
 			case "/volumes":
-				response = await postOpenstackVolumeApiRequestBody(path, requestBody);
+				response = await createVolume(path, requestBody);
 				break;
 
 			case "/v2.0/security-groups":
 			case "/v2.0/security-group-rules":
-				response = await postOpenstackNetworkApiRequestBody(path, requestBody);
+				response = await createNetwork(path, requestBody);
 				break;
 
 			default:
@@ -229,28 +228,16 @@ server.tool(
 		switch (path) {
 			case "/action":
 			case "/remote-consoles":
-				response = await postOpenstackComputeApiRequestBody1Id(
-					path,
-					id,
-					requestBody,
-				);
+				response = await createComputeById(path, id, requestBody);
 				break;
 
 			case "/v2.0/security-groups":
 			case "/v2.0/ports":
-				response = await putOpenstackNetworkApiRequestBody1Id(
-					path,
-					id,
-					requestBody,
-				);
+				response = await updateNetworkById(path, id, requestBody);
 				break;
 
 			case "/volumes":
-				response = await putOpenstackVolumeApiRequestBody1Id(
-					path,
-					id,
-					requestBody,
-				);
+				response = await updateVolumeById(path, id, requestBody);
 				break;
 
 			default:
@@ -279,16 +266,16 @@ server.tool(
 		switch (path) {
 			case "/servers":
 			case "/os-keypairs":
-				response = await deleteOpenstackComputeApiId(path, param);
+				response = await deleteComputeById(path, param);
 				break;
 
 			case "/v2.0/security-groups":
 			case "/v2.0/security-group-rules":
-				response = await deleteOpenstackNetworkApiId(path, param);
+				response = await deleteNetworkById(path, param);
 				break;
 
 			case "/volumes":
-				response = await deleteOpenstackVolumeApiId(path, param);
+				response = await deleteVolumeById(path, param);
 				break;
 
 			default:
