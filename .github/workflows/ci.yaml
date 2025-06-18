@@ -145,6 +145,6 @@ jobs:
         with:
           name: test-and-coverage-report
           path: |
-            reports/coverage/test-cases.csv
+            reports/coverage/test-result.csv
             test-report.md
           retention-days: 30

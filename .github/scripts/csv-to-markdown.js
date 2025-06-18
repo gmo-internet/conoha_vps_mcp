@@ -55,8 +55,7 @@ function generateMarkdownTable(csvData) {
 
 	// Add rows with status emojis
 	for (const row of rows) {
-		const [category, functionalArea, suiteName, testName, status, duration] =
-			row;
+		const [category, functionalArea, suiteName, testName, status] = row;
 
 		// Add status emoji
 		let statusWithEmoji;
@@ -74,7 +73,7 @@ function generateMarkdownTable(csvData) {
 				statusWithEmoji = `🔍 ${status}`;
 		}
 
-		markdown += `| ${category} | ${functionalArea} | ${suiteName} | ${testName} | ${statusWithEmoji} | ${duration} |\n`;
+		markdown += `| ${category} | ${functionalArea} | ${suiteName} | ${testName} | ${statusWithEmoji} \n`;
 	}
 
 	// Add summary statistics
@@ -100,7 +99,7 @@ function generateMarkdownTable(csvData) {
 }
 
 function main() {
-	const csvFilePath = path.join(process.cwd(), "reports", "test-cases.csv");
+	const csvFilePath = path.join(process.cwd(), "reports", "test-result.csv");
 	const outputPath = path.join(process.cwd(), "test-report.md");
 
 	try {

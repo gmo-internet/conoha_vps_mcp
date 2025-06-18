@@ -191,7 +191,7 @@ export class CSVReporter implements Reporter {
 		const reportDir = "./reports";
 		mkdirSync(reportDir, { recursive: true });
 
-		const csvFilePath = `${reportDir}/test-cases.csv`;
+		const csvFilePath = `${reportDir}/test-result.csv`;
 		writeFileSync(csvFilePath, csvContent, "utf-8");
 
 		console.log(`✅ CSV report generated: ${csvFilePath}`);
