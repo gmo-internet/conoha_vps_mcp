@@ -21,6 +21,7 @@
 		"biome:ci": "biome ci .",
 		"biome:fix": "biome check --write .",
 		"test": "vitest run --coverage",
+		"generate:notice": "node scripts/generate-notice.js",
 		"dev:inspector": "npx @modelcontextprotocol/inspector pnpm start",
 		"start:inspector": "npx @modelcontextprotocol/inspector pnpm start",
 		"commit": "cz"

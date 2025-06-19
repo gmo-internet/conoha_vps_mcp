@@ -15,3 +15,4 @@
 - [ ] [Conventional Commits](https://www.conventionalcommits.org/ja/v1.0.0/) に則ったコミットログで構成されていることを確認しました
 - [ ] [ConoHa VPS MCP Code of Conduct](https://github.com/gmo-internet/conoha_vps_mcp/blob/main/CODE-OF-CONDUCT.md) を読みました
 - [ ] GitHub ActionsのCIがすべて通ることを確認しました
+- [ ] NOTICEを更新しました（`npm run generate:notice`コマンドの実行）※ パッケージの更新があった場合
