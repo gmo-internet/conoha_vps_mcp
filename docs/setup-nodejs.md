@@ -1,45 +1,55 @@
-# Node.js版 環境構築
+# Node.js版セットアップガイド
 
-このドキュメントでは、Node.jsを利用したMCPサーバーのセットアップ・利用方法を解説します。
+Node.js を使用したConoHa VPS MCPのセットアップ手順を説明します。
 
----
+## 前提条件
+
+- **Node.js**: v18以上
+- **npm**: Node.jsに付属
 
 ## セットアップ手順
 
-```sh
+### 1. プロジェクトの準備
+
+```bash
 # リポジトリをクローン
 git clone https://github.com/gmo-internet/conoha_vps_mcp.git
 cd conoha_vps_mcp
-# ライブラリのインストール
+
+# 依存関係のインストール
 npm install
 ```
 
-## 環境変数の設定
+### 2. 環境変数の設定
 
-主な環境変数:
+以下の環境変数を設定してください：
 
-- `OPENSTACK_TENANT_ID` : ConoHaのテナントID
-- `OPENSTACK_USER_ID`   : ユーザーID
-- `OPENSTACK_PASSWORD`  : パスワード
+```txt
+OPENSTACK_TENANT_ID: テナントID
+OPENSTACK_USER_ID: APIユーザーのユーザーID
+OPENSTACK_PASSWORD: APIユーザーのパスワード
+```
 
-## サーバーの起動
+各値はConoHaコントロールパネルのAPI設定で確認できます。
 
-```sh
+### 3. サーバーの起動テスト
+
+```bash
 npm start
 ```
 
-## 環境設定
+## AIエージェント別設定方法
 
-### Claude Desktopでの利用例
+### Claude Desktop
 
-`claude_desktop_config.json`に以下を記載してください。
+`claude_desktop_config.json`に以下の設定を追加します：
 
 ```json
 {
   "mcpServers": {
     "ConoHa VPS MCP": {
       "command": "npm",
-      "args": [ "--prefix", "PATH_TO_DIRECTORY", "start"],
+      "args": ["--prefix", "PATH_TO_DIRECTORY", "start"],
       "env": {
         "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
         "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
@@ -50,15 +60,16 @@ npm start
 }
 ```
 
-`PATH_TO_DIRECTORY`、`YOUR_OPENSTACK_TENANT_ID`、`YOUR_OPENSTACK_USER_ID`、`YOUR_OPENSTACK_PASSWORD`は自身のものに置き換えてください。
+以下の値を実際の値に置き換えてください：
 
-### Clineでの利用例
+- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパス
+- `YOUR_OPENSTACK_TENANT_ID`: テナントID
+- `YOUR_OPENSTACK_USER_ID`: APIユーザーのユーザーID
+- `YOUR_OPENSTACK_PASSWORD`: APIユーザーのパスワード
 
-### Cursorでの利用例
+### Cline (VSCode)
 
-### VSCodeでの利用例
-
-`.vscode/settings.json`に以下を記載し、コマンド実行時に認証情報を入力できます。
+`.vscode/settings.json`に以下の設定を追加します：
 
 ```json
 {
@@ -83,16 +94,52 @@ npm start
 }
 ```
 
-`PATH_TO_DIRECTORY`は自身のパスに置き換えてください。
+`PATH_TO_DIRECTORY`をプロジェクトのディレクトリパスに置き換えてください。
 
-まずGitHub Copilotを起動します（Windows/Linux：``ctrl + Shift+ I``、Mac：``Command ＋ Shift + I``）。
+### GitHub Copilot (VSCode)
 
-そしてチャット欄にあるドロップダウンメニューから**Agent**モードを選択します。
+#### 設定方法
 
-その後チャット欄にある**ツール**ボタンをクリックして、その中から**MCPサーバー：ConoHa VPS MCP**を選択してください。
+1. VSCode左下の歯車マークをクリックして設定を開きます
 
-以上の設定により、**ConoHa VPS MCP**をGitHub Copilotからツールとして使えるようになります。
+2. 上部の検索窓で「mcp」と検索します
 
-## 認証情報について
+3. 「settings.jsonで編集」をクリックします
 
-ConoHa VPS Ver.3.0のAPI認証情報はConoHa管理画面から取得できます。
+4. 上記のCline設定と同じ内容を追加します
+
+#### 使用方法
+
+1. GitHub Copilotを起動します
+   - **Windows/Linux**: `Ctrl + Shift + I`
+   - **Mac**: `Command + Shift + I`
+
+2. チャット欄のドロップダウンメニューから**Agent**モードを選択します
+
+3. チャット欄の**ツール**ボタンをクリックして、**MCPサーバー：ConoHa VPS MCP**を選択します
+
+4. プロンプトを入力して操作を実行します
+
+   [サンプルプロンプト](../README.md#サンプルプロンプト)
+
+### Cursor
+
+設定方法は準備中です。Claude Desktop設定を参考にしてください。
+
+## 認証情報の取得方法
+
+ConoHa VPS v3.0のAPI認証情報は、ConoHaコントロールパネルのAPI設定画面から取得できます。
+
+詳細な取得手順については、[ConoHa公式ドキュメント](https://doc.conoha.jp/reference/api-vps3/)をご確認ください。
+
+## トラブルシューティング
+
+### よくある問題
+
+- **認証エラー**: 環境変数の値が正しく設定されているか確認してください
+- **Node.jsバージョンエラー**: Node.js v18以上がインストールされているか確認してください
+- **起動エラー**: `npm install`が正常に完了しているか確認してください
+- **パス設定エラー**: `PATH_TO_DIRECTORY`が正しいプロジェクトパスに設定されているか確認してください
+
+> [!TIP]
+> 問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)でお気軽にお問い合わせください。
