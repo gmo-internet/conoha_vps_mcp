@@ -51,6 +51,11 @@ jobs:
       - name: Run tests with coverage
         run: npm run test
 
+      - name: Convert CSV to Markdown Table
+        id: csv-to-markdown
+        run: |
+          node .github/scripts/csv-to-markdown.js
+
       - name: Parse coverage summary
         id: coverage
         run: |
@@ -69,14 +74,24 @@ jobs:
             echo "📊 [View detailed coverage report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Comment coverage on PR
+      - name: Comment test results and coverage on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            if (require('fs').existsSync('coverage/coverage-summary.json')) {
-              const coverage = JSON.parse(require('fs').readFileSync('coverage/coverage-summary.json', 'utf8'));
-              const comment = `## 📊 Test Coverage Report
+            const fs = require('fs');
+            let comment = '';
+            
+            // Add test results report if available
+            if (fs.existsSync('test-report.md')) {
+              const testReport = fs.readFileSync('test-report.md', 'utf8');
+              comment += testReport + '\n\n';
+            }
+            
+            // Add coverage report if available
+            if (fs.existsSync('reports/coverage/coverage-summary.json')) {
+              const coverage = JSON.parse(fs.readFileSync('reports/coverage/coverage-summary.json', 'utf8'));
+              comment += `## 📊 Test Coverage Report
               
               | Metric | Coverage |
               |--------|----------|
@@ -92,8 +107,10 @@ jobs:
                 `**${file}**: Lines ${data.lines.pct}% | Functions ${data.functions.pct}% | Branches ${data.branches.pct}% | Statements ${data.statements.pct}%`
               ).join('\n')}
               </details>`;
-              
-              // Find existing coverage comment
+            }
+            
+            if (comment) {
+              // Find existing test report or coverage comment
               const comments = await github.rest.issues.listComments({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -101,7 +118,7 @@ jobs:
               });
               
               const existingComment = comments.data.find(comment => 
-                comment.body.includes('📊 Test Coverage Report')
+                comment.body.includes('📊 Test Results Report') || comment.body.includes('📊 Test Coverage Report')
               );
               
               if (existingComment) {
@@ -111,6 +128,7 @@ jobs:
                   comment_id: existingComment.id,
                   body: comment
                 });
+                console.log('Updated existing test and coverage report comment');
               } else {
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
@@ -118,12 +136,15 @@ jobs:
                   issue_number: context.issue.number,
                   body: comment
                 });
+                console.log('Created new test and coverage report comment');
               }
             }
 
-      - name: Upload coverage artifacts
+      - name: Upload test and coverage artifacts
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
-          name: coverage-report
-          path: coverage/
+          name: test-and-coverage-report
+          path: |
+            reports/coverage/test-result.csv
+            test-report.md
           retention-days: 30
