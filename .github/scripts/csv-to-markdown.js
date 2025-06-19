@@ -55,25 +55,19 @@ function generateMarkdownTable(csvData) {
 
 	// Add rows with status emojis
 	for (const row of rows) {
-		const [category, functionalArea, suiteName, testName, status] = row;
+		const [
+			category,
+			functionalArea,
+			suiteName,
+			priority,
+			testName,
+			status,
+			duration,
+		] = row;
 
-		// Add status emoji
-		let statusWithEmoji;
-		switch (status) {
-			case "passed":
-				statusWithEmoji = `✅ ${status}`;
-				break;
-			case "failed":
-				statusWithEmoji = `❌ ${status}`;
-				break;
-			case "skipped":
-				statusWithEmoji = `⏭️ ${status}`;
-				break;
-			default:
-				statusWithEmoji = `🔍 ${status}`;
-		}
+		console.log("duration", duration);
 
-		markdown += `| ${category} | ${functionalArea} | ${suiteName} | ${testName} | ${statusWithEmoji} \n`;
+		markdown += `| ${category} | ${functionalArea} | ${suiteName} | ${priority} | ${testName} | ${status} | ${duration} |\n`;
 	}
 
 	// Add summary statistics
