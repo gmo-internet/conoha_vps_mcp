@@ -189,7 +189,7 @@ Webサーバー用のセキュリティグループを作成して、HTTP（80�
 
 <div align="center">
 
-**Made by [GMO Internet](https://www.gmo.internet/)**
+**Made by [GMO Internet](https://internet.gmo/)**
 
 [⬆️ トップに戻る](#conoha-vps-mcp-server)
 
