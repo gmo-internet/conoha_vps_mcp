@@ -1,6 +1,6 @@
-import { executeOpenstackApi } from "../common/openstack-client";
-import type { JsonObject } from "../common/types";
-import { OPENSTACK_VOLUME_BASE_URL } from "../constants";
+import { executeOpenstackApi } from "../common/openstack-client.js";
+import type { JsonObject } from "../common/types.js";
+import { OPENSTACK_VOLUME_BASE_URL } from "../constants.js";
 
 const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 

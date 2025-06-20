@@ -43,7 +43,7 @@ describe("openstack-client", () => {
 		});
 
 		describe("GET requests", () => {
-			it("GETリクエストを正しく実行する", async () => {
+			it("API（/servers）へのGETリクエストでレスポンスを受け取った場合に、正しいURL（https://compute.example.com/servers/server-id-123）とHTTPヘッダー（{Accept: application/json, X-Auth-Token}）でAPIリクエストを送信し、'{status: number, statusText: string, body: json}'形式に正しくフォーマットできる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -64,7 +64,7 @@ describe("openstack-client", () => {
 				expect(mockFormatResponse).toHaveBeenCalledWith(mockResponse);
 			});
 
-			it("パスパラメータを含むGETリクエストを正しく実行する", async () => {
+			it("API（/servers/server-id-123）へのパスパラメータを含むGETリクエストでレスポンスを受け取った場合に、正しいURL（https://compute.example.com/servers/server-id-123）とHTTPヘッダー（{Accept: application/json, X-Auth-Token}）でAPIリクエストを送信できる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -82,7 +82,7 @@ describe("openstack-client", () => {
 				);
 			});
 
-			it("クエリパラメータを含むGETリクエストを正しく実行する", async () => {
+			it("API（/servers?limit=10&marker=abc）へのクエリパラメータを含むGETリクエストでレスポンスを受け取った場合に、正しいURL（https://compute.example.com/servers?limit=10&marker=abc）とHTTPヘッダー（{Accept: application/json, X-Auth-Token}）でAPIリクエストを送信できる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -106,7 +106,7 @@ describe("openstack-client", () => {
 		});
 
 		describe("DELETE requests", () => {
-			it("DELETEリクエストを正しく実行する", async () => {
+			it("API（/servers/server-id-123）へのDELETEリクエストでサーバー削除レスポンスを受け取った場合に、正しいURL（https://compute.example.com/servers/server-id-123）とHTTPヘッダー（{Accept: application/json, X-Auth-Token}）でAPIリクエストを送信し、'{status: number, statusText: string, body: json}'形式に正しくフォーマットできる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -133,7 +133,7 @@ describe("openstack-client", () => {
 		});
 
 		describe("POST requests", () => {
-			it("POSTリクエストを正しく実行する", async () => {
+			it("API（/servers）へのサーバー作成情報を含むPOSTリクエストでサーバー作成レスポンスを受け取った場合に、正しいJSONボディとHTTPヘッダー（{Accept: application/json, X-Auth-Token, Content-Type: application/json}）でAPIを呼び出しレスポンスをフォーマットできる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -169,7 +169,7 @@ describe("openstack-client", () => {
 				expect(mockFormatResponse).toHaveBeenCalledWith(mockResponse);
 			});
 
-			it("複雑なPOSTリクエストボディを正しく処理する", async () => {
+			it("API（/servers）への複雑なサーバー作成情報（ネットワーク・メタデータ・セキュリティグループ）を含むPOSTリクエストでレスポンスを受け取った場合に、正しいJSONボディとHTTPヘッダー（{Accept: application/json, X-Auth-Token, Content-Type: application/json}）でAPIリクエストを送信できる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -205,7 +205,7 @@ describe("openstack-client", () => {
 		});
 
 		describe("PUT requests", () => {
-			it("PUTリクエストを正しく実行する", async () => {
+			it("API（/servers/server-id-123）への更新情報を含むPUTリクエストでサーバー更新レスポンスを受け取った場合に、正しいJSONボディとHTTPヘッダー（{Accept: application/json, X-Auth-Token, Content-Type: application/json}）でAPIを呼び出しレスポンスをフォーマットできる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -241,7 +241,7 @@ describe("openstack-client", () => {
 		});
 
 		describe("エラーハンドリング", () => {
-			it("generateApiTokenがエラーを投げた場合にエラーメッセージを返す", async () => {
+			it("API（/servers）へのGETリクエストでAPIトークン生成エラーが発生した場合に、'Error: Failed to generate API token'形式のエラーメッセージを返し、APIリクエストやレスポンスフォーマット処理が一切行われないことを検証できる。", async () => {
 				const tokenError = new Error("Failed to generate API token");
 				mockGenerateApiToken.mockRejectedValueOnce(tokenError);
 
@@ -253,7 +253,7 @@ describe("openstack-client", () => {
 				expect(mockFormatResponse).not.toHaveBeenCalled();
 			});
 
-			it("fetchがエラーを投げた場合にエラーメッセージを返す", async () => {
+			it("API（/servers）へのHTTPリクエスト（fetch）でネットワークエラーが発生した場合に、'Error: Network error'形式のエラーメッセージを返し、APIリクエストやレスポンスフォーマット処理が一切行われないことを検証できる。", async () => {
 				const fetchError = new Error("Network error");
 				mockFetch.mockRejectedValueOnce(fetchError);
 
@@ -265,7 +265,7 @@ describe("openstack-client", () => {
 				expect(mockFormatResponse).not.toHaveBeenCalled();
 			});
 
-			it("formatResponseがエラーを投げた場合にエラーメッセージを返す", async () => {
+			it("API（/servers）へのGETリクエストでレスポンスフォーマット処理でエラーが発生した場合に、'Error: Failed to format response'形式のエラーメッセージを返し、APIリクエストやレスポンスフォーマット処理が一切行われないことを検証できる。", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -280,7 +280,7 @@ describe("openstack-client", () => {
 				expect(mockFormatResponse).toHaveBeenCalledWith(mockResponse);
 			});
 
-			it("非Errorオブジェクトがthrowされた場合に汎用エラーメッセージを返す", async () => {
+			it("API（/servers）へのGETリクエストで非Errorオブジェクト（文字列エラー）がthrowされた場合に、'Unexpected error occurred'形式の汎用エラーメッセージを返し、APIリクエストやレスポンスフォーマット処理が一切行われないことを検証できる。", async () => {
 				mockGenerateApiToken.mockRejectedValueOnce("string error");
 
 				const result = await executeOpenstackApi("GET", baseUrl, "/servers");
@@ -293,7 +293,7 @@ describe("openstack-client", () => {
 		});
 
 		describe("異なるベースURL", () => {
-			it("異なるサービスのベースURLでも正しく動作する", async () => {
+			it("API（/v2.0/networks）で異なるベースURLでGETリクエストを送信した場合に、正しいURL（https://network.example.com/v2.0/networks）とヘッダー（{Accept: application/json, X-Auth-Token}）でネットワークAPIを呼び出すことができる", async () => {
 				const networkBaseUrl = "https://network.example.com";
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
@@ -312,7 +312,7 @@ describe("openstack-client", () => {
 				);
 			});
 
-			it("ベースURLの末尾にスラッシュがある場合も正しく処理する", async () => {
+			it("ベースURL（https://compute.example.com/）の末尾にスラッシュがある場合でも、正しいURL（https://compute.example.com//servers）でAPIリクエストを送信できる", async () => {
 				const baseUrlWithSlash = "https://compute.example.com/";
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
@@ -325,7 +325,7 @@ describe("openstack-client", () => {
 				);
 			});
 
-			it("パスの先頭にスラッシュがない場合も正しく処理する", async () => {
+			it("リクエストパス（servers）の先頭にスラッシュがない場合でも、正しいURL（https://compute.example.com/servers）でAPIリクエストを送信できる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -339,7 +339,7 @@ describe("openstack-client", () => {
 		});
 
 		describe("型安全性のテスト", () => {
-			it("GETリクエストではbodyパラメータなしで呼び出せる", async () => {
+			it("TypeScript型システムでGETリクエストメソッド（/servers）を呼び出した場合に、bodyパラメータなしで関数を正しく呼び出すことができる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -349,7 +349,7 @@ describe("openstack-client", () => {
 				expect(result).toBe(mockFormattedResponse);
 			});
 
-			it("DELETEリクエストではbodyパラメータなしで呼び出せる", async () => {
+			it("TypeScript型システムでDELETEリクエストメソッド（/servers/123）を呼び出した場合に、bodyパラメータなしで関数を正しく呼び出すことができる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -363,7 +363,7 @@ describe("openstack-client", () => {
 				expect(result).toBe(mockFormattedResponse);
 			});
 
-			it("POSTリクエストではbodyパラメータが必要", async () => {
+			it("TypeScript型システムでPOSTリクエストメソッド（/servers）を呼び出した場合に、必須のbodyパラメータ（JsonObject）を含めて関数を正しく呼び出すことができる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -380,7 +380,7 @@ describe("openstack-client", () => {
 				expect(result).toBe(mockFormattedResponse);
 			});
 
-			it("PUTリクエストではbodyパラメータが必要", async () => {
+			it("TypeScript型システムでPUTリクエストメソッド（/servers/123）を呼び出した場合に、必須のbodyパラメータ（JsonObject）を含めて関数を正しく呼び出すことができる", async () => {
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
 
@@ -399,7 +399,7 @@ describe("openstack-client", () => {
 		});
 
 		describe("APIトークンの処理", () => {
-			it("空文字トークンでもリクエストを実行する", async () => {
+			it("API（/servers）へのGETリクエストでAPIトークンが空文字の場合でも、正しいHTTPヘッダー（{Accept: application/json, X-Auth-Token: 空文字}）でAPIリクエストを送信できる", async () => {
 				mockGenerateApiToken.mockResolvedValueOnce("");
 				const mockResponse = new Response();
 				mockFetch.mockResolvedValueOnce(mockResponse);
@@ -418,7 +418,7 @@ describe("openstack-client", () => {
 				);
 			});
 
-			it("長いトークンでも正しく処理する", async () => {
+			it("API（/servers）へのGETリクエストでAPIトークンが長い文字列（500文字）の場合でも、正しいHTTPヘッダー（{Accept: application/json, X-Auth-Token: 長いトークン}）でAPIリクエストを送信できる", async () => {
 				const longToken = "a".repeat(500);
 				mockGenerateApiToken.mockResolvedValueOnce(longToken);
 				const mockResponse = new Response();

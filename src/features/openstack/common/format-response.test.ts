@@ -20,7 +20,7 @@ describe("format-response", () => {
 	});
 
 	describe("formatResponse", () => {
-		it("正常なJSONレスポンスを正しくフォーマットする", async () => {
+		it("公開APIの200 OKのJSONレスポンスを'{status: number, statusText: string, body: json}'形式にフォーマットできる", async () => {
 			const mockJsonBody = { message: "success", data: { id: 1 } };
 			const mockResponse = createMockResponse(
 				200,
@@ -38,7 +38,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("プレーンテキストレスポンスを正しくフォーマットする", async () => {
+		it("公開APIの404 Not FoundのJSONレスポンスを'{status: number, statusText: string, body: string}'形式にフォーマットできる", async () => {
 			const mockTextBody = "Plain text response";
 			const mockResponse = createMockResponse(404, "Not Found", mockTextBody);
 
@@ -52,7 +52,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("空のレスポンスボディを正しく処理する", async () => {
+		it("公開APIの204 No Contentの空レスポンスを'{status: number, statusText: string, body: ''}'形式にフォーマットできる", async () => {
 			const mockResponse = createMockResponse(204, "No Content", "");
 
 			const result = await formatResponse(mockResponse);
@@ -65,7 +65,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("不正なJSONレスポンスをテキストとして処理する", async () => {
+		it("公開APIの500 Internal Server Errorの不正なJSONレスポンスを'{status: number, statusText: string, body: string}'形式にフォーマットできる", async () => {
 			const invalidJson = '{"invalid": json}';
 			const mockResponse = createMockResponse(
 				500,
@@ -83,7 +83,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("異なるHTTPステータスコードを正しく処理する", async () => {
+		it("さまざまなHTTPステータスコードのJSONレスポンスを'{status: number, statusText: string}'形式に正しくフォーマットできる", async () => {
 			const testCases = [
 				{ status: 201, statusText: "Created" },
 				{ status: 400, statusText: "Bad Request" },
@@ -107,7 +107,7 @@ describe("format-response", () => {
 			}
 		});
 
-		it("複雑なJSONオブジェクトを正しく処理する", async () => {
+		it("公開APIの200 OKのレスポンスで入れ子構造や配列を含む複雑なJSONオブジェクトがあった場合に、'{status: number, statusText: string, body: json}'形式に正しくフォーマットできる", async () => {
 			const complexJson = {
 				users: [
 					{ id: 1, name: "Alice", roles: ["admin", "user"] },
@@ -140,7 +140,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("特殊文字を含むテキストレスポンスを正しく処理する", async () => {
+		it("公開APIの400 Bad Requestのレスポンスで改行やクォートなど特殊文字を含むテキストがあった場合に、'{status: number, statusText: string, body: string}'形式に正しくフォーマットできる", async () => {
 			const specialText =
 				'Error: "Invalid request" with \\n newline and \\"quotes\\"';
 			const mockResponse = createMockResponse(400, "Bad Request", specialText);
@@ -155,7 +155,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("nullやundefinedを含むJSONを正しく処理する", async () => {
+		it("公開APIの200 OKレスポンスにnullやundefined、空文字、0、falseを含むJSONオブジェクトがあった場合に、'{status: number, statusText: string, body: json}'形式に正しくフォーマットできる", async () => {
 			const jsonWithNulls = {
 				value: null,
 				optional: undefined,
@@ -187,7 +187,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("大きなJSONレスポンスを正しく処理する", async () => {
+		it("公開APIの200 OKレスポンスで1000件の要素を持つ大規模なJSON配列があった場合に、'{status: number, statusText: string, body: json[]}'形式に正しくフォーマットできる。\n加えてbody内のJSON配列の長さが1000でかつ0番目の値が'{id: 0, name: 'Item 0', data: 'Data for item 0'}'になっている", async () => {
 			const largeArray = Array.from({ length: 1000 }, (_, i) => ({
 				id: i,
 				name: `Item ${i}`,
@@ -213,7 +213,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("HTMLレスポンスをテキストとして処理する", async () => {
+		it("公開APIの404 Not FoundレスポンスでHTMLコンテンツが返却された場合に、'{status: number, statusText: string, body: string}'形式に正しくフォーマットできる", async () => {
 			const htmlContent =
 				"<html><body><h1>Error 404</h1><p>Page not found</p></body></html>";
 			const mockResponse = createMockResponse(404, "Not Found", htmlContent);
@@ -228,7 +228,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("XMLレスポンスをテキストとして処理する", async () => {
+		it("公開APIの400 Bad RequestレスポンスでXMLコンテンツが返却された場合に、'{status: number, statusText: string, body: string}'形式に正しくフォーマットできる", async () => {
 			const xmlContent =
 				'<?xml version="1.0"?><root><error>Invalid request</error></root>';
 			const mockResponse = createMockResponse(400, "Bad Request", xmlContent);
@@ -243,7 +243,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("response.text()がエラーを投げた場合に適切に処理する", async () => {
+		it("公開APIの500 Internal Server Errorレスポンスでresponse.text()が例外を投げた場合に、エラーメッセージを正しく例外としてスローできる", async () => {
 			const mockResponse = {
 				status: 500,
 				statusText: "Internal Server Error",
@@ -257,7 +257,7 @@ describe("format-response", () => {
 			);
 		});
 
-		it("JSONが部分的に破損している場合にテキストとして処理する", async () => {
+		it("公開APIの200 OKレスポンスで部分的に破損したJSON文字列が返却された場合に、'{status: number, statusText: string, body: string}'形式のように、JSON文字列をテキストデータとして正しくフォーマットできる", async () => {
 			const partiallyBrokenJson = '{"valid": "data", "broken": incomplete';
 			const mockResponse = createMockResponse(200, "OK", partiallyBrokenJson);
 
@@ -271,7 +271,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("空のJSONオブジェクトを正しく処理する", async () => {
+		it("公開APIの200 OKレスポンスで空のJSONオブジェクトが返却された場合に、'{status: number, statusText: string, body: {}}'形式に正しくフォーマットできる", async () => {
 			const emptyJson = "{}";
 			const mockResponse = createMockResponse(200, "OK", emptyJson);
 
@@ -285,7 +285,7 @@ describe("format-response", () => {
 			});
 		});
 
-		it("空のJSON配列を正しく処理する", async () => {
+		it("公開APIの200 OKレスポンスで空のJSON配列が返却された場合に、'{status: number, statusText: string, body: []}'形式に正しくフォーマットできる", async () => {
 			const emptyArray = "[]";
 			const mockResponse = createMockResponse(200, "OK", emptyArray);
 

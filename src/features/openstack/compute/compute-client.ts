@@ -1,6 +1,6 @@
-import { executeOpenstackApi } from "../common/openstack-client";
-import type { JsonObject } from "../common/types";
-import { OPENSTACK_COMPUTE_BASE_URL } from "../constants";
+import { executeOpenstackApi } from "../common/openstack-client.js";
+import type { JsonObject } from "../common/types.js";
+import { OPENSTACK_COMPUTE_BASE_URL } from "../constants.js";
 
 export async function getCompute(path: string) {
 	return executeOpenstackApi("GET", OPENSTACK_COMPUTE_BASE_URL, path);
