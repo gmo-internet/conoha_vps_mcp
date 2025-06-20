@@ -7,37 +7,37 @@ import {
 	deleteComputeById,
 	getCompute,
 	getComputeById,
-} from "./features/openstack/compute/compute-client";
+} from "./features/openstack/compute/compute-client.js";
 import {
 	CreateSSHKeyPairRequestSchema,
 	CreateServerRequestSchema,
 	OperateServerRequestSchema,
 	RemoteConsoleRequestSchema,
-} from "./features/openstack/compute/compute-schema";
-import { getImage } from "./features/openstack/image/image-client";
+} from "./features/openstack/compute/compute-schema.js";
+import { getImage } from "./features/openstack/image/image-client.js";
 import {
 	createNetwork,
 	deleteNetworkById,
 	getNetwork,
 	getNetworkById,
 	updateNetworkById,
-} from "./features/openstack/network/network-client";
+} from "./features/openstack/network/network-client.js";
 import {
 	CreateSecurityGroupRequestSchema,
 	CreateSecurityGroupRuleRequestSchema,
 	UpdatePortRequestSchema,
 	UpdateSecurityGroupRequestSchema,
-} from "./features/openstack/network/network-schema";
+} from "./features/openstack/network/network-schema.js";
 import {
 	createVolume,
 	deleteVolumeById,
 	getVolume,
 	updateVolumeById,
-} from "./features/openstack/volume/volume-client";
+} from "./features/openstack/volume/volume-client.js";
 import {
 	CreateVolumeRequestSchema,
 	UpdateVolumeRequestSchema,
-} from "./features/openstack/volume/volume-schema";
+} from "./features/openstack/volume/volume-schema.js";
 import {
 	conohaOpenstackDeleteIdDescription,
 	conohaOpenstackGetIdDescription,
@@ -45,7 +45,7 @@ import {
 	conohaOpenstackPostPutRequestBodyIdDescription,
 	conohaOpenstackPostRequestBodyDescription,
 	createServerDescription,
-} from "./tool-descriptions";
+} from "./tool-descriptions.js";
 
 const server = new McpServer({ name: "ConoHa VPS MCP", version: "0.1.0" }); // FIXME: package.jsonからバージョンを取得するようにする
 

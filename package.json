@@ -3,7 +3,7 @@
 	"version": "0.2.0",
 	"description": "ConoHa VPS MCP (Model Context Protocol) server written with Node.js",
 	"type": "module",
-	"main": "index.js",
+	"main": "dist/index.js",
 	"keywords": [
 		"conoha",
 		"vps",
@@ -14,9 +14,9 @@
 	"author": "GMO Internet",
 	"license": "Apache-2.0",
 	"scripts": {
+		"build": "tsc",
+		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
-		"build": "FIXME: ",
-		"start": "tsx src/index.ts",
 		"typecheck": "tsc --noEmit",
 		"biome:ci": "biome ci .",
 		"biome:fix": "biome check --write .",
@@ -28,14 +28,15 @@
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.12.3",
-		"tsx": "^4.20.3",
 		"zod": "^3.25.67"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@types/node": "22.15.32",
-		"cz-conventional-changelog": "3.3.0",
 		"@vitest/coverage-v8": "3.2.4",
+		"cz-conventional-changelog": "3.3.0",
+		"tsx": "^4.20.3",
+		"typescript": "^5.0.0",
 		"vitest": "3.2.4"
 	},
 	"engines": {
