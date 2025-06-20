@@ -31,5 +31,5 @@ jobs:
         uses: googleapis/release-please-action@1155c2c8dcbd6b15e85bae6bc6d1fed9552663cb
         with:
           token: ${{ steps.app-token.outputs.token }}
-          release-type: node
           config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json

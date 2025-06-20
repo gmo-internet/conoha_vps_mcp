@@ -1,4 +1,10 @@
 {
+	"packages": {
+		".": {
+			"release-type": "node",
+			"package-name": "conoha-vps-mcp"
+		}
+	},
 	"changelogSections": {
 		"Features": [
 			"feat"
