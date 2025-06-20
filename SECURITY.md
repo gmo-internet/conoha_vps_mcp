@@ -34,7 +34,7 @@ ConoHa VPS MCPのセキュリティに関する問題を発見された場合は
 認証情報が平文でログに出力される問題
 
 影響範囲:
-- ConoHa VPS MCP v0.2.0
+- ConoHa VPS MCP v0.1.0
 - src/features/openstack/common/openstack-client.ts
 
 攻撃シナリオ:
@@ -48,7 +48,7 @@ ConoHa VPS MCPのセキュリティに関する問題を発見された場合は
 環境情報:
 - OS: Ubuntu 22.04
 - Node.js: v18.17.0
-- ConoHa VPS MCP: v0.2.0
+- ConoHa VPS MCP: v0.1.0
 ```
 
 ## セキュリティ脆弱性の処理プロセス
