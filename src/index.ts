@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import packageJson from "../package.json" with { type: "json" };
 import {
 	createCompute,
 	createComputeById,
@@ -47,7 +48,10 @@ import {
 	createServerDescription,
 } from "./tool-descriptions.js";
 
-const server = new McpServer({ name: "ConoHa VPS MCP", version: "0.1.0" }); // FIXME: package.jsonからバージョンを取得するようにする
+const server = new McpServer({
+	name: "ConoHa VPS MCP",
+	version: packageJson.version,
+});
 
 server.tool(
 	"conoha_openstack_get_no_id",
