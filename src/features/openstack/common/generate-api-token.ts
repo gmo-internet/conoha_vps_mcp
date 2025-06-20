@@ -1,4 +1,4 @@
-import { OPENSTACK_IDENTITY_BASE_URL } from "../constants";
+import { OPENSTACK_IDENTITY_BASE_URL } from "../constants.js";
 
 async function fetchOpenstackAuthHeaders(path: string) {
 	const USER_ID = process.env.OPENSTACK_USER_ID;
