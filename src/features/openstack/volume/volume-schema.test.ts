@@ -6,7 +6,7 @@ import {
 
 describe("Volume Schema Tests", () => {
 	describe("CreateVolumeRequestSchema", () => {
-		it("有効なボリューム作成リクエストを検証する", () => {
+		it("CreateVolumeRequestSchemaが完全なボリューム作成リクエストデータ（size、description、name、volume_type、imageRef）を受け取った場合に、すべての必須フィールドとオプションフィールドが正しく検証され、safeParse結果のsuccessがtrueになること", () => {
 			const validRequest = {
 				volume: {
 					size: 10,
@@ -21,7 +21,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("必須フィールドのみでリクエストを検証する", () => {
+		it("CreateVolumeRequestSchemaが必須フィールドのみのボリューム作成リクエストデータ（size、name、volume_type、imageRef）を受け取った場合に、オプションフィールドなしでも正しく検証され、safeParse結果のsuccessがtrueになること", () => {
 			const minimalRequest = {
 				volume: {
 					size: 5,
@@ -35,7 +35,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("nullのdescriptionを許可する", () => {
+		it("CreateVolumeRequestSchemaがnullのdescriptionを含むボリューム作成リクエストデータを受け取った場合に、nullableフィールドが正しく許可され、safeParse結果のsuccessがtrueになること", () => {
 			const requestWithNullDescription = {
 				volume: {
 					size: 20,
@@ -52,7 +52,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("descriptionフィールドなしを許可する", () => {
+		it("CreateVolumeRequestSchemaがdescriptionフィールドを省略したボリューム作成リクエストデータを受け取った場合に、オプションフィールドの欠如が正しく許可され、safeParse結果のsuccessがtrueになること", () => {
 			const requestWithoutDescription = {
 				volume: {
 					size: 15,
@@ -68,7 +68,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("有効な名前パターンを許可する", () => {
+		it("CreateVolumeRequestSchemaが名前フィールドで有効なパターン（英数字、アンダースコア、ハイフン、1-255文字）を含むボリューム作成リクエストデータを受け取った場合に、正規表現検証が正しく通り、safeParse結果のsuccessがtrueになること", () => {
 			const validNames = [
 				"volume1",
 				"test-volume",
@@ -93,7 +93,7 @@ describe("Volume Schema Tests", () => {
 			}
 		});
 
-		it("無効な名前パターンを拒否する", () => {
+		it("CreateVolumeRequestSchemaが名前フィールドで無効なパターン（不正な文字、長さ超過、空文字等）を含むボリューム作成リクエストデータを受け取った場合に、正規表現検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidNames = [
 				"", // 空文字
 				" volume", // スペースで開始
@@ -120,7 +120,7 @@ describe("Volume Schema Tests", () => {
 			}
 		});
 
-		it("負のサイズを拒否する", () => {
+		it("CreateVolumeRequestSchemaがサイズフィールドで負の値（-1）を含むボリューム作成リクエストデータを受け取った場合に、gt(0)バリデーションが失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidRequest = {
 				volume: {
 					size: -1,
@@ -134,7 +134,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("小数のサイズを拒否する", () => {
+		it("CreateVolumeRequestSchemaがサイズフィールドで小数値（10.5）を含むボリューム作成リクエストデータを受け取った場合に、int()バリデーションが失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidRequest = {
 				volume: {
 					size: 10.5,
@@ -148,7 +148,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("ゼロサイズを拒否する", () => {
+		it("CreateVolumeRequestSchemaがサイズフィールドでゼロ値（0）を含むボリューム作成リクエストデータを受け取った場合に、gt(0)バリデーションが失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidRequest = {
 				volume: {
 					size: 0,
@@ -162,7 +162,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("文字列以外の型のフィールドを拒否する", () => {
+		it("CreateVolumeRequestSchemaが文字列以外の型（数値のname、volume_type、imageRef）を含むボリューム作成リクエストデータを受け取った場合に、型検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidRequests = [
 				{
 					volume: {
@@ -196,7 +196,7 @@ describe("Volume Schema Tests", () => {
 			}
 		});
 
-		it("余分なフィールドを拒否する", () => {
+		it("CreateVolumeRequestSchemaが未定義フィールド（extra_field）を含むボリューム作成リクエストデータを受け取った場合に、strict validationにより余分なフィールドが拒否され、safeParse結果のsuccessがfalseになること", () => {
 			const requestWithExtraFields = {
 				volume: {
 					size: 10,
@@ -213,7 +213,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("必須フィールドの欠如を拒否する", () => {
+		it("CreateVolumeRequestSchemaが必須フィールド（size、name、volume_type、imageRef）を欠いたボリューム作成リクエストデータを受け取った場合に、必須フィールド検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const incompleteRequests = [
 				{
 					volume: {
@@ -257,7 +257,7 @@ describe("Volume Schema Tests", () => {
 	});
 
 	describe("UpdateVolumeRequestSchema", () => {
-		it("有効なボリューム更新リクエストを検証する", () => {
+		it("UpdateVolumeRequestSchemaが完全なボリューム更新リクエストデータ（name、description）を受け取った場合に、すべてのオプションフィールドが正しく検証され、safeParse結果のsuccessがtrueになること", () => {
 			const validRequest = {
 				volume: {
 					name: "updated-volume",
@@ -269,7 +269,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("nameのみの更新を許可する", () => {
+		it("UpdateVolumeRequestSchemaがnameフィールドのみのボリューム更新リクエストデータを受け取った場合に、部分的な更新が正しく許可され、safeParse結果のsuccessがtrueになること", () => {
 			const nameOnlyRequest = {
 				volume: {
 					name: "updated-name",
@@ -280,7 +280,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("descriptionのみの更新を許可する", () => {
+		it("UpdateVolumeRequestSchemaがdescriptionフィールドのみのボリューム更新リクエストデータを受け取った場合に、部分的な更新が正しく許可され、safeParse結果のsuccessがtrueになること", () => {
 			const descriptionOnlyRequest = {
 				volume: {
 					description: "updated description",
@@ -293,7 +293,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("空のvolumeオブジェクトを許可する", () => {
+		it("UpdateVolumeRequestSchemaが空のvolumeオブジェクトを含むボリューム更新リクエストデータを受け取った場合に、空オブジェクトが正しく許可され、safeParse結果のsuccessがtrueになること", () => {
 			const emptyRequest = {
 				volume: {},
 			};
@@ -302,7 +302,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("有効な名前パターンを許可する", () => {
+		it("UpdateVolumeRequestSchemaが名前フィールドで有効なパターン（英数字、アンダースコア、ハイフン、1-255文字）を含むボリューム更新リクエストデータを受け取った場合に、正規表現検証が正しく通り、safeParse結果のsuccessがtrueになること", () => {
 			const validNames = [
 				"volume1",
 				"test-volume",
@@ -324,7 +324,7 @@ describe("Volume Schema Tests", () => {
 			}
 		});
 
-		it("無効な名前パターンを拒否する", () => {
+		it("UpdateVolumeRequestSchemaが名前フィールドで無効なパターン（不正な文字、長さ超過、空文字等）を含むボリューム更新リクエストデータを受け取った場合に、正規表現検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidNames = [
 				"", // 空文字
 				" volume", // スペースで開始
@@ -348,7 +348,7 @@ describe("Volume Schema Tests", () => {
 			}
 		});
 
-		it("文字列以外の型を拒否する", () => {
+		it("UpdateVolumeRequestSchemaが文字列以外の型（数値、boolean、null）を含むボリューム更新リクエストデータを受け取った場合に、型検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidRequests = [
 				{
 					volume: {
@@ -378,7 +378,7 @@ describe("Volume Schema Tests", () => {
 			}
 		});
 
-		it("余分なフィールドを拒否する", () => {
+		it("UpdateVolumeRequestSchemaが未定義フィールド（extra_field）を含むボリューム更新リクエストデータを受け取った場合に、strict validationにより余分なフィールドが拒否され、safeParse結果のsuccessがfalseになること", () => {
 			const requestWithExtraFields = {
 				volume: {
 					name: "test-name",
@@ -393,7 +393,7 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("空文字列のdescriptionを許可する", () => {
+		it("UpdateVolumeRequestSchemaが空文字列のdescriptionを含むボリューム更新リクエストデータを受け取った場合に、空文字列が正しく許可され、safeParse結果のsuccessがtrueになること", () => {
 			const requestWithEmptyDescription = {
 				volume: {
 					description: "",

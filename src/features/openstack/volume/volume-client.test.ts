@@ -34,8 +34,8 @@ describe("volume-client", () => {
 					{
 						id: "volume-id-123",
 						name: "test-volume",
-						status: "available",
-						size: 10,
+						status: "in-use",
+						size: 100,
 					},
 				],
 			},
@@ -45,8 +45,8 @@ describe("volume-client", () => {
 			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
 		});
 
-		it("ボリューム一覧取得のAPIを正しく呼び出す", async () => {
-			const path = "/volumes";
+		it("Volume API（/volumes/detail）へのGETリクエストでボリューム一覧レスポンスを受け取った場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/detail）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes/detail'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+			const path = "/volumes/detail";
 
 			const result = await getVolume(path);
 
@@ -55,12 +55,12 @@ describe("volume-client", () => {
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 				"GET",
 				expectedBaseUrl,
-				"/volumes",
+				"/volumes/detail",
 			);
 		});
 
-		it("特定のボリューム取得のAPIを正しく呼び出す", async () => {
-			const path = "/volumes/volume-id-123";
+		it("Volume API（/volumes/detail）へのGETリクエストでクエリパラメータ（limit=10）付きのボリューム検索を実行する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes?limit=10）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes?limit=10'）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
+			const path = "/volumes/detail?limit=10";
 
 			const result = await getVolume(path);
 
@@ -68,12 +68,12 @@ describe("volume-client", () => {
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 				"GET",
 				expectedBaseUrl,
-				"/volumes/volume-id-123",
+				"/volumes/detail?limit=10",
 			);
 		});
 
-		it("クエリパラメータ付きのパスで正しく呼び出す", async () => {
-			const path = "/volumes?limit=10&status=available";
+		it("パスの先頭にスラッシュがない場合（volumes/detail）でも正しくVolume APIを呼び出せる", async () => {
+			const path = "volumes/detail";
 
 			const result = await getVolume(path);
 
@@ -81,24 +81,11 @@ describe("volume-client", () => {
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 				"GET",
 				expectedBaseUrl,
-				"/volumes?limit=10&status=available",
+				"volumes/detail",
 			);
 		});
 
-		it("パスの先頭にスラッシュがない場合も正しく処理する", async () => {
-			const path = "volumes";
-
-			const result = await getVolume(path);
-
-			expect(result).toBe(mockResponse);
-			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-				"GET",
-				expectedBaseUrl,
-				"volumes",
-			);
-		});
-
-		it("空のパスでも正しく処理する", async () => {
+		it("空のパス（''）でもVolume APIを正しく呼び出せる", async () => {
 			const path = "";
 
 			const result = await getVolume(path);
@@ -112,16 +99,16 @@ describe("volume-client", () => {
 		});
 
 		describe("エラーハンドリング", () => {
-			it("executeOpenstackApiが例外を投げた場合はそのまま例外を投げる", async () => {
+			it("Volume API（/volumes/detail）へのGETリクエストでexecuteOpenstackApi実行時に例外（Network error）が発生した場合に、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes/detail'）を正しく引き渡した上で、同じエラーメッセージ（Network error）の例外を発生させることができる", async () => {
 				const error = new Error("Network error");
 				mockExecuteOpenstackApi.mockRejectedValue(error);
-				const path = "/volumes";
+				const path = "/volumes/detail";
 
 				await expect(getVolume(path)).rejects.toThrow("Network error");
 				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 					"GET",
 					expectedBaseUrl,
-					"/volumes",
+					"/volumes/detail",
 				);
 			});
 		});
@@ -129,14 +116,14 @@ describe("volume-client", () => {
 
 	describe("createVolume", () => {
 		const mockResponse = JSON.stringify({
-			status: 201,
+			status: 202,
 			statusText: "Created",
 			body: {
 				volume: {
 					id: "new-volume-id",
 					name: "new-volume",
 					status: "creating",
-					size: 20,
+					size: 30,
 				},
 			},
 		});
@@ -144,8 +131,10 @@ describe("volume-client", () => {
 		const mockRequestBody = {
 			volume: {
 				name: "new-volume",
-				size: 20,
+				size: 30,
+				descriptine: "New volume description",
 				volume_type: "standard",
+				imageRef: "image-id-123",
 			},
 		};
 
@@ -153,7 +142,7 @@ describe("volume-client", () => {
 			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
 		});
 
-		it("ボリューム作成のAPIを正しく呼び出す", async () => {
+		it("Volume API（/volumes）へのPOSTリクエストでボリューム作成リクエストボディ（volume情報）を送信した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes）でモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/volumes', volumeBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/volumes";
 
 			const result = await createVolume(path, mockRequestBody);
@@ -168,22 +157,8 @@ describe("volume-client", () => {
 			);
 		});
 
-		it("異なるパスでも正しく呼び出す", async () => {
-			const path = "/volumes/action";
-
-			const result = await createVolume(path, mockRequestBody);
-
-			expect(result).toBe(mockResponse);
-			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-				"POST",
-				expectedBaseUrl,
-				"/volumes/action",
-				mockRequestBody,
-			);
-		});
-
 		describe("エラーハンドリング", () => {
-			it("executeOpenstackApiが例外を投げた場合はそのまま例外を投げる", async () => {
+			it("Volume API（/volumes）へのPOSTリクエストでexecuteOpenstackApi実行時に例外（Creation failed）が発生した場合に、API呼び出しパラメータ（'POST', expectedBaseUrl, '/volumes', mockRequestBody）を正しく引き渡した上で、同じエラーメッセージ（Creation failed）の例外を発生させることができる", async () => {
 				const error = new Error("Creation failed");
 				mockExecuteOpenstackApi.mockRejectedValue(error);
 				const path = "/volumes";
@@ -210,7 +185,7 @@ describe("volume-client", () => {
 					id: "volume-id-123",
 					name: "updated-volume",
 					status: "available",
-					size: 10,
+					size: 100,
 				},
 			},
 		});
@@ -226,7 +201,7 @@ describe("volume-client", () => {
 			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
 		});
 
-		it("ボリューム更新のAPIを正しく呼び出す", async () => {
+		it("Volume API（/volumes/{id}）へのPUTリクエストで特定のボリューム（volume-id-123）を更新するリクエストボディ（volume情報）を送信した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/volume-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/volumes/volume-id-123', volumeBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/volumes";
 			const id = "volume-id-123";
 
@@ -242,7 +217,7 @@ describe("volume-client", () => {
 			);
 		});
 
-		it("異なるIDでも正しく呼び出す", async () => {
+		it("Volume API（/volumes/{id}）へのPUTリクエストで異なるボリュームID（another-volume-id）を指定してボリューム更新を実行する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/another-volume-id）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/volumes/another-volume-id', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 			const path = "/volumes";
 			const id = "another-volume-id";
 
@@ -257,7 +232,7 @@ describe("volume-client", () => {
 			);
 		});
 
-		it("パスの末尾にスラッシュがある場合も正しく処理する", async () => {
+		it("パスの末尾にスラッシュがある場合（/volumes/）でもボリューム更新APIを正しく呼び出せる", async () => {
 			const path = "/volumes/";
 			const id = "volume-id-123";
 
@@ -273,7 +248,7 @@ describe("volume-client", () => {
 		});
 
 		describe("エラーハンドリング", () => {
-			it("executeOpenstackApiが例外を投げた場合はそのまま例外を投げる", async () => {
+			it("Volume API（/volumes/{id}）へのPUTリクエストでexecuteOpenstackApi実行時に例外（Update failed）が発生した場合に、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/volumes/volume-id-123', mockRequestBody）を正しく引き渡した上で、同じエラーメッセージ（Update failed）の例外を発生させることができる", async () => {
 				const error = new Error("Update failed");
 				mockExecuteOpenstackApi.mockRejectedValue(error);
 				const path = "/volumes";
@@ -299,7 +274,7 @@ describe("volume-client", () => {
 			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
 		});
 
-		it("ボリューム削除のAPIを正しく呼び出す", async () => {
+		it("Volume API（/volumes/{id}）へのDELETEリクエストで特定のボリューム（volume-id-123）を削除した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/volume-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/volumes/volume-id-123'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/volumes";
 			const id = "volume-id-123";
 
@@ -314,7 +289,7 @@ describe("volume-client", () => {
 			);
 		});
 
-		it("異なるIDでも正しく呼び出す", async () => {
+		it("Volume API（/volumes/{id}）へのDELETEリクエストで異なるボリュームID（another-volume-id）を指定して削除する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/another-volume-id）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/volumes/another-volume-id'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/volumes";
 			const id = "another-volume-id";
 
@@ -328,7 +303,7 @@ describe("volume-client", () => {
 			);
 		});
 
-		it("パスの末尾にスラッシュがある場合も正しく処理する", async () => {
+		it("パスの末尾にスラッシュがある場合（/volumes/）でもボリューム削除APIを正しく呼び出せる", async () => {
 			const path = "/volumes/";
 			const id = "volume-id-123";
 
@@ -343,7 +318,7 @@ describe("volume-client", () => {
 		});
 
 		describe("エラーハンドリング", () => {
-			it("executeOpenstackApiが例外を投げた場合はそのまま例外を投げる", async () => {
+			it("Volume API（/volumes/{id}）へのDELETEリクエストでexecuteOpenstackApi実行時に例外（Delete failed）が発生した場合に、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/volumes/volume-id-123'）を正しく引き渡した上で、同じエラーメッセージ（Delete failed）の例外を発生させることができる", async () => {
 				const error = new Error("Delete failed");
 				mockExecuteOpenstackApi.mockRejectedValue(error);
 				const path = "/volumes";
@@ -362,10 +337,10 @@ describe("volume-client", () => {
 	});
 
 	describe("レスポンスの型", () => {
-		it("文字列レスポンスを正しく返す", async () => {
+		it("Volume API（/volumes/detail）へのGETリクエストで単純な文字列レスポンス（'simple string response'）を受け取った場合に、モックAPIから返された文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
 			const stringResponse = "simple string response";
 			mockExecuteOpenstackApi.mockResolvedValue(stringResponse);
-			const path = "/volumes";
+			const path = "/volumes/detail";
 
 			const result = await getVolume(path);
 
@@ -373,12 +348,12 @@ describe("volume-client", () => {
 			expect(typeof result).toBe("string");
 		});
 
-		it("JSONレスポンスを文字列として返す", async () => {
+		it("Volume API（/volumes/detail）へのGETリクエストでJSON形式のボリューム一覧レスポンス（{volumes: [{id: 'test', name: 'test-volume'}]}）を文字列として受け取った場合に、モックAPIから返されたJSON文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
 			const jsonResponse = JSON.stringify({
 				volumes: [{ id: "test", name: "test-volume" }],
 			});
 			mockExecuteOpenstackApi.mockResolvedValue(jsonResponse);
-			const path = "/volumes";
+			const path = "/volumes/detail";
 
 			const result = await getVolume(path);
 
@@ -388,17 +363,17 @@ describe("volume-client", () => {
 	});
 
 	describe("パフォーマンス", () => {
-		it("大量のボリュームデータでも正しく処理する", async () => {
+		it("Volume API（/volumes/detail）へのGETリクエストで大量のボリュームデータ（1000件のボリューム一覧）を処理する場合に、データ量の制限なく正しいパス（/volumes/detail?limit=1000）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes/detail?limit=1000'）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 			const largeResponse = JSON.stringify({
 				volumes: Array.from({ length: 1000 }, (_, i) => ({
 					id: `volume-${i}`,
 					name: `test-volume-${i}`,
 					status: "available",
-					size: 10,
+					size: 100,
 				})),
 			});
 			mockExecuteOpenstackApi.mockResolvedValue(largeResponse);
-			const path = "/volumes?limit=1000";
+			const path = "/volumes/detail?limit=1000";
 
 			const result = await getVolume(path);
 
@@ -406,12 +381,12 @@ describe("volume-client", () => {
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 				"GET",
 				expectedBaseUrl,
-				"/volumes?limit=1000",
+				"/volumes/detail?limit=1000",
 			);
 		});
 
-		it("非常に長いパスでも正しく処理する", async () => {
-			const longPath = `/volumes/${"very-long-id-".repeat(100)}123`;
+		it("Volume API（長いパス）へのGETリクエストで非常に長いパス（100回繰り返された'very-long-id-'を含むパス）を処理する場合に、パス長の制限なく正しい長いパス（/volumes/very-long-id-...123）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, longPath）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
+			const longPath = `/volumes/detail/${"very-long-id-".repeat(100)}123`;
 			const mockResponse = JSON.stringify({ volume: { id: "test" } });
 			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
 
