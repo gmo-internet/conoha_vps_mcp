@@ -1,6 +1,6 @@
 <div align="center">
 
-![ConoHa VPS Logo](/assets/conoha_logo.svg)
+![ConoHa VPS Logo](assets/conoha_logo.svg)
 
 # ConoHa VPS MCP Server
 
@@ -15,7 +15,7 @@
 [![Docker](https://img.shields.io/badge/Docker-blue?style=flat-square&logo=docker)](https://www.docker.com/)
 [![OpenStack](https://img.shields.io/badge/OpenStack-API-red?style=flat-square&logo=openstack)](https://docs.openstack.org/)
 
-[🚀 クイックスタート](#-クイックスタート) • [📚 使用例](#-使用例) • [よくある質問（FAQ）](/docs/FAQ.md)
+[🚀 クイックスタート](#-クイックスタート) • [📚 使用例](#-使用例) • [よくある質問（FAQ）](docs/FAQ.md)
 
 </div>
 
@@ -44,8 +44,8 @@ Claude、Cline、CursorなどのAIアシスタントと連携することで、*
 | 特徴 | 説明 |
 |------|------|
 | 🇯🇵 **完全日本語対応** | ConoHa VPSのOpenStackリソースを日本語で直感的に操作 |
-| 🤖 **AI統合** | Claude、Cline、Cursorなど主要AIアシスタントに対応 |
-| 🔧 **包括的API** | サーバー・ボリューム・イメージ・ネットワーク管理をフルサポート |
+| 🤖 **AI統合** | Claude、Cline、Cursorなど、主要なMCP対応AIアシスタントに対応 |
+| 🔧 **包括的API** | サーバー・ボリューム・イメージ・セキュリティグループ管理をフルサポート |
 | 🐳 **クロスプラットフォーム** | Node.js および Docker での実行環境を提供 |
 | 🛡️ **セキュア** | OpenStack標準のセキュリティ機能を継承 |
 | 📝 **TypeScript完全対応** | 型安全性とコード補完を提供 |
@@ -88,16 +88,14 @@ Ubuntu 24.04でメモリ1GBのサーバーを、rootパスワード：vG7#kLp9zX
 ubuntu-24-04-serverという名前のサーバーを停止してください。
 ```
 
+```txt
+ubuntu-24-04-serverという名前のサーバーにアタッチされているボリュームの詳細を表示してください。
+```
+
 ### セキュリティ設定
 
 ```txt
 Webサーバー用のセキュリティグループを作成して、HTTP（80番）とHTTPS（443番）を許可してください。
-```
-
-### ボリューム管理
-
-```txt
-100GBのボリュームを作成して、ubuntu-24-04-serverにアタッチしてください。
 ```
 
 ## 📚 ドキュメント
@@ -124,14 +122,18 @@ Webサーバー用のセキュリティグループを作成して、HTTP（80�
 
 - ✅ ConoHa VPS v3.0 API
 
-### API リファレンス
+### MCPサーバーで対応している主な機能一覧
 
-| サービス | 機能 | 対応操作 |
-|---------|------|----------|
-| **Compute** | サーバー管理 | 作成・削除・起動・停止・再起動・リサイズ |
-| **Volume** | ストレージ管理 | ボリューム作成・削除・アタッチ・デタッチ |
-| **Network** | ネットワーク管理 | セキュリティグループ・ポート・IP管理 |
-| **Image** | イメージ管理 | OS・カスタムイメージ参照 |
+| カテゴリ             | 主な対応機能 |
+|---------------------|-------------|
+| サーバー               | 作成 / 削除 / 起動 / 停止 / リサイズ / コンソール接続 |
+| ボリューム           | 作成 / 削除 / 更新 |
+| イメージ             | イメージ一覧取得 |
+| SSHキーペア          | 作成 / 削除 |
+| セキュリティグループ | 作成 / 削除 / 更新 |
+| セキュリティグループルール | 作成 / 削除 |
+
+📄 ツールごとの全機能一覧は [`こちら`](docs/tool.md) を参照してください。
 
 ## 重要な注意事項
 

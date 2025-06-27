@@ -8,7 +8,7 @@ import {
 
 describe("Compute Schema Tests", () => {
 	describe("CreateServerRequestSchema", () => {
-		it("有効なサーバー作成リクエストを検証する", () => {
+		it("CreateServerRequestSchemaが完全なサーバー作成リクエストデータ（flavorRef、adminPass、block_device_mapping_v2、metadata、security_groups、key_name）を受け取った場合に、すべての必須フィールドとオプションフィールドが正しく検証され、safeParse結果のsuccessがtrueになること", () => {
 			const validRequest = {
 				server: {
 					flavorRef: "flavor-12345",
@@ -34,7 +34,7 @@ describe("Compute Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("オプションフィールドなしでリクエストを検証する", () => {
+		it("CreateServerRequestSchemaが必須フィールドのみのサーバー作成リクエストデータ（flavorRef、adminPass、block_device_mapping_v2、metadata）を受け取った場合に、オプションフィールドなしでも正しく検証され、safeParse結果のsuccessがtrueになること", () => {
 			const minimalRequest = {
 				server: {
 					flavorRef: "flavor-12345",
@@ -52,7 +52,7 @@ describe("Compute Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("複数のblock_device_mapping_v2を許可する", () => {
+		it("CreateServerRequestSchemaが複数のblock_device_mapping_v2エントリを含むサーバー作成リクエストデータを受け取った場合に、配列内の複数のボリュームマッピングが正しく検証され、safeParse結果のsuccessがtrueになること", () => {
 			const requestWithMultipleDevices = {
 				server: {
 					flavorRef: "flavor-12345",
@@ -80,7 +80,7 @@ describe("Compute Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("複数のsecurity_groupsを許可する", () => {
+		it("CreateServerRequestSchemaが複数のsecurity_groupsエントリを含むサーバー作成リクエストデータを受け取った場合に、セキュリティグループ配列内の複数のグループ名が正しく検証され、safeParse結果のsuccessがtrueになること", () => {
 			const requestWithMultipleSecurityGroups = {
 				server: {
 					flavorRef: "flavor-12345",
@@ -113,7 +113,7 @@ describe("Compute Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("有効なadminPassパターンを許可する", () => {
+		it("CreateServerRequestSchemaが有効なadminPassパターン（大文字、小文字、数字、記号を含む9-70文字）を含むサーバー作成リクエストデータを受け取った場合に、adminPassの正規表現検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const validPasswords = [
 				"TestPass123!",
 				"ComplexP@ssw0rd",
@@ -144,7 +144,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("無効なadminPassパターンを拒否する", () => {
+		it("CreateServerRequestSchemaが無効なadminPassパターン（長さ不足、文字種不足、禁止文字を含む）を含むサーバー作成リクエストデータを受け取った場合に、adminPassの正規表現検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidPasswords = [
 				"short1A!", // 8文字（短すぎ）
 				"nouppercase123!", // 大文字なし
@@ -178,7 +178,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("有効なinstance_name_tagパターンを許可する", () => {
+		it("CreateServerRequestSchemaが有効なinstance_name_tagパターン（1-255文字の英数字、アンダースコア、ハイフン）を含むmetadataを持つサーバー作成リクエストデータを受け取った場合に、instance_name_tagの正規表現検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const validNames = [
 				"server1",
 				"test-server",
@@ -209,7 +209,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("無効なinstance_name_tagパターンを拒否する", () => {
+		it("CreateServerRequestSchemaが無効なinstance_name_tagパターン（空文字、スペース、特殊文字、256文字以上）を含むmetadataを持つサーバー作成リクエストデータを受け取った場合に、instance_name_tagの正規表現検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidNames = [
 				"", // 空文字
 				" server", // スペースで開始
@@ -242,7 +242,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("余分なフィールドを拒否する", () => {
+		it("CreateServerRequestSchemaがスキーマで定義されていない余分なフィールドを含むサーバー作成リクエストデータを受け取った場合に、厳密なスキーマ検証により余分なフィールドが拒否され、safeParse結果のsuccessがfalseになること", () => {
 			const requestWithExtraFields = {
 				server: {
 					flavorRef: "flavor-12345",
@@ -265,7 +265,7 @@ describe("Compute Schema Tests", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("必須フィールドの欠如を拒否する", () => {
+		it("CreateServerRequestSchemaが必須フィールド（flavorRef、adminPass、block_device_mapping_v2、metadata）のいずれかが欠落したサーバー作成リクエストデータを受け取った場合に、必須フィールド検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const incompleteRequests = [
 				{
 					server: {
@@ -305,7 +305,7 @@ describe("Compute Schema Tests", () => {
 	});
 
 	describe("CreateSSHKeyPairRequestSchema", () => {
-		it("有効なSSHキーペア作成リクエストを検証する", () => {
+		it("CreateSSHKeyPairRequestSchemaが有効なSSHキーペア作成リクエストデータ（name、public_key）を受け取った場合に、必須フィールドが正しく検証され、safeParse結果のsuccessがtrueになること", () => {
 			const validRequest = {
 				keypair: {
 					name: "my-ssh-key",
@@ -317,7 +317,7 @@ describe("Compute Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
-		it("有効な名前パターンを許可する", () => {
+		it("CreateSSHKeyPairRequestSchemaが有効なnameパターン（英数字、アンダースコア、ハイフン）を含むSSHキーペア作成リクエストデータを受け取った場合に、nameの正規表現検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const validNames = [
 				"key1",
 				"test-key",
@@ -342,7 +342,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("無効な名前パターンを拒否する", () => {
+		it("CreateSSHKeyPairRequestSchemaが無効なnameパターン（空文字、スペース、特殊文字）を含むSSHキーペア作成リクエストデータを受け取った場合に、nameの正規表現検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidNames = [
 				"", // 空文字
 				" key", // スペースで開始
@@ -368,7 +368,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("余分なフィールドを拒否する", () => {
+		it("CreateSSHKeyPairRequestSchemaがスキーマで定義されていない余分なフィールドを含むSSHキーペア作成リクエストデータを受け取った場合に、厳密なスキーマ検証により余分なフィールドが拒否され、safeParse結果のsuccessがfalseになること", () => {
 			const requestWithExtraFields = {
 				keypair: {
 					name: "test-key",
@@ -383,7 +383,7 @@ describe("Compute Schema Tests", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("必須フィールドの欠如を拒否する", () => {
+		it("CreateSSHKeyPairRequestSchemaが必須フィールド（name、public_key）のいずれかが欠落したSSHキーペア作成リクエストデータを受け取った場合に、必須フィールド検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const incompleteRequests = [
 				{
 					keypair: {
@@ -407,21 +407,21 @@ describe("Compute Schema Tests", () => {
 	});
 
 	describe("OperateServerRequestSchema", () => {
-		it("os-start操作を検証する", () => {
+		it("OperateServerRequestSchemaがサーバー開始操作リクエストデータ（os-start: null）を受け取った場合に、サーバー開始操作の型検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const startRequest = { "os-start": null };
 
 			const result = OperateServerRequestSchema.safeParse(startRequest);
 			expect(result.success).toBe(true);
 		});
 
-		it("os-stop操作（通常）を検証する", () => {
+		it("OperateServerRequestSchemaが通常のサーバー停止操作リクエストデータ（os-stop: null）を受け取った場合に、サーバー停止操作の型検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const stopRequest = { "os-stop": null };
 
 			const result = OperateServerRequestSchema.safeParse(stopRequest);
 			expect(result.success).toBe(true);
 		});
 
-		it("os-stop操作（強制シャットダウン）を検証する", () => {
+		it("OperateServerRequestSchemaが強制シャットダウンオプション付きサーバー停止操作リクエストデータ（os-stop: {force_shutdown: true/false}）を受け取った場合に、force_shutdownブール値検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const forceStopRequests = [
 				{ "os-stop": { force_shutdown: true } },
 				{ "os-stop": { force_shutdown: false } },
@@ -433,7 +433,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("reboot操作を検証する", () => {
+		it("OperateServerRequestSchemaがサーバー再起動操作リクエストデータ（reboot: {type: 'SOFT' | 'HARD'}）を受け取った場合に、再起動タイプの列挙値検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const rebootRequests = [
 				{ reboot: { type: "SOFT" } },
 				{ reboot: { type: "HARD" } },
@@ -445,35 +445,35 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("resize操作を検証する", () => {
+		it("OperateServerRequestSchemaがサーバーリサイズ操作リクエストデータ（resize: {flavorRef: string}）を受け取った場合に、フレーバー参照の文字列検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const resizeRequest = { resize: { flavorRef: "new-flavor-123" } };
 
 			const result = OperateServerRequestSchema.safeParse(resizeRequest);
 			expect(result.success).toBe(true);
 		});
 
-		it("confirmResize操作を検証する", () => {
+		it("OperateServerRequestSchemaがリサイズ確認操作リクエストデータ（confirmResize: null）を受け取った場合に、リサイズ確認操作の型検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const confirmResizeRequest = { confirmResize: null };
 
 			const result = OperateServerRequestSchema.safeParse(confirmResizeRequest);
 			expect(result.success).toBe(true);
 		});
 
-		it("revertResize操作を検証する", () => {
+		it("OperateServerRequestSchemaがリサイズ取り消し操作リクエストデータ（revertResize: null）を受け取った場合に、リサイズ取り消し操作の型検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const revertResizeRequest = { revertResize: null };
 
 			const result = OperateServerRequestSchema.safeParse(revertResizeRequest);
 			expect(result.success).toBe(true);
 		});
 
-		it("無効なrebootタイプを拒否する", () => {
+		it("OperateServerRequestSchemaが無効な再起動タイプ（INVALID）を含むリクエストデータを受け取った場合に、再起動タイプの列挙値検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidRebootRequest = { reboot: { type: "INVALID" } };
 
 			const result = OperateServerRequestSchema.safeParse(invalidRebootRequest);
 			expect(result.success).toBe(false);
 		});
 
-		it("無効な操作を拒否する", () => {
+		it("OperateServerRequestSchemaが無効な操作（未定義の操作名、不正な型、空オブジェクト）を含むリクエストデータを受け取った場合に、操作種別の検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const invalidRequests = [
 				{ "invalid-operation": null },
 				{ "os-start": "not null" },
@@ -487,7 +487,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("余分なフィールドを拒否する", () => {
+		it("OperateServerRequestSchemaがスキーマで定義されていない余分なフィールドを含むサーバー操作リクエストデータを受け取った場合に、厳密なスキーマ検証により余分なフィールドが拒否され、safeParse結果のsuccessがfalseになること", () => {
 			const requestWithExtraFields = {
 				"os-start": null,
 				extra_field: "not allowed",
@@ -501,7 +501,7 @@ describe("Compute Schema Tests", () => {
 	});
 
 	describe("RemoteConsoleRequestSchema", () => {
-		it("有効なリモートコンソールリクエストを検証する", () => {
+		it("RemoteConsoleRequestSchemaが有効なリモートコンソールリクエストデータ（protocol: 'vnc'|'serial'|'web', type: 'novnc'|'serial'）を受け取った場合に、プロトコルとタイプの列挙値検証が成功し、safeParse結果のsuccessがtrueになること", () => {
 			const validRequests = [
 				{
 					remote_console: {
@@ -529,7 +529,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("無効なprotocolを拒否する", () => {
+		it("RemoteConsoleRequestSchemaが無効なprotocol値（invalid）を含むリモートコンソールリクエストデータを受け取った場合に、protocolの列挙値検証が失敗し、safeParse結果のsuccessがfalseかつ特定のエラーメッセージ（'protocol は vnc、serial、web のいずれかを指定してください'）が出力されること", () => {
 			const invalidRequest = {
 				remote_console: {
 					protocol: "invalid",
@@ -546,7 +546,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("無効なtypeを拒否する", () => {
+		it("RemoteConsoleRequestSchemaが無効なtype値（invalid）を含むリモートコンソールリクエストデータを受け取った場合に、typeの列挙値検証が失敗し、safeParse結果のsuccessがfalseかつ特定のエラーメッセージ（'type は novnc または serial を指定してください'）が出力されること", () => {
 			const invalidRequest = {
 				remote_console: {
 					protocol: "vnc",
@@ -563,7 +563,7 @@ describe("Compute Schema Tests", () => {
 			}
 		});
 
-		it("余分なフィールドを拒否する", () => {
+		it("RemoteConsoleRequestSchemaがスキーマで定義されていない余分なフィールドを含むリモートコンソールリクエストデータを受け取った場合に、スキーマ検証により余分なフィールドが拒否され、safeParse結果のsuccessがfalseになること", () => {
 			const requestWithExtraFields = {
 				remote_console: {
 					protocol: "vnc",
@@ -578,7 +578,7 @@ describe("Compute Schema Tests", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("必須フィールドの欠如を拒否する", () => {
+		it("RemoteConsoleRequestSchemaが必須フィールド（protocol、type）のいずれかが欠落したリモートコンソールリクエストデータを受け取った場合に、必須フィールド検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
 			const incompleteRequests = [
 				{
 					remote_console: {

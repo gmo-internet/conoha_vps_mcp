@@ -71,7 +71,7 @@ describe("index", () => {
 	});
 
 	describe("モック関数の基本動作", () => {
-		it("compute関連のモック関数が正しく定義されている", () => {
+		it("compute client関数群が正常にモックされた状態である", () => {
 			expect(mockGetCompute).toBeDefined();
 			expect(mockGetComputeById).toBeDefined();
 			expect(mockCreateCompute).toBeDefined();
@@ -79,11 +79,11 @@ describe("index", () => {
 			expect(mockDeleteComputeById).toBeDefined();
 		});
 
-		it("image関連のモック関数が正しく定義されている", () => {
+		it("image client関数が正常にモックされた状態である", () => {
 			expect(mockGetImage).toBeDefined();
 		});
 
-		it("network関連のモック関数が正しく定義されている", () => {
+		it("network client関数群が正常にモックされた状態である", () => {
 			expect(mockGetNetwork).toBeDefined();
 			expect(mockGetNetworkById).toBeDefined();
 			expect(mockCreateNetwork).toBeDefined();
@@ -91,14 +91,14 @@ describe("index", () => {
 			expect(mockDeleteNetworkById).toBeDefined();
 		});
 
-		it("volume関連のモック関数が正しく定義されている", () => {
+		it("volume client関数群が正常にモックされた状態である", () => {
 			expect(mockGetVolume).toBeDefined();
 			expect(mockCreateVolume).toBeDefined();
 			expect(mockUpdateVolumeById).toBeDefined();
 			expect(mockDeleteVolumeById).toBeDefined();
 		});
 
-		it("MCP関連のモック関数が正しく定義されている", () => {
+		it("MCP SDK関数群が正常にモックされた状態である", () => {
 			expect(mockMcpServer).toBeDefined();
 			expect(mockStdioServerTransport).toBeDefined();
 			expect(mockTool).toBeDefined();
@@ -136,7 +136,7 @@ describe("index", () => {
 			};
 		});
 
-		it("get_no_idツールハンドラーがcomputeパスを処理する", async () => {
+		it("conoha_openstack_get_no_idツールハンドラーが/servers/detailパスに対してGETリクエストを実行し、computeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
 			mockGetCompute.mockResolvedValue("test response");
 			const handler = toolHandlers["conoha_openstack_get_no_id"];
 
@@ -149,7 +149,7 @@ describe("index", () => {
 			}
 		});
 
-		it("get_idツールハンドラーがcomputeパスを処理する", async () => {
+		it("conoha_openstack_get_idツールハンドラーが/ipsパスに対してGETリクエストを実行し、指定されたIDでcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
 			mockGetComputeById.mockResolvedValue("test response");
 			const handler = toolHandlers["conoha_openstack_get_id"];
 
@@ -162,7 +162,7 @@ describe("index", () => {
 			}
 		});
 
-		it("post_request_bodyツールハンドラーがcomputeパスを処理する", async () => {
+		it("conoha_openstack_post_request_bodyハンドラーが/serversパスに対してPOSTリクエストを実行し、リクエストボディを含めてcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
 			mockCreateCompute.mockResolvedValue("test response");
 			const handler = toolHandlers["conoha_openstack_post_request_body"];
 
@@ -182,7 +182,7 @@ describe("index", () => {
 			}
 		});
 
-		it("delete_paramツールハンドラーがcomputeパスを処理する", async () => {
+		it("conoha_openstack_delete_paramハンドラーが/serversパスに対してDELETEリクエストを実行し、指定されたパラメータでcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
 			mockDeleteComputeById.mockResolvedValue("test response");
 			const handler = toolHandlers["conoha_openstack_delete_param"];
 
@@ -212,7 +212,7 @@ describe("index", () => {
 			promptHandler = createServerPromptCall?.[3];
 		});
 
-		it("create_serverプロンプトハンドラーが正しいメッセージを生成する", () => {
+		it("create_serverプロンプトハンドラーが指定されたrootPasswordを含む適切なメッセージ形式でユーザー向けサーバー作成指示を生成することを確認する", () => {
 			if (promptHandler) {
 				const rootPassword = "TestPass123!";
 				const result = promptHandler({ rootPassword });
@@ -249,7 +249,7 @@ describe("index", () => {
 			};
 		});
 
-		it("get_no_idツールハンドラーが未処理のパスでエラーを投げる", async () => {
+		it("conoha_openstack_get_no_idハンドラーが未定義のパス(/unknown/path)を受信した場合にUnhandled pathエラーメッセージを投げることを確認する", async () => {
 			const handler = toolHandlers["conoha_openstack_get_no_id"];
 
 			if (handler) {
@@ -259,7 +259,7 @@ describe("index", () => {
 			}
 		});
 
-		it("get_idツールハンドラーが未処理のパスでエラーを投げる", async () => {
+		it("conoha_openstack_get_idハンドラーが未定義のパス(/unknown/path)とIDを受信した場合にUnhandled pathエラーメッセージを投げることを確認する", async () => {
 			const handler = toolHandlers["conoha_openstack_get_id"];
 
 			if (handler) {
