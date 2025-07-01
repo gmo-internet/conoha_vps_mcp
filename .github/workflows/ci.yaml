@@ -18,7 +18,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: "22.16.0"
+          node-version: "22.17.0"
           cache: "npm"
 
       - name: Install dependencies
@@ -42,7 +42,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: "22.16.0"
+          node-version: "22.17.0"
           cache: "npm"
 
       - name: Install dependencies
@@ -76,7 +76,7 @@ jobs:
 
       - name: Comment test results and coverage on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
           script: |
             const fs = require('fs');
@@ -141,7 +141,7 @@ jobs:
             }
 
       - name: Upload test and coverage artifacts
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: test-and-coverage-report
           path: |
