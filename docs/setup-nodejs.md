@@ -7,22 +7,62 @@ Node.js を使用したConoHa VPS MCPのセットアップ手順を説明しま�
 - **Node.js**: v18以上
 - **npm**: Node.jsに付属
 
-## セットアップ手順
-
-### 1. プロジェクトの準備
+## プロジェクトの準備
 
 ```bash
 # リポジトリをクローン
 git clone https://github.com/gmo-internet/conoha_vps_mcp.git
-cd conoha_vps_mcp
 
 # 依存関係のインストール
 npm install
+
+# ビルド
+npm run build
 ```
 
-### 2. 環境変数の設定
+## AIエージェント別設定方法
 
-以下の環境変数を設定してください：
+### Claude Desktop
+
+#### 1. Claude Desktopの設定の追加
+
+1. メニューバーから **[ファイル]** → **[設定]** を開きます
+
+   ![Claude Desktopの設定を開く](../assets/claude_desktop_setting.png)
+
+2. 左側のメニューから **[開発者]** タブを選択します
+
+   ![開発者タブ](../assets/claude_desktop_setting_config.png)
+
+3. **[構成を編集]** をクリックします
+
+4. `claude_desktop_config.json`を開き、に以下の設定を追加します：
+
+```json
+{
+  "mcpServers": {
+    "ConoHa VPS MCP": {
+      "command": "node",
+      "args": ["PATH_TO_DIRECTORY", "dist/index.js"],
+      "env": {
+        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
+        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
+        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD",
+        "OPENSTACK_IDENTITY_BASE_URL": "https://identity.c3j1.conoha.io/v3",
+        "OPENSTACK_COMPUTE_BASE_URL": "https://compute.c3j1.conoha.io/v2.1",
+        "OPENSTACK_VOLUME_BASE_URL": "https://block-storage.c3j1.conoha.io/v3",
+        "OPENSTACK_IMAGE_BASE_URL": "https://image-service.c3j1.conoha.io",
+        "OPENSTACK_NETWORK_BASE_URL": "https://networking.c3j1.conoha.io"
+      }
+    }
+  }
+}
+```
+
+#### 2. 設定値の確認
+
+- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパスに置き換えてください
+- 環境変数の設定値：
 
 ```txt
 OPENSTACK_TENANT_ID: テナントID
@@ -32,17 +72,37 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 各値はConoHaコントロールパネルのAPI設定で確認できます。
 
-### 3. サーバーの起動テスト
+![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
 
-```bash
-npm start
-```
+#### 3. ツールの使用
 
-## AIエージェント別設定方法
+プロンプトを入力して操作を実行します
 
-### Claude Desktop
+   [サンプルプロンプト](../README.md#サンプルプロンプト)
 
-`claude_desktop_config.json`に以下の設定を追加します：
+### Cline (VSCode)
+
+#### 1. VSCodeにおけるClineのインストール
+
+1. VSCode左側の拡張機能メニューを開きます
+
+   ![VSCodeの拡張機能メニューを開く](../assets/vscode_install.png)
+
+2. 上部の検索窓で「cline」と検索し、Clineをインストールします
+
+   ![Clineをインストール](../assets/cline_install.png)
+
+#### 2. Clineの設定の追加
+
+1. VSCode左側のClineメニューを開き、適切なプランを選択するとMCPサーバーアイコンが表示されるため、これをクリックします
+
+   ![ClineのMCPサーバー設定を開く](../assets/cline_setting.png)
+
+2. 歯車アイコンから設定を開き、 **[Configure MCP Servers]** をクリックします
+
+   ![ClineのMCPサーバーconfigファイルを開く](../assets/cline_setting_config.png)
+
+3. `cline_mcp_settings.json`に以下の設定を追加します：
 
 ```json
 {
@@ -53,23 +113,56 @@ npm start
       "env": {
         "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
         "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
+        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD",
+        "OPENSTACK_IDENTITY_BASE_URL": "https://identity.c3j1.conoha.io/v3",
+        "OPENSTACK_COMPUTE_BASE_URL": "https://compute.c3j1.conoha.io/v2.1",
+        "OPENSTACK_VOLUME_BASE_URL": "https://block-storage.c3j1.conoha.io/v3",
+        "OPENSTACK_IMAGE_BASE_URL": "https://image-service.c3j1.conoha.io",
+        "OPENSTACK_NETWORK_BASE_URL": "https://networking.c3j1.conoha.io"
       }
     }
   }
 }
 ```
 
-以下の値を実際の値に置き換えてください：
+#### 3. 設定値の確認
 
-- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパス
-- `YOUR_OPENSTACK_TENANT_ID`: テナントID
-- `YOUR_OPENSTACK_USER_ID`: APIユーザーのユーザーID
-- `YOUR_OPENSTACK_PASSWORD`: APIユーザーのパスワード
+- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパスに置き換えてください
+- 環境変数の設定値：
 
-### Cline (VSCode)
+```txt
+OPENSTACK_TENANT_ID: テナントID
+OPENSTACK_USER_ID: APIユーザーのユーザーID
+OPENSTACK_PASSWORD: APIユーザーのパスワード
+```
 
-`.vscode/settings.json`に以下の設定を追加します：
+各値はConoHaコントロールパネルのAPI設定で確認できます。
+
+![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+
+#### 4. ツールの使用
+
+1. チャット欄右下の切り替えメニューから**Act**モードを選択します
+
+2. プロンプトを入力して操作を実行します
+
+   [サンプルプロンプト](../README.md#サンプルプロンプト)
+
+### GitHub Copilot (VSCode)
+
+#### 1. VSCode設定の追加
+
+1. VSCode左下の歯車マークをクリックして設定を開きます
+
+   ![VSCodeの設定を開く](../assets/vscode_settings.png)
+
+2. 上部の検索窓で「mcp」と検索します
+
+   ![MCP設定を検索](../assets/vscode_settings_mcp.png)
+
+3. 「settings.jsonで編集」をクリックします
+
+4. `mcp`セクションに以下の設定を追加します：
 
 ```json
 {
@@ -94,21 +187,26 @@ npm start
 }
 ```
 
-`PATH_TO_DIRECTORY`をプロジェクトのディレクトリパスに置き換えてください。
+#### 2. 設定値の確認
 
-### GitHub Copilot (VSCode)
+- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパスに置き換えてください
+- 環境変数の設定値：
 
-#### 設定方法
+```txt
+OPENSTACK_TENANT_ID: テナントID
+OPENSTACK_USER_ID: APIユーザーのユーザーID
+OPENSTACK_PASSWORD: APIユーザーのパスワード
+```
 
-1. VSCode左下の歯車マークをクリックして設定を開きます
+各値はConoHaコントロールパネルのAPI設定で確認できます。
 
-2. 上部の検索窓で「mcp」と検索します
+![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
 
-3. 「settings.jsonで編集」をクリックします
+### 3. MCPサーバーの起動
 
-4. 上記のCline設定と同じ内容を追加します
+編集したjsonファイル上に表示される起動ボタンをクリックして、MCPサーバーを起動します。その際、環境変数の初期設定を求められるので、確認した設定値を入力してください。
 
-#### 使用方法
+### 4. ツールの使用
 
 1. GitHub Copilotを起動します
    - **Windows/Linux**: `Ctrl + Shift + I`
@@ -126,19 +224,13 @@ npm start
 
 設定方法は準備中です。Claude Desktop設定を参考にしてください。
 
-## 認証情報の取得方法
-
-ConoHa VPS v3.0のAPI認証情報は、ConoHaコントロールパネルのAPI設定画面から取得できます。
-
-詳細な取得手順については、[ConoHa公式ドキュメント](https://doc.conoha.jp/reference/api-vps3/)をご確認ください。
-
 ## トラブルシューティング
 
 ### よくある問題
 
 - **認証エラー**: 環境変数の値が正しく設定されているか確認してください
 - **Node.jsバージョンエラー**: Node.js v18以上がインストールされているか確認してください
-- **起動エラー**: `npm install`が正常に完了しているか確認してください
+- **起動エラー**: `npm install`や`npm run build`が正常に完了しているか確認してください
 - **パス設定エラー**: `PATH_TO_DIRECTORY`が正しいプロジェクトパスに設定されているか確認してください
 
 > [!TIP]
