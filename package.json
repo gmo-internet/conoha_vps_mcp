@@ -1,12 +1,15 @@
 {
 	"name": "@gmo-internet/conoha-vps-mcp",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "ConoHa VPS MCP (Model Context Protocol) server",
 	"author": "GMO Internet",
 	"license": "Apache-2.0",
 	"type": "module",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"bin": {
+		"conoha-vps-mcp": "dist/index.js"
+	},
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
