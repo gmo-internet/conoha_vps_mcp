@@ -118,15 +118,11 @@ describe("index", () => {
 			// 登録されたツールハンドラーを取得
 			const toolCalls = mockTool.mock.calls;
 			toolHandlers = {
-				conoha_get: toolCalls.find(
-					(call) => call[0] === "conoha_get",
-				)?.[3],
+				conoha_get: toolCalls.find((call) => call[0] === "conoha_get")?.[3],
 				conoha_get_by_param: toolCalls.find(
 					(call) => call[0] === "conoha_get_by_param",
 				)?.[3],
-				conoha_post: toolCalls.find(
-					(call) => call[0] === "conoha_post",
-				)?.[3],
+				conoha_post: toolCalls.find((call) => call[0] === "conoha_post")?.[3],
 				conoha_post_put_by_param: toolCalls.find(
 					(call) => call[0] === "conoha_post_put_by_param",
 				)?.[3],
@@ -155,7 +151,10 @@ describe("index", () => {
 
 			if (handler) {
 				const result = await handler({ path: "/ips", param: "test-param" });
-				expect(mockGetComputeByParam).toHaveBeenCalledWith("/ips", "test-param");
+				expect(mockGetComputeByParam).toHaveBeenCalledWith(
+					"/ips",
+					"test-param",
+				);
 				expect(result).toEqual({
 					content: [{ type: "text", text: "test response" }],
 				});
@@ -240,9 +239,7 @@ describe("index", () => {
 			await import("./index");
 			const toolCalls = mockTool.mock.calls;
 			toolHandlers = {
-				conoha_get: toolCalls.find(
-					(call) => call[0] === "conoha_get",
-				)?.[3],
+				conoha_get: toolCalls.find((call) => call[0] === "conoha_get")?.[3],
 				conoha_get_by_param: toolCalls.find(
 					(call) => call[0] === "conoha_get_by_param",
 				)?.[3],
