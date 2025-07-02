@@ -1,4 +1,3 @@
-import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -48,8 +47,8 @@ import {
 	createServerDescription,
 } from "./tool-descriptions.js";
 
-const require = createRequire(import.meta.url);
-const packageJson = require("../package.json");
+// Import package.json directly for bundling
+import packageJson from "../package.json" assert { type: "json" };
 const server = new McpServer({
 	name: "ConoHa VPS MCP",
 	version: packageJson.version,
