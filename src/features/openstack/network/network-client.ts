@@ -6,11 +6,11 @@ export async function getNetwork(path: string) {
 	return executeOpenstackApi("GET", OPENSTACK_NETWORK_BASE_URL, path);
 }
 
-export async function getNetworkById(path: string, id: string) {
+export async function getNetworkByParam(path: string, param: string) {
 	return executeOpenstackApi(
 		"GET",
 		OPENSTACK_NETWORK_BASE_URL,
-		`${path}/${id}`,
+		`${path}/${param}`,
 	);
 }
 
@@ -23,23 +23,23 @@ export async function createNetwork(path: string, requestBody: JsonObject) {
 	);
 }
 
-export async function updateNetworkById(
+export async function updateNetworkByParam(
 	path: string,
-	id: string,
+	param: string,
 	requestBody: JsonObject,
 ) {
 	return executeOpenstackApi(
 		"PUT",
 		OPENSTACK_NETWORK_BASE_URL,
-		`${path}/${id}`,
+		`${path}/${param}`,
 		requestBody,
 	);
 }
 
-export async function deleteNetworkById(path: string, id: string) {
+export async function deleteNetworkByParam(path: string, param: string) {
 	return executeOpenstackApi(
 		"DELETE",
 		OPENSTACK_NETWORK_BASE_URL,
-		`${path}/${id}`,
+		`${path}/${param}`,
 	);
 }

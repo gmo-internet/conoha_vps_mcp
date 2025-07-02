@@ -7,6 +7,7 @@ export async function formatResponse(response: Response) {
 			body: JSON.parse(raw),
 		});
 	} catch (error) {
+		console.error("Failed to parse response body as JSON:", error);
 		return JSON.stringify({
 			status: response.status,
 			statusText: response.statusText,

@@ -19,23 +19,23 @@ export async function createVolume(path: string, requestBody: JsonObject) {
 	);
 }
 
-export async function updateVolumeById(
+export async function updateVolumeByParam(
 	path: string,
-	id: string,
+	param: string,
 	requestBody: JsonObject,
 ) {
 	return executeOpenstackApi(
 		"PUT",
 		OPENSTACK_VOLUME_TENANT_BASE_URL,
-		`${path}/${id}`,
+		`${path}/${param}`,
 		requestBody,
 	);
 }
 
-export async function deleteVolumeById(path: string, id: string) {
+export async function deleteVolumeByParam(path: string, param: string) {
 	return executeOpenstackApi(
 		"DELETE",
 		OPENSTACK_VOLUME_TENANT_BASE_URL,
-		`${path}/${id}`,
+		`${path}/${param}`,
 	);
 }

@@ -1,26 +1,27 @@
+import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import {
 	createCompute,
-	createComputeById,
-	deleteComputeById,
+	createComputeByParam,
+	deleteComputeByParam,
 	getCompute,
-	getComputeById,
+	getComputeByParam,
 } from "./features/openstack/compute/compute-client.js";
 import {
-	CreateSSHKeyPairRequestSchema,
 	CreateServerRequestSchema,
+	CreateSSHKeyPairRequestSchema,
 	OperateServerRequestSchema,
 	RemoteConsoleRequestSchema,
 } from "./features/openstack/compute/compute-schema.js";
 import { getImage } from "./features/openstack/image/image-client.js";
 import {
 	createNetwork,
-	deleteNetworkById,
+	deleteNetworkByParam,
 	getNetwork,
-	getNetworkById,
-	updateNetworkById,
+	getNetworkByParam,
+	updateNetworkByParam,
 } from "./features/openstack/network/network-client.js";
 import {
 	CreateSecurityGroupRequestSchema,
@@ -30,33 +31,33 @@ import {
 } from "./features/openstack/network/network-schema.js";
 import {
 	createVolume,
-	deleteVolumeById,
+	deleteVolumeByParam,
 	getVolume,
-	updateVolumeById,
+	updateVolumeByParam,
 } from "./features/openstack/volume/volume-client.js";
 import {
 	CreateVolumeRequestSchema,
 	UpdateVolumeRequestSchema,
 } from "./features/openstack/volume/volume-schema.js";
 import {
-	conohaOpenstackDeleteIdDescription,
-	conohaOpenstackGetIdDescription,
-	conohaOpenstackGetNoParamDescription,
-	conohaOpenstackPostPutRequestBodyIdDescription,
-	conohaOpenstackPostRequestBodyDescription,
+	conohaDeleteByParamDescription,
+	conohaGetByParamDescription,
+	conohaGetDescription,
+	conohaPostDescription,
+	conohaPostPutByParamDescription,
 	createServerDescription,
 } from "./tool-descriptions.js";
 
-// Import package.json directly for bundling
-import packageJson from "../package.json" assert { type: "json" };
+const require = createRequire(import.meta.url);
+const packageJson = require("../package.json");
 const server = new McpServer({
 	name: "ConoHa VPS MCP",
 	version: packageJson.version,
 });
 
 server.tool(
-	"conoha_openstack_get_no_id",
-	conohaOpenstackGetNoParamDescription,
+	"conoha_get",
+	conohaGetDescription,
 	{
 		path: z.enum([
 			"/servers/detail",
@@ -103,8 +104,8 @@ server.tool(
 );
 
 server.tool(
-	"conoha_openstack_get_id",
-	conohaOpenstackGetIdDescription,
+	"conoha_get_by_param",
+	conohaGetByParamDescription,
 	{
 		path: z.enum([
 			"/ips",
@@ -114,9 +115,9 @@ server.tool(
 			"/v2.0/security-groups",
 			"/v2.0/security-group-rules",
 		]),
-		id: z.string(),
+		param: z.string(),
 	},
-	async ({ path, id }) => {
+	async ({ path, param }) => {
 		let response: string;
 
 		switch (path) {
@@ -124,12 +125,12 @@ server.tool(
 			case "/os-security-groups":
 			case "/rrd/cpu":
 			case "/rrd/disk":
-				response = await getComputeById(path, id);
+				response = await getComputeByParam(path, param);
 				break;
 
 			case "/v2.0/security-groups":
 			case "/v2.0/security-group-rules":
-				response = await getNetworkById(path, id);
+				response = await getNetworkByParam(path, param);
 				break;
 
 			default:
@@ -140,8 +141,8 @@ server.tool(
 );
 
 server.tool(
-	"conoha_openstack_post_request_body",
-	conohaOpenstackPostRequestBodyDescription,
+	"conoha_post",
+	conohaPostDescription,
 	{
 		input: z.discriminatedUnion("path", [
 			z.object({
@@ -194,55 +195,55 @@ server.tool(
 );
 
 server.tool(
-	"conoha_openstack_post_put_request_body_id",
-	conohaOpenstackPostPutRequestBodyIdDescription,
+	"conoha_post_put_by_param",
+	conohaPostPutByParamDescription,
 	{
 		input: z.discriminatedUnion("path", [
 			z.object({
 				path: z.literal("/action"),
-				id: z.string(),
+				param: z.string(),
 				requestBody: OperateServerRequestSchema,
 			}),
 			z.object({
 				path: z.literal("/remote-consoles"),
-				id: z.string(),
+				param: z.string(),
 				requestBody: RemoteConsoleRequestSchema,
 			}),
 			z.object({
 				path: z.literal("/v2.0/security-groups"),
-				id: z.string(),
+				param: z.string(),
 				requestBody: UpdateSecurityGroupRequestSchema,
 			}),
 			z.object({
 				path: z.literal("/v2.0/ports"),
-				id: z.string(),
+				param: z.string(),
 				requestBody: UpdatePortRequestSchema,
 			}),
 			z.object({
 				path: z.literal("/volumes"),
-				id: z.string(),
+				param: z.string(),
 				requestBody: UpdateVolumeRequestSchema,
 			}),
 		]),
 	},
 	async ({ input }) => {
-		const { path, id, requestBody } = input;
+		const { path, param, requestBody } = input;
 
 		let response: string;
 
 		switch (path) {
 			case "/action":
 			case "/remote-consoles":
-				response = await createComputeById(path, id, requestBody);
+				response = await createComputeByParam(path, param, requestBody);
 				break;
 
 			case "/v2.0/security-groups":
 			case "/v2.0/ports":
-				response = await updateNetworkById(path, id, requestBody);
+				response = await updateNetworkByParam(path, param, requestBody);
 				break;
 
 			case "/volumes":
-				response = await updateVolumeById(path, id, requestBody);
+				response = await updateVolumeByParam(path, param, requestBody);
 				break;
 
 			default:
@@ -253,8 +254,8 @@ server.tool(
 );
 
 server.tool(
-	"conoha_openstack_delete_param",
-	conohaOpenstackDeleteIdDescription,
+	"conoha_delete_by_param",
+	conohaDeleteByParamDescription,
 	{
 		path: z.enum([
 			"/servers",
@@ -271,16 +272,16 @@ server.tool(
 		switch (path) {
 			case "/servers":
 			case "/os-keypairs":
-				response = await deleteComputeById(path, param);
+				response = await deleteComputeByParam(path, param);
 				break;
 
 			case "/v2.0/security-groups":
 			case "/v2.0/security-group-rules":
-				response = await deleteNetworkById(path, param);
+				response = await deleteNetworkByParam(path, param);
 				break;
 
 			case "/volumes":
-				response = await deleteVolumeById(path, param);
+				response = await deleteVolumeByParam(path, param);
 				break;
 
 			default:
@@ -295,7 +296,7 @@ server.prompt(
 	createServerDescription,
 	{
 		rootPassword: z.string().regex(
-			/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\\\^$+\-*/|()\[\]{}.,?!_=&@~%#:;'"])[A-Za-z0-9\\\^$+\-*/|()\[\]{}.,?!_=&@~%#:;'"]{9,70}$/, // 9文字以上70文字以下で、英大文字、英小文字、数字、記号を含む、利用可能な記号は \^$+-*/|()[]{}.,?!_=&@~%#:;'"
+			/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\\^$+\-*/|()[\]{}.,?!_=&@~%#:;'"])[A-Za-z0-9\\^$+\-*/|()[\]{}.,?!_=&@~%#:;'"]{9,70}$/, // 9文字以上70文字以下で、英大文字、英小文字、数字、記号を含む、利用可能な記号は \^$+-*/|()[]{}.,?!_=&@~%#:;'"
 		),
 	},
 	({ rootPassword }) => ({
