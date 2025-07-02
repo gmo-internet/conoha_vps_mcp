@@ -78,7 +78,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#サンプルプロンプト)
+   [サンプルプロンプト](../README.md#-使用例)
 
 ### Cline (VSCode)
 

@@ -116,7 +116,7 @@ A: 基本的な操作は日本語で可能ですので必要ありません。�
 
 ### Q: API利用制限はありますか？
 
-A: ConoHa VPS APIの利用制限に準拠します。詳細はConoHa公式ドキュメントをご確認ください。
+A: ConoHa VPS APIの利用制限に準拠します。詳細は[ConoHa公式ドキュメント](https://doc.conoha.jp/reference/api-vps3/?btn_id=reference-api-compute-vps3--breadcrumbs_reference-api-vps3)をご確認ください。
 
 ### Q: セキュリティは大丈夫ですか？
 
