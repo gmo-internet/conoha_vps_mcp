@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	createVolume,
-	deleteVolumeById,
+	deleteVolumeByParam,
 	getVolume,
-	updateVolumeById,
+	updateVolumeByParam,
 } from "./volume-client";
 
 // executeOpenstackApi のモック
@@ -132,7 +132,7 @@ describe("volume-client", () => {
 			volume: {
 				name: "new-volume",
 				size: 30,
-				descriptine: "New volume description",
+				description: "New volume description",
 				volume_type: "standard",
 				imageRef: "image-id-123",
 			},
@@ -176,7 +176,7 @@ describe("volume-client", () => {
 		});
 	});
 
-	describe("updateVolumeById", () => {
+	describe("updateVolumeByParam", () => {
 		const mockResponse = JSON.stringify({
 			status: 200,
 			statusText: "OK",
@@ -203,9 +203,9 @@ describe("volume-client", () => {
 
 		it("Volume API（/volumes/{id}）へのPUTリクエストで特定のボリューム（volume-id-123）を更新するリクエストボディ（volume情報）を送信した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/volume-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/volumes/volume-id-123', volumeBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/volumes";
-			const id = "volume-id-123";
+			const param = "volume-id-123";
 
-			const result = await updateVolumeById(path, id, mockRequestBody);
+			const result = await updateVolumeByParam(path, param, mockRequestBody);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledTimes(1);
@@ -219,9 +219,9 @@ describe("volume-client", () => {
 
 		it("Volume API（/volumes/{id}）へのPUTリクエストで異なるボリュームID（another-volume-id）を指定してボリューム更新を実行する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/another-volume-id）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/volumes/another-volume-id', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 			const path = "/volumes";
-			const id = "another-volume-id";
+			const param = "another-volume-id";
 
-			const result = await updateVolumeById(path, id, mockRequestBody);
+			const result = await updateVolumeByParam(path, param, mockRequestBody);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -234,9 +234,9 @@ describe("volume-client", () => {
 
 		it("パスの末尾にスラッシュがある場合（/volumes/）でもボリューム更新APIを正しく呼び出せる", async () => {
 			const path = "/volumes/";
-			const id = "volume-id-123";
+			const param = "volume-id-123";
 
-			const result = await updateVolumeById(path, id, mockRequestBody);
+			const result = await updateVolumeByParam(path, param, mockRequestBody);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -252,10 +252,10 @@ describe("volume-client", () => {
 				const error = new Error("Update failed");
 				mockExecuteOpenstackApi.mockRejectedValue(error);
 				const path = "/volumes";
-				const id = "volume-id-123";
+				const param = "volume-id-123";
 
 				await expect(
-					updateVolumeById(path, id, mockRequestBody),
+					updateVolumeByParam(path, param, mockRequestBody),
 				).rejects.toThrow("Update failed");
 				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 					"PUT",
@@ -267,7 +267,7 @@ describe("volume-client", () => {
 		});
 	});
 
-	describe("deleteVolumeById", () => {
+	describe("deleteVolumeByParam", () => {
 		const mockResponse = "";
 
 		beforeEach(() => {
@@ -276,9 +276,9 @@ describe("volume-client", () => {
 
 		it("Volume API（/volumes/{id}）へのDELETEリクエストで特定のボリューム（volume-id-123）を削除した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/volume-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/volumes/volume-id-123'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/volumes";
-			const id = "volume-id-123";
+			const param = "volume-id-123";
 
-			const result = await deleteVolumeById(path, id);
+			const result = await deleteVolumeByParam(path, param);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledTimes(1);
@@ -291,9 +291,9 @@ describe("volume-client", () => {
 
 		it("Volume API（/volumes/{id}）へのDELETEリクエストで異なるボリュームID（another-volume-id）を指定して削除する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/another-volume-id）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/volumes/another-volume-id'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/volumes";
-			const id = "another-volume-id";
+			const param = "another-volume-id";
 
-			const result = await deleteVolumeById(path, id);
+			const result = await deleteVolumeByParam(path, param);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -305,9 +305,9 @@ describe("volume-client", () => {
 
 		it("パスの末尾にスラッシュがある場合（/volumes/）でもボリューム削除APIを正しく呼び出せる", async () => {
 			const path = "/volumes/";
-			const id = "volume-id-123";
+			const param = "volume-id-123";
 
-			const result = await deleteVolumeById(path, id);
+			const result = await deleteVolumeByParam(path, param);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -322,9 +322,9 @@ describe("volume-client", () => {
 				const error = new Error("Delete failed");
 				mockExecuteOpenstackApi.mockRejectedValue(error);
 				const path = "/volumes";
-				const id = "volume-id-123";
+				const param = "volume-id-123";
 
-				await expect(deleteVolumeById(path, id)).rejects.toThrow(
+				await expect(deleteVolumeByParam(path, param)).rejects.toThrow(
 					"Delete failed",
 				);
 				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(

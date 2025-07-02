@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	createNetwork,
-	deleteNetworkById,
+	deleteNetworkByParam,
 	getNetwork,
-	getNetworkById,
-	updateNetworkById,
+	getNetworkByParam,
+	updateNetworkByParam,
 } from "./network-client";
 
 // executeOpenstackApi のモック
@@ -102,7 +102,7 @@ describe("network-client", () => {
 		});
 	});
 
-	describe("getNetworkById", () => {
+	describe("getNetworkByParam", () => {
 		const mockResponse = JSON.stringify({
 			status: 200,
 			statusText: "OK",
@@ -124,9 +124,9 @@ describe("network-client", () => {
 
 		it("Network API（/v2.0/ports/{id}）へのGETリクエストで特定のポート（port-id-123）レスポンスを受け取った場合に、正しいURL（https://networking.c3j1.conoha.io）とパス（/v2.0/ports/port-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/v2.0/ports/port-id-123'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/v2.0/ports";
-			const id = "port-id-123";
+			const param = "port-id-123";
 
-			const result = await getNetworkById(path, id);
+			const result = await getNetworkByParam(path, param);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -138,9 +138,9 @@ describe("network-client", () => {
 
 		it("Network API（/v2.0/ports/{id}）へのGETリクエストで異なるポートID（another-port-id）を指定してポート詳細を取得する場合に、正しいURL（https://networking.c3j1.conoha.io）とパス（/v2.0/ports/another-port-id）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/v2.0/ports/another-port-id'）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 			const path = "/v2.0/ports";
-			const id = "another-port-id";
+			const param = "another-port-id";
 
-			const result = await getNetworkById(path, id);
+			const result = await getNetworkByParam(path, param);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -155,9 +155,9 @@ describe("network-client", () => {
 				const error = new Error("Port not found");
 				mockExecuteOpenstackApi.mockRejectedValue(error);
 				const path = "/v2.0/ports";
-				const id = "port-id-123";
+				const param = "port-id-123";
 
-				await expect(getNetworkById(path, id)).rejects.toThrow(
+				await expect(getNetworkByParam(path, param)).rejects.toThrow(
 					"Port not found",
 				);
 				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -233,7 +233,7 @@ describe("network-client", () => {
 		});
 	});
 
-	describe("updatePortById", () => {
+	describe("updateNetworkByParam", () => {
 		const mockResponse = JSON.stringify({
 			status: 200,
 			statusText: "OK",
@@ -261,14 +261,14 @@ describe("network-client", () => {
 
 		it("Network API（/v2.0/ports/{id}）へのPUTリクエストで特定のポート（port-id-123）を更新するリクエストボディ（port情報）を送信した場合に、正しいURL（https://networking.c3j1.conoha.io）とパス（/v2.0/ports/port-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/v2.0/ports/port-id-123', portBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/v2.0/ports";
-			const id = "port-id-123";
+			const param = "port-id-123";
 			const portBody = {
 				port: {
 					security_groups: ["security-group-id-1"],
 				},
 			};
 
-			const result = await updateNetworkById(path, id, portBody);
+			const result = await updateNetworkByParam(path, param, portBody);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -281,9 +281,9 @@ describe("network-client", () => {
 
 		it("Network API（/v2.0/ports/{id}）へのPUTリクエストで異なるポートID（another-port-id）を指定してポート更新を実行する場合に、正しいURL（https://networking.c3j1.conoha.io）とパス（/v2.0/ports/another-port-id）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/v2.0/ports/another-port-id', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 			const path = "/v2.0/ports";
-			const id = "another-port-id";
+			const param = "another-port-id";
 
-			const result = await updateNetworkById(path, id, mockRequestBody);
+			const result = await updateNetworkByParam(path, param, mockRequestBody);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -299,10 +299,10 @@ describe("network-client", () => {
 				const error = new Error("Port update failed");
 				mockExecuteOpenstackApi.mockRejectedValue(error);
 				const path = "/v2.0/ports";
-				const id = "port-id-123";
+				const param = "port-id-123";
 
 				await expect(
-					updateNetworkById(path, id, mockRequestBody),
+					updateNetworkByParam(path, param, mockRequestBody),
 				).rejects.toThrow("Port update failed");
 				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 					"PUT",
@@ -314,7 +314,7 @@ describe("network-client", () => {
 		});
 	});
 
-	describe("deleteNetworkById", () => {
+	describe("deleteNetworkByParam", () => {
 		const mockResponse = "";
 
 		beforeEach(() => {
@@ -323,9 +323,9 @@ describe("network-client", () => {
 
 		it("Network API（/v2.0/ports/{id}）へのDELETEリクエストで特定のポート（port-id-123）を削除した場合に、正しいURL（https://networking.c3j1.conoha.io）とパス（/v2.0/ports/port-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/v2.0/ports/port-id-123'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/v2.0/ports";
-			const id = "port-id-123";
+			const param = "port-id-123";
 
-			const result = await deleteNetworkById(path, id);
+			const result = await deleteNetworkByParam(path, param);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -337,9 +337,9 @@ describe("network-client", () => {
 
 		it("Network API（/v2.0/ports/{id}）へのDELETEリクエストで異なるポートID（another-port-id）を指定して削除する場合に、正しいURL（https://networking.c3j1.conoha.io）とパス（/v2.0/ports/another-port-id）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/v2.0/ports/another-port-id'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/v2.0/ports";
-			const id = "another-port-id";
+			const param = "another-port-id";
 
-			const result = await deleteNetworkById(path, id);
+			const result = await deleteNetworkByParam(path, param);
 
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -354,9 +354,9 @@ describe("network-client", () => {
 				const error = new Error("Port delete failed");
 				mockExecuteOpenstackApi.mockRejectedValue(error);
 				const path = "/v2.0/ports";
-				const id = "port-id-123";
+				const param = "port-id-123";
 
-				await expect(deleteNetworkById(path, id)).rejects.toThrow(
+				await expect(deleteNetworkByParam(path, param)).rejects.toThrow(
 					"Port delete failed",
 				);
 				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
@@ -412,14 +412,14 @@ describe("network-client", () => {
 	});
 
 	describe("パス結合のテスト", () => {
-		it("getNetworkByIdでポートID（port-123）とベースパス（/v2.0/ports）を指定した場合に、正しく結合されたパス（/v2.0/ports/port-123）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/v2.0/ports/port-123'）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
+		it("getNetworkByParamでポートID（port-123）とベースパス（/v2.0/ports）を指定した場合に、正しく結合されたパス（/v2.0/ports/port-123）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/v2.0/ports/port-123'）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
 			const mockResponse = JSON.stringify({ port: { id: "test" } });
 			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
 
 			const path = "/v2.0/ports";
-			const id = "port-123";
+			const param = "port-123";
 
-			await getNetworkById(path, id);
+			await getNetworkByParam(path, param);
 
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 				"GET",
@@ -428,17 +428,17 @@ describe("network-client", () => {
 			);
 		});
 
-		it("updateNetworkByIdでポートID（port-123）とベースパス（/v2.0/ports）とリクエストボディ（{port: {security_groups: ['security-group-id-1']}}）を指定した場合に、正しく結合されたパス（/v2.0/ports/port-123）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/v2.0/ports/port-123', requestBody）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
+		it("updateNetworkByParamでポートID（port-123）とベースパス（/v2.0/ports）とリクエストボディ（{port: {security_groups: ['security-group-id-1']}}）を指定した場合に、正しく結合されたパス（/v2.0/ports/port-123）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/v2.0/ports/port-123', requestBody）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
 			const mockResponse = JSON.stringify({ port: { id: "test" } });
 			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
 
 			const path = "/v2.0/ports";
-			const id = "port-123";
+			const param = "port-123";
 			const requestBody = {
 				port: { security_groups: ["security-group-id-1"] },
 			};
 
-			await updateNetworkById(path, id, requestBody);
+			await updateNetworkByParam(path, param, requestBody);
 
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 				"PUT",
@@ -448,14 +448,14 @@ describe("network-client", () => {
 			);
 		});
 
-		it("deleteNetworkByIdでポートID（port-123）とベースパス（/v2.0/ports）を指定した場合に、正しく結合されたパス（/v2.0/ports/port-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/v2.0/ports/port-123'）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
+		it("deleteNetworkByParamでポートID（port-123）とベースパス（/v2.0/ports）を指定した場合に、正しく結合されたパス（/v2.0/ports/port-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/v2.0/ports/port-123'）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
 			const mockResponse = "";
 			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
 
 			const path = "/v2.0/ports";
-			const id = "port-123";
+			const param = "port-123";
 
-			await deleteNetworkById(path, id);
+			await deleteNetworkByParam(path, param);
 
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 				"DELETE",
