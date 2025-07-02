@@ -63,7 +63,45 @@ ClaudeやCline、CursorなどのAIアシスタント（AIチャットボット�
 - ConoHa VPSアカウントとAPIクレデンシャル
 - 対応AIアシスタント（Claude Desktop、Cline、Cursor等）
 
-### セットアップガイド
+### 簡単実行方法
+
+ConoHa VPS MCPを即座に起動するには、以下の内容をVSCodeのsettings.json に記述するだけで準備完了です。
+```json
+{
+  "mcp": {
+    "inputs": [
+      { "type": "promptString", "id": "openstack-tenant-id", "description": "OpenStack Tenant ID" },
+      { "type": "promptString", "id": "openstack-user-id", "description": "OpenStack User ID" },
+      { "type": "promptString", "id": "openstack-password", "description": "OpenStack Password", "password": true }
+    ],
+    "servers": {
+      "ConoHa VPS MCP": {
+        "command": "npm",
+        "args": [
+          "exec",
+          "--registry=https://npm.pkg.github.com",
+          "@gmo-internet/conoha-vps-mcp@0.0.8"
+        ],
+        "env": {
+          "OPENSTACK_TENANT_ID": "${input:openstack-tenant-id}",
+          "OPENSTACK_USER_ID": "${input:openstack-user-id}",
+          "OPENSTACK_PASSWORD": "${input:openstack-password}"
+        }
+      }
+    }
+  }
+}
+
+```
+
+この設定を保存してAIアシスタントを起動すれば、OpenStackの認証情報を入力するだけでConoHa VPS MCPが起動し、サーバーの作成・操作・削除などが自然言語で可能になります。
+
+💡 **npm install 不要**  
+npm exec を使うことで、グローバルにもローカルにもパッケージをインストールせず、安全・簡単に実行できます。
+
+📄 より詳しい手順はこちら 👉 [簡単実行](docs/install.md)
+
+### その他のセットアップ方法
 
 - 📋 [Node.js版セットアップ](docs/setup-nodejs.md)
 - 🐳 [Docker版セットアップ](docs/setup-docker.md)
