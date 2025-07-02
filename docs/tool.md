@@ -5,7 +5,7 @@ ConoHa VPS MCP サーバーに実装されている各ツールと、それぞ�
 
 ---
 
-## 🔹 `conoha_openstack_get_no_id`
+## 🔹 `conoha_get`
 
 - サーバー詳細一覧取得  
 - サーバープラン詳細一覧取得  
@@ -19,7 +19,7 @@ ConoHa VPS MCP サーバーに実装されている各ツールと、それぞ�
 
 ---
 
-## 🔹 `conoha_openstack_get_id`
+## 🔹 `conoha_get_by_param`
 
 - サーバーに紐づくIPアドレス一覧取得  
 - サーバーに紐づくセキュリティグループ一覧取得  
@@ -30,7 +30,7 @@ ConoHa VPS MCP サーバーに実装されている各ツールと、それぞ�
 
 ---
 
-## 🔹 `conoha_openstack_post_request_body`
+## 🔹 `conoha_post`
 
 - サーバー作成  
 - SSHキーペア作成  
@@ -40,7 +40,7 @@ ConoHa VPS MCP サーバーに実装されている各ツールと、それぞ�
 
 ---
 
-## 🔹 `conoha_openstack_post_put_request_body_id`
+## 🔹 `conoha_post_put_by_param`
 
 - サーバー操作  
   - サーバー起動  
@@ -57,7 +57,7 @@ ConoHa VPS MCP サーバーに実装されている各ツールと、それぞ�
 
 ---
 
-## 🔹 `conoha_openstack_delete_param`
+## 🔹 `conoha_delete_by_param`
 
 - サーバー削除  
 - SSHキーペア削除

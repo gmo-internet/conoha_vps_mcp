@@ -57,7 +57,7 @@ export class CSVReporter implements Reporter {
 				functionalArea: this.determineFunctionalArea(fileName),
 				status: this.getTaskStatus(task),
 				duration: task.result?.duration || 0,
-				priority: this.assessPriority(task.name, fileName),
+				priority: this.assessPriority(task.name),
 			};
 
 			this.testCases.push(testCase);
@@ -137,7 +137,7 @@ export class CSVReporter implements Reporter {
 		}
 	}
 
-	private assessPriority(testName: string, fileName: string): string {
+	private assessPriority(testName: string): string {
 		const name = testName.toLowerCase();
 
 		// Critical: Error handling, security

@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Conoha お問い合わせ窓口
+  - name: ConoHaサポート窓口
     url: https://support.conoha.jp/inquiry/
-    about: Conohaのサポート窓口です。技術的な質問や問題については、こちらからお問い合わせください。なお、本ConoHa VPS MCPに関しては、ConoHaのサポート窓口では対応できませんので、GitHubのIssueを利用してください。
+    about: ConoHaのサポート窓口です。なお、本ConoHa VPS MCPに関しては、ConoHaのサポート窓口では対応できませんので、GitHubのIssueを利用してください。

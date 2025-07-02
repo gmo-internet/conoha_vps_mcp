@@ -1,4 +1,3 @@
-import path from "node:path";
 import { defineConfig } from "vitest/config";
 import { CSVReporter } from "./scripts/csv-reporter";
 

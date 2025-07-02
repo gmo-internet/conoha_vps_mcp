@@ -1,4 +1,4 @@
-export const conohaOpenstackGetNoParamDescription = `
+export const conohaGetDescription = `
    JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
 
          • 引数 ‘path’ でアクセス先リソースを指定
@@ -16,7 +16,7 @@ export const conohaOpenstackGetNoParamDescription = `
          • 契約に紐づくサーバー管理用途にのみ使用可
    `;
 
-export const conohaOpenstackGetIdDescription = `
+export const conohaGetByParamDescription = `
    JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
 
          • 引数 ‘path’ でアクセス先リソースを指定
@@ -29,7 +29,7 @@ export const conohaOpenstackGetIdDescription = `
                /v2.0/security-groups        (セキュリティグループ詳細取得)
                /v2.0/security-group-rules   (セキュリティグループルール詳細取得)
 
-         • 引数 ‘id’ で必要なidを指定
+         • 引数 ‘param’ で必要な値を指定
                /ips, /os-security-groups, /rrd/cpu, /rrd/disk: サーバーID
                /v2.0/security-groups: セキュリティグループID
                /v2.0/security-group-rules: セキュリティグループルールID
@@ -37,7 +37,7 @@ export const conohaOpenstackGetIdDescription = `
          • 契約に紐づくサーバー管理用途にのみ使用可
    `;
 
-export const conohaOpenstackPostRequestBodyDescription = `
+export const conohaPostDescription = `
    JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
 
          • inputに‘path’と‘requestBody’を指定
@@ -113,10 +113,10 @@ export const conohaOpenstackPostRequestBodyDescription = `
          • 契約に紐づくサーバー管理用途にのみ使用可
    `;
 
-export const conohaOpenstackPostPutRequestBodyIdDescription = `
+export const conohaPostPutByParamDescription = `
    JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
    
-         • inputに‘path’, ‘id’, ‘requestBody’を指定
+         • inputに‘path’, ‘param’, ‘requestBody’を指定
 
          • 引数 ‘path’ でアクセス先リソースを指定
 
@@ -127,7 +127,7 @@ export const conohaOpenstackPostPutRequestBodyIdDescription = `
                /volumes              (ボリューム更新)
                /v2.0/ports           (ポート更新)
 
-         • 引数 ‘id’ で必要なidを指定
+         • 引数 ‘param’ で必要な値を指定
                /action, /remote-consoles: サーバーID
                /v2.0/security-groups: セキュリティグループID
                /volumes: ボリュームID
@@ -188,7 +188,7 @@ export const conohaOpenstackPostPutRequestBodyIdDescription = `
          • 契約に紐づくサーバー管理用途にのみ使用可
    `;
 
-export const conohaOpenstackDeleteIdDescription = `
+export const conohaDeleteByParamDescription = `
    JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
    
          • 引数 ‘path’ でアクセス先リソースを指定
