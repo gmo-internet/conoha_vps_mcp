@@ -37,12 +37,49 @@
 - **Node.js**: v18以上
 - **npm**: Node.jsに付属
 
+<details>
+<summary>Node.jsのインストール手順（Windows向け）</summary>
+
+1. Node.jsのダウンロードページにアクセスします [ダウンロードページ](https://nodejs.org/ja/download)
+2. アーキテクチャーとOSを確認したうえで、ダウンロードページ下部にある「Windows インストーラー（.msi）」をクリックします
+   
+    ![「Windows インストーラー（.msi）」と書かれた緑糸のボタンをクリック](../assets/nextjs_download_page.png)
+
+3. ダウンロードされたインストーラー（.msi）をダブルクリックします
+4. しばらく待つとSetup Wizardが表示されるので、Nextを押します
+
+    ![ウィンドウ下部にあるNextを押します](../assets/nodejs_setup_welcome.png)
+
+5. ライセンス規約を一読したうえで同意（チェックを入力）をして、Nextを押します
+
+    ![「I accept...」と書かれたチェックボックスにチェックを入れて、ウィンドウ下部にあるNextをクリックします](../assets/nodejs_setup_license.png)
+
+6. 表示されているインストール先に問題がなければNextを押します（基本的にはデフォルトのままで問題ありません）
+
+    ![ウィンドウ下部にあるNextを押します](../assets/nodejs_setup_destination_folder.png)
+
+7. 追加でインストールするものがない場合は基本的に何も選択せず、Nextを押します（ConoHa VPS MCP Serverでは追加でインストールが必要なものはありません）
+
+    ![ウィンドウ下部にあるNextを押します](../assets/nodejs_setup_custom_setup.png)
+
+8. こちらも追加でインストールするものがない場合はチェックを入れず、Nextを押します（ConoHa VPS MCP Serverでは追加でインストールが必要なものはありません）
+
+    ![ウィンドウ下部にあるNextを押します](../assets/nodejs_setup_custom_tools.png)
+
+9.  Installボタンをクリックします
+
+    ![ウィンドウ下部にあるInstallを押します](../assets/nodejs_setup_custom_ready.png)
+
+10.  インストールが完了したらFinishを押します
+
+</details>
+
 ## AIエージェント別実行方法
 
 ### Claude Desktop
 
 <details>
-<summary>展開</summary>
+<summary>セットアップ手順</summary>
 
 #### 1. Claude Desktopの設定の追加
 
@@ -108,7 +145,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 ### Cline (VSCode)
 
 <details>
-<summary>展開</summary>
+<summary>セットアップ手順</summary>
 
 #### 1. VSCodeにおけるClineのインストール
 
@@ -184,7 +221,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 ### GitHub Copilot (VSCode)
 
 <details>
-<summary>展開</summary>
+<summary>セットアップ手順</summary>
 
 #### 1. VSCode設定の追加
 
@@ -204,9 +241,22 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 {
   "mcp": {
     "inputs": [
-      { "type": "promptString", "id": "openstack-tenant-id", "description": "OpenStack Tenant ID" },
-      { "type": "promptString", "id": "openstack-user-id", "description": "OpenStack User ID" },
-      { "type": "promptString", "id": "openstack-password", "description": "OpenStack Password", "password": true }
+      {
+        "type": "promptString",
+        "id": "openstack-tenant-id",
+        "description": "OpenStack Tenant ID"
+      },
+      {
+        "type": "promptString",
+        "id": "openstack-user-id",
+        "description": "OpenStack User ID"
+      },
+      {
+        "type": "promptString",
+        "id": "openstack-password",
+        "description": "OpenStack Password",
+        "password": true
+      }
     ],
     "servers": {
       "ConoHa VPS MCP": {
@@ -240,10 +290,17 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 各値はConoHaコントロールパネルのAPI設定で確認できます。
 
 ![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
 
 ### 3. MCPサーバーの起動
 
 編集したjsonファイル上に表示される起動ボタンをクリックして、MCPサーバーを起動します。その際、環境変数の初期設定を求められるので、確認した設定値を入力してください。
+
+![起動と書かれたボタンをクリックして起動](../assets/vscode_settings_mcp_start.png)
+
+![OpenStack Tenant IDと書かれた入力フォームにテナントIDを入力](../assets/input_tenant_id.png)
+
+*テナントID入力画面*
 
 ### 4. ツールの使用
 
@@ -255,9 +312,11 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 3. チャット欄の**ツール**ボタンをクリックして、**MCPサーバー：ConoHa VPS MCP**を選択します
 
+  ![MCPサーバー：ConoHa VPS MCPと表示される](../assets/view_tools.png)
+
 4. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 

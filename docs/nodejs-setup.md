@@ -49,7 +49,7 @@ npm run build
 ### Claude Desktop
 
 <details>
-<summary>展開</summary>
+<summary>セットアップ手順</summary>
 
 #### 1. Claude Desktopの設定の追加
 
@@ -112,7 +112,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 ### Cline (VSCode)
 
 <details>
-<summary>展開</summary>
+<summary>セットアップ手順</summary>
 
 #### 1. VSCodeにおけるClineのインストール
 
@@ -185,7 +185,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 ### GitHub Copilot (VSCode)
 
 <details>
-<summary>展開</summary>
+<summary>セットアップ手順</summary>
 
 #### 1. VSCode設定の追加
 
@@ -205,14 +205,31 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 {
   "mcp": {
     "inputs": [
-      { "type": "promptString", "id": "openstack-tenant-id", "description": "OpenStack Tenant ID" },
-      { "type": "promptString", "id": "openstack-user-id", "description": "OpenStack User ID" },
-      { "type": "promptString", "id": "openstack-password", "description": "OpenStack Password", "password": true }
+      {
+        "type": "promptString",
+        "id": "openstack-tenant-id",
+        "description": "OpenStack Tenant ID"
+      },
+      {
+        "type": "promptString",
+        "id": "openstack-user-id",
+        "description": "OpenStack User ID"
+      },
+      {
+        "type": "promptString",
+        "id": "openstack-password",
+        "description": "OpenStack Password",
+        "password": true
+      }
     ],
     "servers": {
       "ConoHa VPS MCP": {
         "command": "npm",
-        "args": ["--prefix", "PATH_TO_DIRECTORY", "start"],
+        "args": [
+          "--prefix",
+          "PATH_TO_DIRECTORY",
+          "start"
+        ],
         "env": {
           "OPENSTACK_TENANT_ID": "${input:openstack-tenant-id}",
           "OPENSTACK_USER_ID": "${input:openstack-user-id}",
@@ -238,6 +255,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 各値はConoHaコントロールパネルのAPI設定で確認できます。
 
 ![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
 
 ### 3. MCPサーバーの起動
 
@@ -253,9 +271,11 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 3. チャット欄の**ツール**ボタンをクリックして、**MCPサーバー：ConoHa VPS MCP**を選択します
 
+   ![MCPサーバー：ConoHa VPS MCPと表示される](../assets/view_tools.png)
+
 4. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 

@@ -32,6 +32,9 @@ A: 機能は同じですが、Docker版は環境の統一が容易で、Node.js�
 
 A: ConoHaコントロールパネルのAPI設定画面から取得できます。テナントID、ユーザーID、パスワードが必要です。
 
+![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
+
 ### Q: 環境変数の設定方法がわかりません
 
 A: 各AIエージェントの設定ファイル（claude_desktop_config.json、.vscode/settings.json等）に記載します。詳細は各実行ガイドをご確認ください。
@@ -80,9 +83,9 @@ A: 以下を確認してください：
 
 docs/配下の各実行ガイド末尾のトラブルシューティングをご覧ください。
 
-- [簡単実行ガイド](docs/easy-setup.md)
-- [Node.js ローカルビルド版実行ガイド](docs/nodejs-setup.md)
-- [Docker ローカルビルド版実行ガイド](docs/docker-setup.md)
+- [簡単実行ガイド](./easy-setup.md)
+- [Node.js ローカルビルド版実行ガイド](./nodejs-setup.md)
+- [Docker ローカルビルド版実行ガイド](./docker-setup.md)
 
 ### Q: AIエージェントでツールが表示されません
 

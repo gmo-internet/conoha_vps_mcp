@@ -49,7 +49,7 @@ docker build -t conoha-vps-mcp .
 #### Claude Desktop
 
 <details>
-<summary>展開</summary>
+<summary>セットアップ手順</summary>
 
 ##### 1. Claude Desktopの設定の追加
 
@@ -112,7 +112,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 #### Cline (VSCode)
 
 <details>
-<summary>展開</summary>
+<summary>セットアップ手順</summary>
 
 ##### 1. VSCodeにおけるClineのインストール
 
@@ -185,7 +185,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 #### GitHub Copilot (VSCode)
 
 <details>
-<summary>展開</summary>
+<summary>セットアップ手順</summary>
 
 ##### 1. VSCode設定の追加
 
@@ -301,6 +301,8 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 各値はConoHaコントロールパネルのAPI設定で確認できます。
 
 ![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
+
 
 > [!TIP]
 > 必要に応じて`.env`ファイルを用意し、`--env-file`オプションで指定することも可能です。
@@ -309,9 +311,13 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 ### 3. MCPサーバーの起動
 
-編集したjsonファイル上に表示される起動ボタンをクリックして、MCPサーバーを起動します。
+編集したjsonファイル上に表示される起動ボタンをクリックして、MCPサーバーを起動します。その際、環境変数の初期設定を求められるので、確認した設定値を入力してください。
 
 ![起動と書かれたボタンをクリックして起動](../assets/vscode_settings_mcp_start.png)
+
+![OpenStack Tenant IDと書かれた入力フォームにテナントIDを入力](../assets/input_tenant_id.png)
+
+*テナントID入力画面*
 
 ### 4. ツールの使用
 
@@ -319,15 +325,15 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
    - **Windows/Linux**: `Ctrl + Shift + I`
    - **Mac**: `Command + Shift + I`
 
-2. agentモードに切り替えます
+2. チャット欄のドロップダウンメニューから**Agent**モードを選択します
 
-3. チャット入力欄のツールボタンから、ConoHa VPS MCPが有効になっていることを確認します
+3. チャット欄の**ツール**ボタンをクリックして、**MCPサーバー：ConoHa VPS MCP**を選択します
 
-   ![ツール一覧](../assets/view_tools.png)
+   ![MCPサーバー：ConoHa VPS MCPと表示される](../assets/view_tools.png)
 
 4. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 ## トラブルシューティング
 
