@@ -18,7 +18,7 @@ A: Apache 2.0 ライセンスの範囲でご自由にご利用いただけます
 
 A: 現在開発中のソフトウェアで、機能や動作が予告なく変更される可能性があります。本番環境での使用は推奨されません。
 
-## セットアップ・設定関連
+## 実行方法・設定関連
 
 ### Q: Node.jsのバージョンはどれが必要ですか？
 
@@ -32,9 +32,12 @@ A: 機能は同じですが、Docker版は環境の統一が容易で、Node.js�
 
 A: ConoHaコントロールパネルのAPI設定画面から取得できます。テナントID、ユーザーID、パスワードが必要です。
 
+![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
+
 ### Q: 環境変数の設定方法がわかりません
 
-A: 各AIエージェントの設定ファイル（claude_desktop_config.json、.vscode/settings.json等）に記載します。詳細は各セットアップガイドをご確認ください。
+A: 各AIエージェントの設定ファイル（claude_desktop_config.json、.vscode/settings.json等）に記載します。詳細は各実行ガイドをご確認ください。
 
 ### Q: PATH_TO_DIRECTORYには何を入れればいいですか？
 
@@ -44,11 +47,11 @@ A: プロジェクトをクローンしたディレクトリの絶対パスを�
 
 ### Q: どのAIエージェントで利用できますか？
 
-A: Claude Desktop、Cline（VSCode）、GitHub Copilot（VSCode）、Cursorなど、MCPプロトコルに対応したAIエージェントで利用できます。
+A: Claude Desktop、Cline（VSCode）、GitHub Copilot（VSCode）など、MCPプロトコルに対応したAIエージェントで利用できます。
 
 ### Q: 日本語でコマンドを実行できますか？
 
-A: はい。「Ubuntu 24.04でメモリ1GBのサーバーを作成してください」のような自然な日本語で操作できます。
+A: はい。「現在あるサーバーの一覧を表示してください。」のような自然な日本語で操作できます。
 
 ### Q: サーバー作成時に料金は発生しますか？
 
@@ -78,11 +81,11 @@ A: 以下を確認してください：
 
 ### Q: MCPサーバーが起動しません
 
-A: 以下を確認してください：
+docs/配下の各実行ガイド末尾のトラブルシューティングをご覧ください。
 
-- Node.js v18以上がインストールされているか
-- `npm install`が正常に完了しているか
-- 必要な依存関係がインストールされているか
+- [簡単実行ガイド](./easy-setup.md)
+- [Node.js ローカルビルド版実行ガイド](./nodejs-setup.md)
+- [Docker ローカルビルド版実行ガイド](./docker-setup.md)
 
 ### Q: AIエージェントでツールが表示されません
 

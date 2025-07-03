@@ -2,23 +2,23 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // 依存関数のモック
 const mockGetCompute = vi.fn();
-const mockGetComputeById = vi.fn();
+const mockGetComputeByParam = vi.fn();
 const mockCreateCompute = vi.fn();
-const mockCreateComputeById = vi.fn();
-const mockDeleteComputeById = vi.fn();
+const mockCreateComputeByParam = vi.fn();
+const mockDeleteComputeByParam = vi.fn();
 
 const mockGetImage = vi.fn();
 
 const mockGetNetwork = vi.fn();
-const mockGetNetworkById = vi.fn();
+const mockGetNetworkByParam = vi.fn();
 const mockCreateNetwork = vi.fn();
-const mockUpdateNetworkById = vi.fn();
-const mockDeleteNetworkById = vi.fn();
+const mockUpdateNetworkByParam = vi.fn();
+const mockDeleteNetworkByParam = vi.fn();
 
 const mockGetVolume = vi.fn();
 const mockCreateVolume = vi.fn();
-const mockUpdateVolumeById = vi.fn();
-const mockDeleteVolumeById = vi.fn();
+const mockUpdateVolumeByParam = vi.fn();
+const mockDeleteVolumeByParam = vi.fn();
 
 const mockTool = vi.fn();
 const mockPrompt = vi.fn();
@@ -32,10 +32,10 @@ const mockStdioServerTransport = vi.fn();
 
 vi.mock("./features/openstack/compute/compute-client", () => ({
 	getCompute: mockGetCompute,
-	getComputeById: mockGetComputeById,
+	getComputeByParam: mockGetComputeByParam,
 	createCompute: mockCreateCompute,
-	createComputeById: mockCreateComputeById,
-	deleteComputeById: mockDeleteComputeById,
+	createComputeByParam: mockCreateComputeByParam,
+	deleteComputeByParam: mockDeleteComputeByParam,
 }));
 
 vi.mock("./features/openstack/image/image-client", () => ({
@@ -44,17 +44,17 @@ vi.mock("./features/openstack/image/image-client", () => ({
 
 vi.mock("./features/openstack/network/network-client", () => ({
 	getNetwork: mockGetNetwork,
-	getNetworkById: mockGetNetworkById,
+	getNetworkByParam: mockGetNetworkByParam,
 	createNetwork: mockCreateNetwork,
-	updateNetworkById: mockUpdateNetworkById,
-	deleteNetworkById: mockDeleteNetworkById,
+	updateNetworkByParam: mockUpdateNetworkByParam,
+	deleteNetworkByParam: mockDeleteNetworkByParam,
 }));
 
 vi.mock("./features/openstack/volume/volume-client", () => ({
 	getVolume: mockGetVolume,
 	createVolume: mockCreateVolume,
-	updateVolumeById: mockUpdateVolumeById,
-	deleteVolumeById: mockDeleteVolumeById,
+	updateVolumeByParam: mockUpdateVolumeByParam,
+	deleteVolumeByParam: mockDeleteVolumeByParam,
 }));
 
 vi.mock("@modelcontextprotocol/sdk/server/mcp.js", () => ({
@@ -73,10 +73,10 @@ describe("index", () => {
 	describe("モック関数の基本動作", () => {
 		it("compute client関数群が正常にモックされた状態である", () => {
 			expect(mockGetCompute).toBeDefined();
-			expect(mockGetComputeById).toBeDefined();
+			expect(mockGetComputeByParam).toBeDefined();
 			expect(mockCreateCompute).toBeDefined();
-			expect(mockCreateComputeById).toBeDefined();
-			expect(mockDeleteComputeById).toBeDefined();
+			expect(mockCreateComputeByParam).toBeDefined();
+			expect(mockDeleteComputeByParam).toBeDefined();
 		});
 
 		it("image client関数が正常にモックされた状態である", () => {
@@ -85,17 +85,17 @@ describe("index", () => {
 
 		it("network client関数群が正常にモックされた状態である", () => {
 			expect(mockGetNetwork).toBeDefined();
-			expect(mockGetNetworkById).toBeDefined();
+			expect(mockGetNetworkByParam).toBeDefined();
 			expect(mockCreateNetwork).toBeDefined();
-			expect(mockUpdateNetworkById).toBeDefined();
-			expect(mockDeleteNetworkById).toBeDefined();
+			expect(mockUpdateNetworkByParam).toBeDefined();
+			expect(mockDeleteNetworkByParam).toBeDefined();
 		});
 
 		it("volume client関数群が正常にモックされた状態である", () => {
 			expect(mockGetVolume).toBeDefined();
 			expect(mockCreateVolume).toBeDefined();
-			expect(mockUpdateVolumeById).toBeDefined();
-			expect(mockDeleteVolumeById).toBeDefined();
+			expect(mockUpdateVolumeByParam).toBeDefined();
+			expect(mockDeleteVolumeByParam).toBeDefined();
 		});
 
 		it("MCP SDK関数群が正常にモックされた状態である", () => {
@@ -118,27 +118,23 @@ describe("index", () => {
 			// 登録されたツールハンドラーを取得
 			const toolCalls = mockTool.mock.calls;
 			toolHandlers = {
-				conoha_openstack_get_no_id: toolCalls.find(
-					(call) => call[0] === "conoha_openstack_get_no_id",
+				conoha_get: toolCalls.find((call) => call[0] === "conoha_get")?.[3],
+				conoha_get_by_param: toolCalls.find(
+					(call) => call[0] === "conoha_get_by_param",
 				)?.[3],
-				conoha_openstack_get_id: toolCalls.find(
-					(call) => call[0] === "conoha_openstack_get_id",
+				conoha_post: toolCalls.find((call) => call[0] === "conoha_post")?.[3],
+				conoha_post_put_by_param: toolCalls.find(
+					(call) => call[0] === "conoha_post_put_by_param",
 				)?.[3],
-				conoha_openstack_post_request_body: toolCalls.find(
-					(call) => call[0] === "conoha_openstack_post_request_body",
-				)?.[3],
-				conoha_openstack_post_put_request_body_id: toolCalls.find(
-					(call) => call[0] === "conoha_openstack_post_put_request_body_id",
-				)?.[3],
-				conoha_openstack_delete_param: toolCalls.find(
-					(call) => call[0] === "conoha_openstack_delete_param",
+				conoha_delete_by_param: toolCalls.find(
+					(call) => call[0] === "conoha_delete_by_param",
 				)?.[3],
 			};
 		});
 
-		it("conoha_openstack_get_no_idツールハンドラーが/servers/detailパスに対してGETリクエストを実行し、computeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
+		it("conoha_getツールハンドラーが/servers/detailパスに対してGETリクエストを実行し、computeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
 			mockGetCompute.mockResolvedValue("test response");
-			const handler = toolHandlers["conoha_openstack_get_no_id"];
+			const handler = toolHandlers["conoha_get"];
 
 			if (handler) {
 				const result = await handler({ path: "/servers/detail" });
@@ -149,22 +145,25 @@ describe("index", () => {
 			}
 		});
 
-		it("conoha_openstack_get_idツールハンドラーが/ipsパスに対してGETリクエストを実行し、指定されたIDでcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
-			mockGetComputeById.mockResolvedValue("test response");
-			const handler = toolHandlers["conoha_openstack_get_id"];
+		it("conoha_get_by_paramツールハンドラーが/ipsパスに対してGETリクエストを実行し、指定されたパラメータでcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
+			mockGetComputeByParam.mockResolvedValue("test response");
+			const handler = toolHandlers["conoha_get_by_param"];
 
 			if (handler) {
-				const result = await handler({ path: "/ips", id: "test-id" });
-				expect(mockGetComputeById).toHaveBeenCalledWith("/ips", "test-id");
+				const result = await handler({ path: "/ips", param: "test-param" });
+				expect(mockGetComputeByParam).toHaveBeenCalledWith(
+					"/ips",
+					"test-param",
+				);
 				expect(result).toEqual({
 					content: [{ type: "text", text: "test response" }],
 				});
 			}
 		});
 
-		it("conoha_openstack_post_request_bodyハンドラーが/serversパスに対してPOSTリクエストを実行し、リクエストボディを含めてcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
+		it("conoha_postハンドラーが/serversパスに対してPOSTリクエストを実行し、リクエストボディを含めてcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
 			mockCreateCompute.mockResolvedValue("test response");
-			const handler = toolHandlers["conoha_openstack_post_request_body"];
+			const handler = toolHandlers["conoha_post"];
 
 			if (handler) {
 				const input = {
@@ -182,15 +181,15 @@ describe("index", () => {
 			}
 		});
 
-		it("conoha_openstack_delete_paramハンドラーが/serversパスに対してDELETEリクエストを実行し、指定されたパラメータでcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
-			mockDeleteComputeById.mockResolvedValue("test response");
-			const handler = toolHandlers["conoha_openstack_delete_param"];
+		it("conoha_delete_by_paramハンドラーが/serversパスに対してDELETEリクエストを実行し、指定されたパラメータでcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
+			mockDeleteComputeByParam.mockResolvedValue("test response");
+			const handler = toolHandlers["conoha_delete_by_param"];
 
 			if (handler) {
-				const result = await handler({ path: "/servers", param: "test-id" });
-				expect(mockDeleteComputeById).toHaveBeenCalledWith(
+				const result = await handler({ path: "/servers", param: "test-param" });
+				expect(mockDeleteComputeByParam).toHaveBeenCalledWith(
 					"/servers",
-					"test-id",
+					"test-param",
 				);
 				expect(result).toEqual({
 					content: [{ type: "text", text: "test response" }],
@@ -240,17 +239,15 @@ describe("index", () => {
 			await import("./index");
 			const toolCalls = mockTool.mock.calls;
 			toolHandlers = {
-				conoha_openstack_get_no_id: toolCalls.find(
-					(call) => call[0] === "conoha_openstack_get_no_id",
-				)?.[3],
-				conoha_openstack_get_id: toolCalls.find(
-					(call) => call[0] === "conoha_openstack_get_id",
+				conoha_get: toolCalls.find((call) => call[0] === "conoha_get")?.[3],
+				conoha_get_by_param: toolCalls.find(
+					(call) => call[0] === "conoha_get_by_param",
 				)?.[3],
 			};
 		});
 
-		it("conoha_openstack_get_no_idハンドラーが未定義のパス(/unknown/path)を受信した場合にUnhandled pathエラーメッセージを投げることを確認する", async () => {
-			const handler = toolHandlers["conoha_openstack_get_no_id"];
+		it("conoha_getハンドラーが未定義のパス(/unknown/path)を受信した場合にUnhandled pathエラーメッセージを投げることを確認する", async () => {
+			const handler = toolHandlers["conoha_get"];
 
 			if (handler) {
 				await expect(handler({ path: "/unknown/path" })).rejects.toThrow(
@@ -259,12 +256,12 @@ describe("index", () => {
 			}
 		});
 
-		it("conoha_openstack_get_idハンドラーが未定義のパス(/unknown/path)とIDを受信した場合にUnhandled pathエラーメッセージを投げることを確認する", async () => {
-			const handler = toolHandlers["conoha_openstack_get_id"];
+		it("conoha_get_by_paramハンドラーが未定義のパス(/unknown/path)とパラメータを受信した場合にUnhandled pathエラーメッセージを投げることを確認する", async () => {
+			const handler = toolHandlers["conoha_get_by_param"];
 
 			if (handler) {
 				await expect(
-					handler({ path: "/unknown/path", id: "test-id" }),
+					handler({ path: "/unknown/path", param: "test-param" }),
 				).rejects.toThrow("Unhandled path: /unknown/path");
 			}
 		});
