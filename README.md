@@ -25,7 +25,7 @@
 
 ConoHa VPS MCPは、ConoHa VPSの[公開API](https://doc.conoha.jp/reference/api-vps3/)を**日本語**で簡単に操作できるオープンソースの**Model Context Protocol (MCP) サーバー**です。
 
-Claude、Cline、CursorなどのAIアシスタントと連携することで、**自然言語によるインフラ操作**が可能になります。
+Claude、Cline、GitHub CopilotなどのAIエージェントと連携することで、**自然言語によるインフラ操作**が可能になります。
 
 > [!CAUTION]
 > **⚠️ ベータ版について**
@@ -44,16 +44,16 @@ Claude、Cline、CursorなどのAIアシスタントと連携することで、*
 | 特徴 | 説明 |
 |------|------|
 | 🇯🇵 **完全日本語対応** | ConoHa VPSのOpenStackリソースを日本語で直感的に操作 |
-| 🤖 **AI統合** | Claude、Cline、Cursorなど、主要なMCP対応AIアシスタントに対応 |
-| 🔧 **包括的API** | サーバー・ボリューム・イメージ・セキュリティグループ管理をフルサポート |
-| 🐳 **クロスプラットフォーム** | Node.js および Docker での実行環境を提供 |
-| 🛡️ **セキュア** | OpenStack標準のセキュリティ機能を継承 |
+| 🤖 **AI統合** | Claude、Cline、GitHub Copilotなど、主要なMCP対応AIエージェントに対応 |
+| 🔧 **包括的API** | サーバー・ボリューム・イメージ・セキュリティグループ管理をサポート |
+| 🐳 **クロスプラットフォーム** | Node.js および Dockerでの実行環境を提供 |
+| 🛡️ **セキュリティ** | OpenStack標準のセキュリティ機能を継承 |
 | 📝 **TypeScript完全対応** | 型安全性とコード補完を提供 |
 
-## ❓ Model Context Protocol (MCP) とは?
+## ❓ Model Context Protocol (MCP) とは
 
-ClaudeやCline、CursorなどのAIアシスタント（AIチャットボット）が、インターネット上のサービスや様々なツールと連携するための仕組みです。
-この仕組みにより、AIアシスタントがあなたの代わりに、サーバーの操作やファイルの管理などの複雑な作業を簡単かつ自動で行えるようになります。
+Claude、Cline、GitHub CopilotなどのAIエージェント（AIチャットボット）が、インターネット上のサービスや様々なツールと連携するための仕組みです。
+この仕組みにより、AIエージェントがあなたの代わりに、サーバーの操作やファイルの管理などの複雑な作業を簡単かつ自動で行えるようになります。
 
 ## 🚀 クイックスタート
 
@@ -61,11 +61,13 @@ ClaudeやCline、CursorなどのAIアシスタント（AIチャットボット�
 
 - Node.js 18以上 または Docker
 - ConoHa VPSアカウントとAPIクレデンシャル
-- 対応AIアシスタント（Claude Desktop、Cline、Cursor等）
+- 対応AIエージェント（Claude Desktop、Cline、GitHub Copilot等）
 
-### 簡単実行方法
+### もっとも簡単な起動方法（VS Code）
 
-ConoHa VPS MCPを即座に起動するには、以下の内容をVSCodeのsettings.json に記述するだけで準備完了です。
+`settings.json` に以下を追記し、AI アシスタントを再起動すると、認証情報の入力後すぐに MCP サーバーが起動します。
+認証情報はConoHaコントロールパネルのAPI設定で確認できます。
+
 ```json
 {
   "mcp": {
@@ -79,8 +81,8 @@ ConoHa VPS MCPを即座に起動するには、以下の内容をVSCodeのsettin
         "command": "npm",
         "args": [
           "exec",
-          "--registry=https://npm.pkg.github.com",
-          "@gmo-internet/conoha-vps-mcp@0.0.8"
+          "--@gmo-internet:registry=https://npm.pkg.github.com",
+          "@gmo-internet/conoha-vps-mcp"
         ],
         "env": {
           "OPENSTACK_TENANT_ID": "${input:openstack-tenant-id}",
@@ -94,33 +96,48 @@ ConoHa VPS MCPを即座に起動するには、以下の内容をVSCodeのsettin
 
 ```
 
-この設定を保存してAIアシスタントを起動すれば、OpenStackの認証情報を入力するだけでConoHa VPS MCPが起動し、サーバーの作成・操作・削除などが自然言語で可能になります。
+この設定を保存してAIエージェントを起動すれば、OpenStackの認証情報を入力するだけでConoHa VPS MCPが起動し、サーバーの作成・操作・削除などが自然言語で可能になります。
 
-💡 **npm install 不要**  
-npm exec を使うことで、グローバルにもローカルにもパッケージをインストールせず、安全・簡単に実行できます。
+💡 **npm install 不要** — `npm exec` を利用するため、ローカル/グローバルへのインストールなしで安全に実行できます。
 
-📄 より詳しい手順はこちら 👉 [簡単実行](docs/install.md)
+詳細な手順は 👉 [簡単実行ガイド](docs/easy-setup.md) を参照してください。
 
-### その他のセットアップ方法
+### AIエージェント別詳細設定ガイド
 
-- 📋 [Node.js版セットアップ](docs/setup-nodejs.md)
-- 🐳 [Docker版セットアップ](docs/setup-docker.md)
-- ❓ [よくある質問](docs/FAQ.md)
+#### 🚀 簡単実行方法（推奨）
+
+- 📋 [簡単実行ガイド](docs/easy-setup.md) - `npm exec`を使用した最も簡単な方法
+  - ✅ Claude Desktop
+  - ✅ Cline (VS Code)  
+  - ✅ GitHub Copilot (VS Code)
+
+#### 🔧 ローカルビルド方法（上級者向け）
+
+- 📋 [Node.js ローカルビルド版実行ガイド](docs/nodejs-setup.md) - ソースコードからビルドして実行
+- 🐳 [Docker ローカルビルド版実行ガイド](docs/docker-setup.md) - Dockerコンテナで実行
+
+#### 🆘 トラブルシューティング
+
+- ❓ [FAQ](docs/FAQ.md) - よくある質問と解決方法
 
 ## 🎯 使用例
 
 ### サーバー作成
 
 ```txt
-サーバプラン一覧、イメージ一覧、ボリュームタイプ一覧を確認して、
+サーバープラン一覧、イメージ一覧、ボリュームタイプ一覧を確認して、
 Ubuntu 24.04でメモリ1GBのサーバーを、rootパスワード：vG7#kLp9zX!q、
 ネームタグ：test-1、セキュリティグループ：defaultとして作ってください。
 ```
 
-> [!IMPORTANT]
-> パスワードの管理には十分ご注意ください。
+> [!DANGER]
+> **パスワードセキュリティに関する重要な警告**
 >
-> サーバー作成後は、パスワードの変更、あるいは、パスワード認証を無効化し、SSH キー認証へ変更することを推奨します。
+> - 上記のパスワード例は**絶対に実際に使用しないでください**（公開されているため）
+> - 実際の運用では、十分に複雑で一意なパスワードを生成してください
+> - サーバー作成後は、**直ちに**パスワードの変更、またはパスワード認証の無効化を行ってください
+> - SSHキー認証への変更を強く推奨します
+> - AIエージェントとの会話履歴にパスワードが残ることに注意してください
 
 ### リソース管理
 
@@ -156,12 +173,15 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 - ✅ Docker
 - ✅ Linux / macOS / Windows
 
-#### AIアシスタント統合
+#### AIエージェント統合
 
 - ✅ [Claude Desktop](https://claude.ai/download)
 - ✅ [Cline (VS Code)](https://github.com/cline/cline)
-- ✅ [Cursor](https://cursor.sh/)
 - ✅ [GitHub Copilot (VS Code)](https://docs.github.com/ja/copilot)
+
+> [!NOTE]
+> MCPに対応した他のAIエージェントでも利用できます。
+> 詳細は各AIエージェントのドキュメントを参照して下さい。
 
 #### ConoHa環境
 
@@ -169,18 +189,23 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 
 ### MCPサーバーで対応している主な機能一覧
 
-| カテゴリ             | 主な対応機能 |
-|---------------------|-------------|
-| サーバー               | 作成 / 削除 / 起動 / 停止 / リサイズ / コンソール接続 |
-| ボリューム           | 作成 / 削除 / 更新 |
-| イメージ             | イメージ一覧取得 |
-| SSHキーペア          | 作成 / 削除 |
+| カテゴリ | 主な対応機能 |
+|---------|-------------|
+| サーバー | 作成 / 削除 / 起動 / 停止 / リサイズ / コンソール接続 |
+| ボリューム | 作成 / 削除 / 更新 |
+| イメージ | 一覧取得 |
+| SSHキーペア | 作成 / 削除 |
 | セキュリティグループ | 作成 / 削除 / 更新 |
 | セキュリティグループルール | 作成 / 削除 |
 
-📄 ツールごとの全機能一覧は [`こちら`](docs/tool.md) を参照してください。
+📄 ツールごとの全機能一覧は[こちら](docs/tool.md)を参照してください。
 
-## 重要な注意事項
+## ⚠️ 重要な注意事項
+
+### AIエージェント利用について
+
+- Claude等、AIエージェントの利用には別途費用が発生する場合があります
+- 利用しているAIエージェントの料金プランや課金形態は十分確認してください
 
 ### API利用について
 
@@ -190,7 +215,7 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 
 ### 自動化利用について
 
-- 設定ミスや設計不備により意図しない課金が発生する可能性があります
+- 設定ミスにより意図しない課金が発生する可能性があります
 - 自動化する際は設定の確認とセキュリティ対策を十分に行ってください
 - 不安な場合はコントロールパネルからの手動操作を推奨します
 
@@ -214,7 +239,7 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 
 ## 📄 ライセンス
 
-このプロジェクトは[Apache License 2.0](LICENSE)の下で公開されています。
+このプロジェクトは[Apache License 2.0](LICENSE) の下で公開されています。
 
 ## 🙏 謝辞
 
@@ -223,13 +248,13 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 
 ## 📞 サポート・コミュニティ
 
-- 📧 **Issue報告**: [GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)
-- 🌟 **Star**: このプロジェクトが役に立ったら⭐をお願いします！
+- 🐛 **バグ報告・機能要望**: [GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)
+- 🌟 **Star**: このプロジェクトが役に立ったら ⭐ をお願いします！
 
 ## 🔗 関連リンク
 
-- [ConoHa公式サイト](https://www.conoha.jp/)
-- [公開API ドキュメント](https://doc.conoha.jp/reference/api-vps3/)
+- [ConoHa 公式サイト](https://www.conoha.jp/)
+- [公開 API ドキュメント](https://doc.conoha.jp/reference/api-vps3/)
 - [Model Context Protocol 仕様](https://modelcontextprotocol.io/)
 
 ---

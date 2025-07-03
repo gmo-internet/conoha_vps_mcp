@@ -1,4 +1,28 @@
-# Node.js版セットアップガイド
+# Node.js ローカルビルド版実行ガイド
+
+## 目次
+
+- [Node.js ローカルビルド版実行ガイド](#nodejs-ローカルビルド版実行ガイド)
+  - [目次](#目次)
+  - [前提条件](#前提条件)
+  - [プロジェクトの準備](#プロジェクトの準備)
+  - [AIエージェント別設定方法](#aiエージェント別設定方法)
+    - [Claude Desktop](#claude-desktop)
+      - [1. Claude Desktopの設定の追加](#1-claude-desktopの設定の追加)
+      - [2. 設定値の確認](#2-設定値の確認)
+      - [3. ツールの使用](#3-ツールの使用)
+    - [Cline (VSCode)](#cline-vscode)
+      - [1. VSCodeにおけるClineのインストール](#1-vscodeにおけるclineのインストール)
+      - [2. Clineの設定の追加](#2-clineの設定の追加)
+      - [3. 設定値の確認](#3-設定値の確認)
+      - [4. ツールの使用](#4-ツールの使用)
+    - [GitHub Copilot (VSCode)](#github-copilot-vscode)
+      - [1. VSCode設定の追加](#1-vscode設定の追加)
+      - [2. 設定値の確認](#2-設定値の確認-1)
+    - [3. MCPサーバーの起動](#3-mcpサーバーの起動)
+    - [4. ツールの使用](#4-ツールの使用-1)
+  - [トラブルシューティング](#トラブルシューティング)
+    - [よくある問題](#よくある問題)
 
 Node.js を使用したConoHa VPS MCPのセットアップ手順を説明します。
 
@@ -24,6 +48,9 @@ npm run build
 
 ### Claude Desktop
 
+<details>
+<summary>展開</summary>
+
 #### 1. Claude Desktopの設定の追加
 
 1. メニューバーから **[ファイル]** → **[設定]** を開きます
@@ -36,7 +63,7 @@ npm run build
 
 3. **[構成を編集]** をクリックします
 
-4. `claude_desktop_config.json`を開き、に以下の設定を追加します：
+4. `claude_desktop_config.json`を開き、以下の設定を追加します：
 
 ```json
 {
@@ -78,9 +105,14 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#-使用例)
+   [サンプルプロンプト](../README.md#使用例)
+
+</details>
 
 ### Cline (VSCode)
+
+<details>
+<summary>展開</summary>
 
 #### 1. VSCodeにおけるClineのインストール
 
@@ -146,9 +178,14 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 2. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#サンプルプロンプト)
+   [サンプルプロンプト](../README.md#使用例)
+
+</details>
 
 ### GitHub Copilot (VSCode)
+
+<details>
+<summary>展開</summary>
 
 #### 1. VSCode設定の追加
 
@@ -218,11 +255,9 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 4. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#サンプルプロンプト)
+   [サンプルプロンプト](../README.md#使用例)
 
-### Cursor
-
-設定方法は準備中です。Claude Desktop設定を参考にしてください。
+</details>
 
 ## トラブルシューティング
 
@@ -232,6 +267,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 - **Node.jsバージョンエラー**: Node.js v18以上がインストールされているか確認してください
 - **起動エラー**: `npm install`や`npm run build`が正常に完了しているか確認してください
 - **パス設定エラー**: `PATH_TO_DIRECTORY`が正しいプロジェクトパスに設定されているか確認してください
+- **ファイル不存在エラー**: `npm run build`が正常に完了し、`dist/index.js`ファイルが存在するか確認してください
 
 > [!TIP]
 > 問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)でお気軽にお問い合わせください。
