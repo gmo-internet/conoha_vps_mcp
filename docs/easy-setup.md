@@ -108,12 +108,7 @@
       "env": {
         "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
         "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD",
-        "OPENSTACK_IDENTITY_BASE_URL": "https://identity.c3j1.conoha.io/v3",
-        "OPENSTACK_COMPUTE_BASE_URL": "https://compute.c3j1.conoha.io/v2.1",
-        "OPENSTACK_VOLUME_BASE_URL": "https://block-storage.c3j1.conoha.io/v3",
-        "OPENSTACK_IMAGE_BASE_URL": "https://image-service.c3j1.conoha.io",
-        "OPENSTACK_NETWORK_BASE_URL": "https://networking.c3j1.conoha.io"
+        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
       }
     }
   }
@@ -182,12 +177,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
       "env": {
         "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
         "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD",
-        "OPENSTACK_IDENTITY_BASE_URL": "https://identity.c3j1.conoha.io/v3",
-        "OPENSTACK_COMPUTE_BASE_URL": "https://compute.c3j1.conoha.io/v2.1",
-        "OPENSTACK_VOLUME_BASE_URL": "https://block-storage.c3j1.conoha.io/v3",
-        "OPENSTACK_IMAGE_BASE_URL": "https://image-service.c3j1.conoha.io",
-        "OPENSTACK_NETWORK_BASE_URL": "https://networking.c3j1.conoha.io"
+        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
       }
     }
   }

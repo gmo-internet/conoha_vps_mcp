@@ -16,7 +16,7 @@ ConoHa VPS MCP に関する脆弱性を発見された場合は、責任ある�
 
 ### 1. メールでのご報告
 
-* **宛先** : [security@conoha.jp](mailto:security@conoha.jp)
+* **宛先** : [vuln-report@conoha.jp](mailto:vuln-report@conoha.jp)
 * **件名** : `[SECURITY] ConoHa VPS MCP 脆弱性報告`
 * **本文** : 下記の情報を可能な限り詳細にご記載ください。
 
