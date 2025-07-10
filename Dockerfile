@@ -12,6 +12,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+RUN npm run build
+
 # Production stage
 FROM node:22-alpine3.21@sha256:a7c10fad0b8fa59578bf3cd1717b168df134db8362b89e1ea6f54676fee49d3b AS production
 
@@ -25,11 +27,11 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install only production dependencies
-RUN npm ci --only=production && \
+RUN npm ci --omit=dev && \
     npm cache clean --force
 
 # Copy built application from builder stage
-COPY --from=builder --chown=nodeuser:nodejs /app/src ./src
+COPY --from=builder --chown=nodeuser:nodejs /app/dist ./dist
 
 # Switch to non-root user
 USER nodeuser
