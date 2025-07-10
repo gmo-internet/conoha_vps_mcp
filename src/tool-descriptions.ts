@@ -212,6 +212,8 @@ export const conohaDeleteByParamDescription = `
 
 export const createServerDescription = `
    JA: ConoHa の OpenStack API を利用して新しいサーバーを作成します。
+        • rootパスワードは必ずユーザー自身が指定したものを設定してください。
         • rootパスワードは9~70文字の半角英数記号の組み合わせで指定してください。
         • rootパスワードにはアルファベット大文字、小文字、数字、記号をそれぞれ含めてください。(利用可能な記号は \^$+-*/|()[]{}.,?!_=&@~%#:;'" です)
+        • rootパスワードの作成条件に誤りがあった場合でも、必ずユーザー自身にパスワードの再入力を依頼し、ユーザーが指定した値のみをadminPassに設定してください。
    `;
