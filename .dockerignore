@@ -1,12 +1,12 @@
 # Dependencies
-node_modules
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
 # Build outputs
-dist
+dist/
 build
 *.tsbuildinfo
 
@@ -32,7 +32,6 @@ CHANGELOG.md
 *.md
 vitest.config.ts
 biome.json
-tsconfig.json
 
 # Docker files
 Dockerfile*
@@ -51,12 +50,7 @@ Thumbs.db
 
 # Logs
 logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 lerna-debug.log*
-.pnpm-debug.log*
 
 # Runtime data
 pids
@@ -65,7 +59,6 @@ pids
 *.pid.lock
 
 # Coverage directory used by tools like istanbul
-coverage
 *.lcov
 
 # nyc test coverage
