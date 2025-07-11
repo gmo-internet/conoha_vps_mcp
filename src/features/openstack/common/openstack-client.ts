@@ -1,6 +1,6 @@
+import type { HttpMethod, JsonObject } from "../../../types.js";
 import { formatResponse } from "./format-response.js";
 import { generateApiToken } from "./generate-api-token.js";
-import type { HttpMethod, JsonObject } from "./types.js";
 
 export async function executeOpenstackApi(
 	method: "GET" | "DELETE",
