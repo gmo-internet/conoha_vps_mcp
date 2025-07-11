@@ -50,8 +50,7 @@
 		"biome:fix": "biome check --write .",
 		"test": "vitest run --coverage",
 		"generate:notice": "node scripts/generate-notice.js",
-		"dev:inspector": "npx @modelcontextprotocol/inspector pnpm start",
-		"start:inspector": "npx @modelcontextprotocol/inspector pnpm start",
+		"inspector": "npx @modelcontextprotocol/inspector",
 		"commit": "cz"
 	},
 	"dependencies": {
