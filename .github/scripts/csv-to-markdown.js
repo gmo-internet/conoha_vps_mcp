@@ -50,7 +50,7 @@ function generateMarkdownTable(csvData) {
 
 	// Create table header
 	let markdown =
-		"## 📊 Test Results Report\n\n<details>\n<summary>Click to expand</summary>\n";
+		"## 📊 Test Results Report\n\n<details>\n<summary>Click to expand</summary>\n\n";
 	markdown += `| ${headers.join(" | ")} |\n`;
 	markdown += `| ${headers.map(() => "----------").join("|")} |\n`;
 
