@@ -15,8 +15,8 @@ jobs:
         id: extract
         run: |
           BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-          if [[ "$BRANCH_NAME" =~ ^release\/v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
-            VERSION="v${BASH_REMATCH[1]}"
+          if [[ "$BRANCH_NAME" =~ ^release\/(v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?)$ ]]; then
+            VERSION="${BASH_REMATCH[1]}"
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           else
             echo "Not a release branch. Skipping."
