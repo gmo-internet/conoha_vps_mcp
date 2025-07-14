@@ -49,7 +49,8 @@ function generateMarkdownTable(csvData) {
 	const { headers, rows } = csvData;
 
 	// Create table header
-	let markdown = "## 📊 Test Results Report\n\n<details>\n<summary>Click to expand</summary>\n";
+	let markdown =
+		"## 📊 Test Results Report\n\n<details>\n<summary>Click to expand</summary>\n";
 	markdown += `| ${headers.join(" | ")} |\n`;
 	markdown += `| ${headers.map(() => "----------").join("|")} |\n`;
 
