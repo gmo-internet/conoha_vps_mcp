@@ -41,6 +41,12 @@ export const conohaPostDescription = `
    JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
 
          • inputに‘path’と‘requestBody’を指定
+         
+               {  "input": {
+                     "path": <path>,
+                     "requestBody": <requestBody>
+                  }
+               }
 
          • 引数 ‘path’ でアクセス先リソースを指定
          
@@ -117,6 +123,13 @@ export const conohaPostPutByParamDescription = `
    JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
    
          • inputに‘path’, ‘param’, ‘requestBody’を指定
+         
+               {  "input": {
+                     "path": <path>,
+                     "param": <param>,
+                     "requestBody": <requestBody>
+                  }
+               }
 
          • 引数 ‘path’ でアクセス先リソースを指定
 
