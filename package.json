@@ -1,6 +1,6 @@
 {
 	"name": "@gmo-internet/conoha-vps-mcp",
-	"version": "0.0.3",
+	"version": "0.0.5",
 	"description": "ConoHa VPS MCP (Model Context Protocol) server",
 	"author": "GMO Internet",
 	"license": "Apache-2.0",
@@ -50,8 +50,7 @@
 		"biome:fix": "biome check --write .",
 		"test": "vitest run --coverage",
 		"generate:notice": "node scripts/generate-notice.js",
-		"dev:inspector": "npx @modelcontextprotocol/inspector pnpm start",
-		"start:inspector": "npx @modelcontextprotocol/inspector pnpm start",
+		"inspector": "npx @modelcontextprotocol/inspector",
 		"commit": "cz"
 	},
 	"dependencies": {
