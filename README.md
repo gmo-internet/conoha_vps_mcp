@@ -25,17 +25,15 @@
 
 ConoHa VPS MCPは、ConoHa VPSの[公開API](https://doc.conoha.jp/reference/api-vps3/)を**日本語**で簡単に操作できるオープンソースの**Model Context Protocol (MCP) サーバー**です。
 
-Claude、Cline、GitHub CopilotなどのAIエージェントと連携することで、**自然言語によるインフラ操作**が可能になります。
+GitHub Copilot、Cline、ClaudeなどのAIエージェントと連携することで、**自然言語によるインフラ操作**が可能になります。
 
 > [!CAUTION]
-> **⚠️ ベータ版について**
->
-> 本ソフトウェアは現在ベータ版です。
+> **⚠️ 本ソフトウェアは現在ベータ版です**
 >
 > - いかなる保証もなく現状のまま提供されます。
 > - 機能・動作は予告なく変更される場合があります。
 > - 本番環境での使用前に十分なテストを行ってください。
-> - 問題やフィードバックは GitHub の Issue トラッカー からご報告をよろしくお願いいたします。
+> - バグやフィードバックは GitHub の Issue トラッカー からご報告願います。
 >
 > このベータ版ConoHa VPS MCP を使用することで、これらの条件に同意したものとみなされます。
 
@@ -43,101 +41,56 @@ Claude、Cline、GitHub CopilotなどのAIエージェントと連携するこ�
 
 | 特徴 | 説明 |
 |------|------|
-| 🇯🇵 **完全日本語対応** | ConoHa VPSのOpenStackリソースを日本語で直感的に操作 |
-| 🤖 **AI統合** | Claude、Cline、GitHub Copilotなど、主要なMCP対応AIエージェントに対応 |
+| 🇯🇵 **完全日本語対応** | ConoHa VPSのリソースを日本語で直感的に操作 |
+| 🤖 **AI統合** | GitHub Copilot、Cline、Claudeなど、主要なMCP対応AIエージェントに対応 |
 | 🔧 **包括的API** | サーバー・ボリューム・イメージ・セキュリティグループ管理をサポート |
 | 🐳 **クロスプラットフォーム** | Node.js および Dockerでの実行環境を提供 |
-| 🛡️ **セキュリティ** | OpenStack標準のセキュリティ機能を継承 |
-| 📝 **TypeScript完全対応** | 型安全性とコード補完を提供 |
+| 🛡️ **セキュリティ** | 公開APIのセキュリティ機能を継承 |
 
 ## ❓ Model Context Protocol (MCP) とは
 
-Claude、Cline、GitHub CopilotなどのAIエージェント（AIチャットボット）が、インターネット上のサービスや様々なツールと連携するための仕組みです。
+Model Context Protocolとは、GitHub Copilot、Cline、ClaudeなどのAIエージェントがインターネット上のサービスや様々なツールと連携するための共通化された仕組み（プロトコル）です。
 この仕組みにより、AIエージェントがあなたの代わりに、サーバーの操作やファイルの管理などの複雑な作業を簡単かつ自動で行えるようになります。
 
 ## 🚀 クイックスタート
 
-### 前提条件
+1. ConoHaのコントロールパネルにアクセスし、APIクレデンシャルを発行
+2. Node.js あるいは Dockerをローカル端末にインストール
+3. 利用中のMCP対応のAIエージェント（GitHub Copilot等）にConoHa VPS MCPの設定を記載し、MCPサーバーを起動
+    <details>
+    <summary>設定（簡略版）</summary>
 
-- Node.js 18以上 または Docker
-- ConoHa VPSアカウントとAPIクレデンシャル
-- 対応AIエージェント（Claude Desktop、Cline、GitHub Copilot等）
-
-### もっとも簡単な起動方法（VS Code）
-
-`settings.json` に以下を追記し、AI アシスタントを再起動すると、認証情報の入力後すぐに MCP サーバーが起動します。
-認証情報はConoHaコントロールパネルのAPI設定で確認できます。
-
-```json
-{
-  "mcp": {
-    "inputs": [
-      { "type": "promptString", "id": "openstack-tenant-id", "description": "OpenStack Tenant ID" },
-      { "type": "promptString", "id": "openstack-user-id", "description": "OpenStack User ID" },
-      { "type": "promptString", "id": "openstack-password", "description": "OpenStack Password", "password": true }
-    ],
-    "servers": {
+    ```json
+    {
       "ConoHa VPS MCP": {
         "command": "npm",
         "args": [
           "exec",
           "--@gmo-internet:registry=https://npm.pkg.github.com",
-          "@gmo-internet/conoha-vps-mcp"
+          "@gmo-internet/conoha-vps-mcp@latest"
         ],
         "env": {
-          "OPENSTACK_TENANT_ID": "${input:openstack-tenant-id}",
-          "OPENSTACK_USER_ID": "${input:openstack-user-id}",
-          "OPENSTACK_PASSWORD": "${input:openstack-password}"
+          "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
+          "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
+          "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
         }
       }
     }
-  }
-}
-
-```
-
-この設定を保存してAIエージェントを起動すれば、OpenStackの認証情報を入力するだけでConoHa VPS MCPが起動し、サーバーの作成・操作・削除などが自然言語で可能になります。
-
-💡 **npm install 不要** — `npm exec` を利用するため、ローカル/グローバルへのインストールなしで安全に実行できます。
+    ```
+    </details>
 
 詳細な手順は 👉 [簡単実行ガイド](docs/easy-setup.md) を参照してください。
 
-### AIエージェント別詳細設定ガイド
-
-#### 🚀 簡単実行方法（推奨）
-
-- 📋 [簡単実行ガイド](docs/easy-setup.md) - `npm exec`を使用した最も簡単な方法
-  - ✅ Claude Desktop
-  - ✅ Cline (VS Code)  
-  - ✅ GitHub Copilot (VS Code)
-
-#### 🔧 ローカルビルド方法（上級者向け）
+### 🔧 その他の設定方法（ローカルビルド版（上級者向け））
 
 - 📋 [Node.js ローカルビルド版実行ガイド](docs/nodejs-setup.md) - ソースコードからビルドして実行
 - 🐳 [Docker ローカルビルド版実行ガイド](docs/docker-setup.md) - Dockerコンテナで実行
 
-#### 🆘 トラブルシューティング
+### 🆘 トラブルシューティング
 
 - ❓ [FAQ](docs/FAQ.md) - よくある質問と解決方法
 
 ## 🎯 使用例
-
-### サーバー作成
-
-```txt
-サーバープラン一覧、イメージ一覧、ボリュームタイプ一覧を確認して、
-Ubuntu 24.04でメモリ1GBのサーバーを、rootパスワード：vG7#kLp9zX!q、
-ネームタグ：test-1、セキュリティグループ：defaultとして作ってください。
-```
-
-> [!DANGER]
-> **パスワードセキュリティに関する重要な警告**
->
-> - 上記のパスワード例は**絶対に実際に使用しないでください**（公開されているため）
-> - 実際の運用では、十分に複雑で一意なパスワードを生成してください
-> - サーバー作成後は、**直ちに**パスワードの変更、またはパスワード認証の無効化を行ってください
-> - SSHキー認証への変更を強く推奨します
-> - AIエージェントとの会話履歴にパスワードが残ることに注意してください
 
 ### リソース管理
 
@@ -152,6 +105,23 @@ Ubuntu 24.04でメモリ1GBのサーバーを、rootパスワード：vG7#kLp9zX
 ```txt
 test-1という名前のサーバーにアタッチされているボリュームの詳細を表示してください。
 ```
+
+### サーバー作成
+
+```txt
+サーバープラン一覧、イメージ一覧、ボリュームタイプ一覧を確認して、
+Ubuntu 24.04でメモリ1GBのサーバーを、rootパスワード：vG7#kLp9zX!q、
+ネームタグ：test-1、セキュリティグループ：defaultとして作ってください。
+```
+
+> [!CAUTION]
+> **パスワードセキュリティに関する重要な警告**
+>
+> - 上記のパスワード例は**絶対に実際に使用しないでください**（公開されているため）
+> - 実際の運用では、十分に複雑で一意なパスワードを生成してください
+> - サーバー作成後は、**直ちに**パスワードの変更、またはパスワード認証の無効化を行ってください
+> - SSHキー認証への変更を強く推奨します
+> - AIエージェントとの会話履歴にパスワードが残ることに注意してください
 
 ### セキュリティ設定
 
