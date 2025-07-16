@@ -2,12 +2,13 @@
 name: Publish to Private GitHub Packages
 
 on:
-  push:
-    branches: [staging]
-
+  pull_request:
+    types: [closed]
+    branches:
+      - staging
 jobs:
   publish:
-    if: github.repository == 'gmo-internet/priv_conoha_vps_mcp'
+    if: github.repository == 'gmo-internet/priv_conoha_vps_mcp' && github.event.pull_request.merged == true
     runs-on: ubuntu-24.04
 
     permissions:
@@ -23,7 +24,7 @@ jobs:
       - name: Extract version from branch name
         id: extract
         run: |
-          BRANCH_NAME="${{ github.head_ref }}"
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           if [[ "$BRANCH_NAME" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             VERSION="${BASH_REMATCH[1]}"
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
