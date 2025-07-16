@@ -1,14 +1,13 @@
-# stagingブランチへのpushでstaging用のパッケージのリリース
-name: Publish to Private GitHub Packages
+# mainブランチへのpushでパッケージのリリース
+name: Publish to Public GitHub Packages
 
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - staging
+  push:
+    branches: [staging] # FIXME: change to main
+
 jobs:
   publish:
-    if: github.repository == 'gmo-internet/priv_conoha_vps_mcp' && github.event.pull_request.merged == true
+    if: github.repository == 'gmo-internet/conoha_vps_mcp'
     runs-on: ubuntu-24.04
 
     permissions:
@@ -24,7 +23,7 @@ jobs:
       - name: Extract version from branch name
         id: extract
         run: |
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          BRANCH_NAME="${{ github.ref_name }}"
           if [[ "$BRANCH_NAME" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             VERSION="${BASH_REMATCH[1]}"
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
@@ -62,14 +61,7 @@ jobs:
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build
 
-      # 7) Private用のパッケージ名調整
-      - name: Set package name for private packages
-        if: success() && steps.extract.outputs.skip != 'true'
-        run: |
-          VERSION='${{ steps.extract.outputs.VERSION }}'
-          npm pkg set name="@gmo-internet/priv-conoha-vps-mcp"
-
-      # 8) 公開
+      # 7) 公開
       - name: Publish to GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm publish
