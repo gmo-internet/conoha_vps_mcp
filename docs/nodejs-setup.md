@@ -49,11 +49,11 @@ npm run build
 
 ### GitHub Copilot (VSCode)
 
-<details>
-<summary>セットアップ手順</summary>
-
 > [!CAUTION]
 > [VSCodeのJune 2025のアップデート (version 1.102)](https://code.visualstudio.com/updates/v1_102)により、設定方法が大きく変わっております。古いバージョンをご利用中の方は最新バージョンへの更新、あるいは公式のドキュメントをご参照ください。
+
+<details>
+<summary>セットアップ手順</summary>
 
 #### 1. 設定の追加
 
@@ -129,7 +129,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 ![起動と書かれたボタンをクリックして起動](../assets/vscode_settings_mcp_npm_start.png)
 
-> [!TIP]
+> 📌
 > 環境変数の入力欄は起動ボタンをクリックした後に、画面上部に表示されます。
 > 
 > ![起動ボタンを押すと、画面上部に環境変数入力欄が表示される](../assets/vscode_npm_mcp_json_input.png)
@@ -222,13 +222,13 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 ### Claude Desktop
 
-<details>
-<summary>セットアップ手順</summary>
-
 > [!CAUTION]
 > 2025年7月15日現在、Claude Desktopのバグと思われる事象により、`conoha_post`・`conoha_post_put_by_param`のtoolsが利用できなくなっております。
 > 修正が確認でき次第ドキュメントを更新の上、[リリースノート](https://github.com/gmo-internet/conoha_vps_mcp/releases)に記載いたします。
 > ご迷惑おかけし申し訳ございません。
+
+<details>
+<summary>セットアップ手順</summary>
 
 #### 1. Claude Desktopの設定の追加
 
@@ -297,6 +297,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 - **起動エラー**: `npm install`や`npm run build`が正常に完了しているか確認してください
 - **パス設定エラー**: `PATH_TO_DIRECTORY`が正しいプロジェクトパスに設定されているか確認してください
 - **ファイル不存在エラー**: `npm run build`が正常に完了し、`dist/index.js`ファイルが存在するか確認してください
+- その他FAQは[こちら](FAQ.md)
 
 > [!TIP]
 > 問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)でお気軽にお問い合わせください。
