@@ -6,31 +6,24 @@
   - [目次](#目次)
   - [前提条件](#前提条件)
   - [AIエージェント別実行方法](#aiエージェント別実行方法)
-    - [Claude Desktop](#claude-desktop)
-      - [1. Claude Desktopの設定の追加](#1-claude-desktopの設定の追加)
+    - [GitHub Copilot (VSCode)](#github-copilot-vscode)
+      - [1. 設定の追加](#1-設定の追加)
       - [2. 設定値の確認](#2-設定値の確認)
-      - [3. ツールの使用](#3-ツールの使用)
+      - [3. MCPサーバーの起動](#3-mcpサーバーの起動)
+      - [4. ツールの使用](#4-ツールの使用)
     - [Cline (VSCode)](#cline-vscode)
       - [1. VSCodeにおけるClineのインストール](#1-vscodeにおけるclineのインストール)
       - [2. Clineの設定の追加](#2-clineの設定の追加)
       - [3. 設定値の確認](#3-設定値の確認)
-      - [4. ツールの使用](#4-ツールの使用)
-    - [GitHub Copilot (VSCode)](#github-copilot-vscode)
-      - [1. VSCode設定の追加](#1-vscode設定の追加)
+      - [4. ツールの使用](#4-ツールの使用-1)
+    - [Claude Desktop](#claude-desktop)
+      - [1. Claude Desktopの設定の追加](#1-claude-desktopの設定の追加)
       - [2. 設定値の確認](#2-設定値の確認-1)
-    - [3. MCPサーバーの起動](#3-mcpサーバーの起動)
-    - [4. ツールの使用](#4-ツールの使用-1)
+      - [3. ツールの使用](#3-ツールの使用)
   - [トラブルシューティング](#トラブルシューティング)
     - [よくある問題](#よくある問題)
 
-このドキュメントでは、ConoHa VPS MCP をローカル環境にインストールすることなく、`npm exec` コマンドを使って **即座に実行する方法** を説明します。
-
-この方式では、パッケージをグローバルにもローカルにもインストールする必要がなく、以下の特徴があります：
-
-- ✅ 必要なのは Node.js のみ
-- ✅ VSCodeの`settings.json` に記述するだけで、対応AIエージェントからすぐに実行可能
-- ✅ 最新のConoHa VPS MCPを毎回クリーンに呼び出せる
-- ✅ セットアップや依存関係の管理が不要
+このドキュメントでは、ConoHa VPS MCP をローカル環境にコードのクローンやビルドをすることなく**簡単に**MCPサーバーを実行する方法を説明します。
 
 ## 前提条件
 
@@ -76,42 +69,63 @@
 
 ## AIエージェント別実行方法
 
-### Claude Desktop
+### GitHub Copilot (VSCode)
 
 <details>
 <summary>セットアップ手順</summary>
 
-#### 1. Claude Desktopの設定の追加
+> [!CAUTION]
+> [VSCodeのJune 2025のアップデート (version 1.102)](https://code.visualstudio.com/updates/v1_102)により、設定方法が大きく変わっております。古いバージョンをご利用中の方は最新バージョンへの更新、あるいは公式のドキュメントをご参照ください。
 
-1. メニューバーから **[ファイル]** → **[設定]** を開きます
+#### 1. 設定の追加
 
-   ![Claude Desktopの設定を開く](../assets/claude_desktop_setting.png)
+1. VSCode上の画面で`ctrl + Shift + P`を実行してコマンドパレットを開きます
 
-2. 左側のメニューから **[開発者]** タブを選択します
+2. 上部の検索窓で`Open User Configuration`と入力します（大文字小文字は区別しません）
 
-   ![開発者タブ](../assets/claude_desktop_setting_config.png)
+   ![画面上部中央に表示されている検索窓に、Open User Configurationと入力](../assets/vscode_add_mcp.png)
 
-3. **[構成を編集]** をクリックします
+3. 「MPC: ユーザー構成を開く」をクリックします
 
-4. `claude_desktop_config.json`を開き、以下の設定を追加します：
+  ![検索結果に出てきたMPC: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
+
+4. 開いたmcp.jsonに以下の設定を追加します：
 
 ```json
 {
-  "mcpServers": {
-    "ConoHa VPS MCP": {
-      "command": "npm",
-      "args": [
-        "exec",
-        "--@gmo-internet:registry=https://npm.pkg.github.com",
-        "@gmo-internet/conoha-vps-mcp"
-      ],
-      "env": {
-        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
-        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
+    "inputs": [
+      {
+        "type": "promptString",
+        "id": "openstack-tenant-id",
+        "description": "OpenStack Tenant ID"
+      },
+      {
+        "type": "promptString",
+        "id": "openstack-user-id",
+        "description": "OpenStack User ID"
+      },
+      {
+        "type": "promptString",
+        "id": "openstack-password",
+        "description": "OpenStack Password",
+        "password": true
+      }
+    ],
+    "servers": {
+      "ConoHa VPS MCP": {
+        "command": "npm",
+        "args": [
+          "exec",
+          "--@gmo-internet:registry=https://npm.pkg.github.com",
+          "@gmo-internet/conoha-vps-mcp@latest"
+        ],
+        "env": {
+          "OPENSTACK_TENANT_ID": "${input:openstack-tenant-id}",
+          "OPENSTACK_USER_ID": "${input:openstack-user-id}",
+          "OPENSTACK_PASSWORD": "${input:openstack-password}"
+        }
       }
     }
-  }
 }
 ```
 
@@ -128,12 +142,34 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 各値はConoHaコントロールパネルのAPI設定で確認できます。
 
 ![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
 
-#### 3. ツールの使用
+#### 3. MCPサーバーの起動
 
-プロンプトを入力して操作を実行します
+編集したjsonファイル上に表示される起動ボタンをクリックして、MCPサーバーを起動します。その際、環境変数の初期設定を求められるので、確認した設定値を入力してください。
 
-   [サンプルプロンプト](../README.md#使用例)
+![起動と書かれたボタンをクリックして起動](../assets/vscode_settings_mcp_easy_start.png)
+
+> [!TIP]
+> 環境変数の入力欄は起動ボタンをクリックした後に、画面上部に表示されます。
+> 
+> ![起動ボタンを押すと、画面上部に環境変数入力欄が表示される](../assets/vscode_easy_mcp_json_input.png)
+
+#### 4. ツールの使用
+
+1. GitHub Copilotを起動します
+   - **Windows/Linux**: `Ctrl + Shift + I`
+   - **Mac**: `Command + Shift + I`
+
+2. チャット欄のドロップダウンメニューから**Agent**モードを選択します
+
+3. チャット欄の**ツール**ボタンをクリックして、**MCPサーバー：ConoHa VPS MCP**を選択します
+
+  ![MCPサーバー：ConoHa VPS MCPと表示される](../assets/view_tools.png)
+
+4. プロンプトを入力して操作を実行します
+
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
@@ -172,7 +208,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
       "args": [
         "exec",
         "--@gmo-internet:registry=https://npm.pkg.github.com",
-        "@gmo-internet/conoha-vps-mcp"
+        "@gmo-internet/conoha-vps-mcp@latest"
       ],
       "env": {
         "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
@@ -208,59 +244,44 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 </details>
 
-### GitHub Copilot (VSCode)
+### Claude Desktop
 
 <details>
 <summary>セットアップ手順</summary>
 
-#### 1. VSCode設定の追加
+> [!CAUTION]
+> 2025年7月15日現在、Claude Desktopのバグと思われる事象により、`conoha_post`・`conoha_post_put_by_param`のtoolsが利用できなくなっております。
+> 修正が確認でき次第ドキュメントを更新の上、[リリースノート](https://github.com/gmo-internet/conoha_vps_mcp/releases)に記載いたします。
+> ご迷惑おかけし申し訳ございません。
 
-1. VSCode左下の歯車マークをクリックして設定を開きます
+#### 1. Claude Desktopの設定の追加
 
-   ![VSCodeの設定を開く](../assets/vscode_settings.png)
+1. メニューバーから **[ファイル]** → **[設定]** を開きます
 
-2. 上部の検索窓で「mcp」と検索します
+   ![Claude Desktopの設定を開く](../assets/claude_desktop_setting.png)
 
-   ![MCP設定を検索](../assets/vscode_settings_mcp.png)
+2. 左側のメニューから **[開発者]** タブを選択します
 
-3. 「settings.jsonで編集」をクリックします
+   ![開発者タブ](../assets/claude_desktop_setting_config.png)
 
-4. `mcp`セクションに以下の設定を追加します：
+3. **[構成を編集]** をクリックします
+
+4. `claude_desktop_config.json`を開き、以下の設定を追加します：
 
 ```json
 {
-  "mcp": {
-    "inputs": [
-      {
-        "type": "promptString",
-        "id": "openstack-tenant-id",
-        "description": "OpenStack Tenant ID"
-      },
-      {
-        "type": "promptString",
-        "id": "openstack-user-id",
-        "description": "OpenStack User ID"
-      },
-      {
-        "type": "promptString",
-        "id": "openstack-password",
-        "description": "OpenStack Password",
-        "password": true
-      }
-    ],
-    "servers": {
-      "ConoHa VPS MCP": {
-        "command": "npm",
-        "args": [
-          "exec",
-          "--@gmo-internet:registry=https://npm.pkg.github.com",
-          "@gmo-internet/conoha-vps-mcp"
-        ],
-        "env": {
-          "OPENSTACK_TENANT_ID": "${input:openstack-tenant-id}",
-          "OPENSTACK_USER_ID": "${input:openstack-user-id}",
-          "OPENSTACK_PASSWORD": "${input:openstack-password}"
-        }
+  "mcpServers": {
+    "ConoHa VPS MCP": {
+      "command": "npm",
+      "args": [
+        "exec",
+        "--@gmo-internet:registry=https://npm.pkg.github.com",
+        "@gmo-internet/conoha-vps-mcp@latest"
+      ],
+      "env": {
+        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
+        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
+        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
       }
     }
   }
@@ -280,33 +301,12 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 各値はConoHaコントロールパネルのAPI設定で確認できます。
 
 ![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
-*https://manage.conoha.jp/V3/API/*
 
-### 3. MCPサーバーの起動
+#### 3. ツールの使用
 
-編集したjsonファイル上に表示される起動ボタンをクリックして、MCPサーバーを起動します。その際、環境変数の初期設定を求められるので、確認した設定値を入力してください。
+プロンプトを入力して操作を実行します
 
-![起動と書かれたボタンをクリックして起動](../assets/vscode_settings_mcp_start.png)
-
-![OpenStack Tenant IDと書かれた入力フォームにテナントIDを入力](../assets/input_tenant_id.png)
-
-*テナントID入力画面*
-
-### 4. ツールの使用
-
-1. GitHub Copilotを起動します
-   - **Windows/Linux**: `Ctrl + Shift + I`
-   - **Mac**: `Command + Shift + I`
-
-2. チャット欄のドロップダウンメニューから**Agent**モードを選択します
-
-3. チャット欄の**ツール**ボタンをクリックして、**MCPサーバー：ConoHa VPS MCP**を選択します
-
-  ![MCPサーバー：ConoHa VPS MCPと表示される](../assets/view_tools.png)
-
-4. プロンプトを入力して操作を実行します
-
-   [サンプルプロンプト](../README.md#-使用例)
+   [サンプルプロンプト](../README.md#使用例)
 
 </details>
 
@@ -316,7 +316,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 - **認証エラー**: 環境変数の値が正しく設定されているか確認してください
 - **Node.jsバージョンエラー**: Node.js v18以上がインストールされているか確認してください
-- **起動エラー**: `"--registry=..."` の記述ミスや、`@gmo-internet/conoha-vps-mcp` のパッケージ名が正しいかを確認してください
+- **起動エラー**: `"--@gmo-internet:registry=..."` の記述ミスや、`@gmo-internet/conoha-vps-mcp@latest` のパッケージ名が正しいかを確認してください
 - **パッケージ取得エラー**: `npm exec`の初回実行時にパッケージのダウンロードに時間がかかる場合があります
 
 > [!TIP]

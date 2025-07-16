@@ -1,8 +1,13 @@
 {
 	"permissions": {
 		"allow": [
+			"Bash(mkdir:*)",
 			"Bash(npm run build:*)",
-			"Bash(npm install:*)"
+			"Bash(npm install:*)",
+			"Bash(npm run typecheck:*)",
+			"Bash(npm run biome:ci:*)",
+			"Bash(npm run biome:fix:*)",
+			"Bash(npm test:*)"
 		],
 		"deny": []
 	}
