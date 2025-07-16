@@ -19,30 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
-      # 2) ブランチ名からバージョン抽出
-      - name: Extract version from branch name
-        id: extract
-        run: |
-          BRANCH_NAME="${{ github.ref_name }}"
-          if [[ "$BRANCH_NAME" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            VERSION="${BASH_REMATCH[1]}"
-            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          else
-            echo "Not a release branch. Skipping."
-            echo "skip=true" >> $GITHUB_OUTPUT
-          fi
-
-      # 3) タグ付け
-      - name: Tag and push
-        if: success() && steps.extract.outputs.skip != 'true'
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git fetch --tags
-          git tag ${{ steps.extract.outputs.VERSION }}
-          git push origin ${{ steps.extract.outputs.VERSION }}
-
-      # 4) Node セットアップ
+      # 2) Node セットアップ
       - name: Setup Node.js
         if: success() && steps.extract.outputs.skip != 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -51,17 +28,17 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@gmo-internet"
 
-      # 5) 依存インストール
+      # 3) 依存インストール
       - name: Install dependencies
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm ci
 
-      # 6) ビルド
+      # 4) ビルド
       - name: Build project
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build
 
-      # 7) 公開
+      # 5) 公開
       - name: Publish to GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm publish
