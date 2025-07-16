@@ -3,7 +3,7 @@ name: Publish to Public GitHub Packages
 
 on:
   push:
-    branches: [staging] # FIXME: change to main
+    branches: [main]
 
 jobs:
   publish:
