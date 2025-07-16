@@ -1,0 +1,11 @@
+name: Push to Public Repository
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  push-to-public:
+    uses: gmo-internet/priv_share/.github/workflows/publish.yml@main
+    secrets: inherit
