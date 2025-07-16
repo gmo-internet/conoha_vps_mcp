@@ -2,7 +2,7 @@ name: Push to Public Repository
 on:
   push:
     branches:
-      - staging # FIXME: change to main
+      - main
 
 permissions:
   contents: write
