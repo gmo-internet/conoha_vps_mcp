@@ -31,7 +31,7 @@ Docker を使用したConoHa VPS MCPのセットアップ手順を説明しま�
 ## 前提条件
 
 - **Docker**: Windows/Mac/Linux対応
-- **WSL**: Ubuntuなどのディストリビューションがインストール済み（Windows環境の場合）
+- **WSL2**: Ubuntuなどのディストリビューションがインストール済み（Windows環境の場合）
 
 ## プロジェクトの準備
 
@@ -59,9 +59,9 @@ docker build -t conoha-vps-mcp .
 
    ![画面上部中央に表示されている検索窓に、Open User Configurationと入力](../assets/vscode_add_mcp.png)
 
-3. 「MPC: ユーザー構成を開く」をクリックします
+3. 「MCP: ユーザー構成を開く」をクリックします
    
-  ![検索結果に出てきたMPC: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
+  ![検索結果に出てきたMCP: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
 
 4. 開いたmcp.jsonに以下の設定を追加します：
 
@@ -269,7 +269,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 2. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
@@ -337,7 +337,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
@@ -347,7 +347,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 - **認証エラー**: 環境変数の値が正しく設定されているか確認してください
 - **Docker起動エラー**: Dockerが正常に動作しているか確認してください
-- **WSLエラー**: Windows環境でWSLが正しく設定されているか確認してください
+- **WSL2エラー**: Windows環境でWSLが正しく設定されているか確認してください
 - その他FAQは[こちら](FAQ.md)
 
 > [!TIP]
