@@ -43,6 +43,9 @@ npm install
 
 # ビルド
 npm run build
+
+# ビルドが成功したことを確認
+ls dist/index.js
 ```
 
 ## AIエージェント別設定方法
@@ -63,9 +66,9 @@ npm run build
 
    ![画面上部中央に表示されている検索窓に、Open User Configurationと入力](../assets/vscode_add_mcp.png)
 
-3. 「MPC: ユーザー構成を開く」をクリックします
+3. 「MCP: ユーザー構成を開く」をクリックします
 
-![検索結果に出てきたMPC: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
+![検索結果に出てきたMCP: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
 
 4. 開いたmcp.jsonに以下の設定を追加します：
 
@@ -216,7 +219,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 2. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
@@ -284,7 +287,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 2. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
