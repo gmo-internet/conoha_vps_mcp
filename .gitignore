@@ -6,3 +6,6 @@ reports/**
 
 # build output
 dist/**
+
+# claude
+settings.local.json
