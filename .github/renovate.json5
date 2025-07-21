@@ -1,7 +1,7 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   timezone: 'Asia/Tokyo',
-  baseBranches: [
+  baseBranchPatterns: [
     'main',
   ],
   extends: [
@@ -80,10 +80,10 @@
       groupName: 'npm minor',
     },
     {
-      'matchManagers': [
+      matchManagers: [
         'github-actions',
       ],
-      'groupName': 'github actions',
-    }
+      groupName: 'github actions',
+    },
   ],
 }
