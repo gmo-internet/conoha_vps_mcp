@@ -116,7 +116,7 @@ A: 以下を確認してください：
 
 A: docs/配下の各実行ガイド末尾のトラブルシューティングをご覧ください。
 
-- [簡単実行ガイド](./easy-setup.md)
+- [npm パッケージインストール版実行ガイド](./npm-setup.md)
 - [Node.js ローカルビルド版実行ガイド](./nodejs-setup.md)
 - [Docker ローカルビルド版実行ガイド](./docker-setup.md)
 
