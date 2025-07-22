@@ -5,6 +5,7 @@
 - [簡単実行ガイド](#簡単実行ガイド)
   - [目次](#目次)
   - [前提条件](#前提条件)
+    - [.npmrcファイルへのPATの登録手順](#npmrcファイルへのpatの登録手順)
   - [AIエージェント別実行方法](#aiエージェント別実行方法)
     - [GitHub Copilot (VSCode)](#github-copilot-vscode)
       - [1. 設定の追加](#1-設定の追加)
@@ -29,6 +30,7 @@
 
 1. **Node.js v18以上**・**npm v7 以上**（Node.jsに付属）のインストール
 2. **GitHubのPersonal Access Token**（以下PAT）の発行
+3. **.npmrcファイル**へPATの登録
 
 <details>
 <summary>Node.jsのインストール手順（Windows向け）</summary>
@@ -68,7 +70,7 @@
 </details>
 
 <details>
-<summary>Personal Access Tokenの発行手順</summary>
+<summary>GitHubのPersonal Access Tokenの発行手順</summary>
 
 1. [GitHubのダッシュボード画面](https://github.com/dashboard)の右上にあるアイコン画像をクリックします
 ![画面右上のアイコン画像をクリック](../assets/github_click_icon.png)
@@ -93,6 +95,15 @@
 > トークン値は一度しか表示されないので、必ず安全なところにメモしておくようにしてください。
 
 </details>
+
+### .npmrcファイルへのPATの登録手順
+
+任意のディレクトリで以下のコマンドを実行して、.npmrcファイルを生成してください  
+`ghp_xxxYourTokenxxx`にはGitHub上で発行したPATの値を入力してください
+
+```bash
+npm config set //npm.pkg.github.com/:_authToken=ghp_xxxYourTokenxxx
+```
 
 ## AIエージェント別実行方法
 
