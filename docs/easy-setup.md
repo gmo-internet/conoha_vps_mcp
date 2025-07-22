@@ -23,12 +23,12 @@
   - [トラブルシューティング](#トラブルシューティング)
     - [よくある問題](#よくある問題)
 
-このドキュメントでは、ConoHa VPS MCP をローカル環境にコードのクローンやビルドをすることなく**簡単に**MCPサーバーを実行する方法を説明します。
+このドキュメントでは、ローカル環境にコードのクローンやビルドをすることなくConoHa VPS MCPを実行する方法を説明します。
 
 ## 前提条件
 
-- **Node.js**: v18以上
-- **npm**: Node.jsに付属
+1. **Node.js v18以上**・**npm v7 以上**（Node.jsに付属）のインストール
+2. **GitHubのPersonal Access Token**（以下PAT）の発行
 
 <details>
 <summary>Node.jsのインストール手順（Windows向け）</summary>
@@ -64,6 +64,33 @@
     ![ウィンドウ下部にあるInstallを押します](../assets/nodejs_setup_custom_ready.png)
 
 10.  インストールが完了したらFinishを押します
+
+</details>
+
+<details>
+<summary>Personal Access Tokenの発行手順</summary>
+
+1. [GitHubのダッシュボード画面](https://github.com/dashboard)の右上にあるアイコン画像をクリックします
+![画面右上のアイコン画像をクリック](../assets/github_click_icon.png)
+1. アイコン画像をクリックして表示されたメニュー中にある`Settings`をクリックします
+![展開されたメニューの中にあるSettingsをクリック](github_click_settings.png)
+
+1. settings画面の左側のサイドメニューの最下部にある`Developer settings`をクリックします
+   ![developer settingsは最下部にあるため、スクロールして見つけます](github_scroll_settings.png)
+
+   ![developer settingsをクリック](github_click_developer_settings.png)
+2. Developer settings画面の左側サイドメニュー中にある`Personal access tokens`をクリックして展開されたメニューから、`Tokens (Classic)`をクリックします
+![左側サイドメニューのPersonal access tokensをクリック](github_click_pat.png)
+1. `Generate new token (classic)`をクリックして、トークン生成画面にアクセスします
+![classicの方をクリック](github_click_generate_new_token_classic.png)
+1. 必要事項を入力して、最後にページ下部にある`Generate token`ボタンをクリックしてトークンの生成を完了させます
+   1. `read:packages`の権限を付与してください  
+   
+   ![Note, Expiration, read:packagesは必須です](github_setup_pat_info.png)
+2. 以下のようにトークン値が生成されていれば完了です
+![トークン値が表示されています](github_generated_token.png)
+> [!CAUTION]
+> トークン値は一度しか表示されないので、必ず安全なところにメモしておくようにしてください。
 
 </details>
 
