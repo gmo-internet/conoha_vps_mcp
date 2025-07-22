@@ -2,6 +2,9 @@
 
 ## 基本的な質問
 
+<details>
+<summary>質問一覧</summary>
+
 ### Q: このMCPサーバーは何ができますか？
 
 A: ConoHa VPSのOpenStack APIを日本語で操作できます。サーバーの作成・削除・停止・起動、ボリューム管理、イメージ管理、セキュリティグループの設定などが可能です。
@@ -18,7 +21,12 @@ A: Apache 2.0 ライセンスの範囲でご自由にご利用いただけます
 
 A: 現在開発中のソフトウェアで、機能や動作が予告なく変更される可能性があります。本番環境での使用は推奨されません。
 
+</details>
+
 ## 実行方法・設定関連
+
+<details>
+<summary>質問一覧</summary>
 
 ### Q: Node.jsのバージョンはどれが必要ですか？
 
@@ -32,7 +40,7 @@ A: 機能は同じですが、Docker版は環境の統一が容易で、Node.js�
 
 A: ConoHaコントロールパネルのAPI設定画面から取得できます。テナントID、ユーザーID、パスワードが必要です。
 
-![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+![ConoHa APIユーザー情報 - テナントID、ユーザーID、パスワードを確認できる画面](../assets/conoha_api_info.png)
 *https://manage.conoha.jp/V3/API/*
 
 ### Q: 環境変数の設定方法がわかりません
@@ -43,7 +51,12 @@ A: 各AIエージェントの設定ファイル（claude_desktop_config.json、.
 
 A: プロジェクトをクローンしたディレクトリの絶対パスを入力してください。例：`/Users/username/conoha_vps_mcp`
 
+</details>
+
 ## 利用・操作関連
+
+<details>
+<summary>質問一覧</summary>
 
 ### Q: どのAIエージェントで利用できますか？
 
@@ -74,7 +87,12 @@ A: はい。「すべてのサーバーを停止してください」のよう�
 
 A: AIに「必要な情報はその都度確認してください」と指示することで、情報の設定が必要なタイミングで確認してくれるようになります。
 
+</details>
+
 ## トラブルシューティング
+
+<details>
+<summary>質問一覧</summary>
 
 ### Q: AIエージェントが意図と異なる回答やツール実行を行います
 
@@ -98,7 +116,7 @@ A: 以下を確認してください：
 
 A: docs/配下の各実行ガイド末尾のトラブルシューティングをご覧ください。
 
-- [簡単実行ガイド](./easy-setup.md)
+- [npm パッケージインストール版実行ガイド](./npm-setup.md)
 - [Node.js ローカルビルド版実行ガイド](./nodejs-setup.md)
 - [Docker ローカルビルド版実行ガイド](./docker-setup.md)
 
@@ -125,9 +143,9 @@ A: 2025年7月15日現在、GitHub Copilot (VSCode) 上で比較的長めのや�
 ![やりとりが途中で止まってしまっており、先に進める操作ができない状態](../assets/vscodecopilot_stop_chat.png)
 
 これはGitHub Copilot (VSCode) 側のバグと思われる動作であり、現在調査・対応を進めております。  
-現状の対策方法としては、途中でやりとりが止まってしまった際にチャット画面の横幅を適宜変えることで、やりとりを進めることができることを確認しております。
+現状の対策方法としては、途中でやりとりが止まってしまった際にチャット画面の横幅を広げたり狭めたりすることで、やりとりを進めることができることを確認しております。 
 
-![やりとりが途中で止まってしまっており、先に進める操作ができない状態](../assets/vscodecopilot_change_chat_width.png)
+![チャット画面の横幅を変更](../assets/vscodecopilot_change_chat_width.png)
 
 ### Q: Claude Desktop 上でツールを実行しようとすると invalid argument エラーになります
 
@@ -140,7 +158,12 @@ A: 2025年7月15日現在、Claude Desktop 上で conoha_post および conoha_p
 
 A: WSL2が有効になっており、Ubuntuなどのディストリビューションがインストールされていることを確認してください。
 
+</details>
+
 ## API・技術仕様関連
+
+<details>
+<summary>質問一覧</summary>
 
 ### Q: ConoHa VPSのどのバージョンに対応していますか？
 
@@ -152,13 +175,18 @@ A: 基本的な操作は日本語で可能ですので必要ありません。�
 
 ### Q: API利用制限はありますか？
 
-A: ConoHa VPS APIの利用制限に準拠します。詳細は[ConoHa公式ドキュメント](https://doc.conoha.jp/reference/api-vps3/?btn_id=reference-api-compute-vps3--breadcrumbs_reference-api-vps3)をご確認ください。
+A: ConoHa VPS APIの利用制限に準拠します。詳細は[ConoHa公式ドキュメント](https://doc.conoha.jp/reference/api-vps3/)をご確認ください。
 
 ### Q: セキュリティは大丈夫ですか？
 
 A: 認証情報はローカル環境でのみ使用され、外部に送信されることはありません。ただし、適切な権限管理を行ってください。
 
+</details>
+
 ## その他
+
+<details>
+<summary>質問一覧</summary>
 
 ### Q: バグを見つけた場合はどうすればいいですか？
 
@@ -175,3 +203,5 @@ A: [CONTRIBUTING.md](../CONTRIBUTING.md)をご確認ください。
 ### Q: 商用サポートはありますか？
 
 A: 現在、商用サポートは提供しておりません。コミュニティベースでの開発となります。
+
+</details>

@@ -33,19 +33,19 @@ GitHub Copilot、Cline、ClaudeなどのAIエージェントと連携するこ�
 > - いかなる保証もなく現状のまま提供されます。
 > - 機能・動作は予告なく変更される場合があります。
 > - 本番環境での使用前に十分なテストを行ってください。
-> - バグやフィードバックは GitHub の Issue トラッカー からご報告願います。
+> - バグやフィードバックは GitHub Issues からご報告願います。
 >
-> このベータ版ConoHa VPS MCP を使用することで、これらの条件に同意したものとみなされます。
+> このベータ版 ConoHa VPS MCP を使用することで、これらの条件に同意したものとみなされます。
 
 ## ✨ 主な特徴
 
 | 特徴 | 説明 |
 |------|------|
-| 🇯🇵 **完全日本語対応** | ConoHa VPSのリソースを日本語で直感的に操作 |
-| 🤖 **AI統合** | GitHub Copilot、Cline、Claudeなど、主要なMCP対応AIエージェントに対応 |
+| 🇯🇵 **完全日本語対応** | 完全日本語対応 「ConoHa VPS」のリソースを、日本語で直感的な操作が可能 |
+| 🤖 **AI エージェントとの連携** | GitHub Copilot や Claude など、主要な AI エージェントと連携し、操作や構成の提案をサポート |
 | 🔧 **包括的API** | サーバー・ボリューム・イメージ・セキュリティグループ管理をサポート |
 | 🐳 **クロスプラットフォーム** | Node.js および Dockerでの実行環境を提供 |
-| 🛡️ **セキュリティ** | 公開APIのセキュリティ機能を継承 |
+| 🛡️ **セキュリティ対策** | OpenStack 準拠のセキュリティ機能を装備 |
 
 ## ❓ Model Context Protocol (MCP) とは
 
@@ -54,39 +54,17 @@ Model Context Protocolとは、GitHub Copilot、Cline、ClaudeなどのAIエー�
 
 ## 🚀 クイックスタート
 
-1. ConoHaのコントロールパネルにアクセスし、APIクレデンシャルを発行
-2. Node.js あるいは Dockerをローカル端末にインストール
+1. Node.js あるいは Dockerをご自身のローカル端末にインストール
+2. ConoHaのコントロールパネルにアクセスし、APIクレデンシャルを発行
 3. 利用中のMCP対応のAIエージェント（GitHub Copilot等）にConoHa VPS MCPの設定を記載し、MCPサーバーを起動
-    <details>
-    <summary>設定（簡略版）</summary>
 
-    ```json
-    {
-      "ConoHa VPS MCP": {
-        "command": "npm",
-        "args": [
-          "exec",
-          "--@gmo-internet:registry=https://npm.pkg.github.com",
-          "@gmo-internet/conoha-vps-mcp@latest"
-        ],
-        "env": {
-          "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
-          "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-          "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
-        }
-      }
-    }
-    ```
-    </details>
+詳細は👇
 
-詳細な手順は 👉 [簡単実行ガイド](docs/easy-setup.md) を参照してください。
-
-### 🔧 その他の設定方法（ローカルビルド版（上級者向け））
-
+- 🎈 [npm パッケージインストール版実行ガイド](docs/npm-setup.md) - GitHub Packagesを利用して実行
 - 📋 [Node.js ローカルビルド版実行ガイド](docs/nodejs-setup.md) - ソースコードからビルドして実行
 - 🐳 [Docker ローカルビルド版実行ガイド](docs/docker-setup.md) - Dockerコンテナで実行
 
-### 🆘 トラブルシューティング
+🆘 トラブルシューティング
 
 - ❓ [FAQ](docs/FAQ.md) - よくある質問と解決方法
 

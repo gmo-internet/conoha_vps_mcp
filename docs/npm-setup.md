@@ -1,10 +1,11 @@
-# 簡単実行ガイド
+# npm パッケージインストール版実行ガイド
 
 ## 目次
 
-- [簡単実行ガイド](#簡単実行ガイド)
+- [npm パッケージインストール版実行ガイド](#npm-パッケージインストール版実行ガイド)
   - [目次](#目次)
   - [前提条件](#前提条件)
+    - [.npmrcファイルへのPATの登録手順](#npmrcファイルへのpatの登録手順)
   - [AIエージェント別実行方法](#aiエージェント別実行方法)
     - [GitHub Copilot (VSCode)](#github-copilot-vscode)
       - [1. 設定の追加](#1-設定の追加)
@@ -23,12 +24,13 @@
   - [トラブルシューティング](#トラブルシューティング)
     - [よくある問題](#よくある問題)
 
-このドキュメントでは、ConoHa VPS MCP をローカル環境にコードのクローンやビルドをすることなく**簡単に**MCPサーバーを実行する方法を説明します。
+このドキュメントでは、ローカル環境にコードのクローンやビルドをすることなくConoHa VPS MCPを実行する方法を説明します。
 
 ## 前提条件
 
-- **Node.js**: v18以上
-- **npm**: Node.jsに付属
+1. **Node.js v18以上**・**npm v7 以上**（Node.jsに付属）のインストール
+2. **GitHubのPersonal Access Token**（以下PAT）の発行
+3. **.npmrcファイル**へPATの登録
 
 <details>
 <summary>Node.jsのインストール手順（Windows向け）</summary>
@@ -36,7 +38,7 @@
 1. Node.jsのダウンロードページにアクセスします [ダウンロードページ](https://nodejs.org/ja/download)
 2. アーキテクチャーとOSを確認したうえで、ダウンロードページ下部にある「Windows インストーラー（.msi）」をクリックします
    
-    ![「Windows インストーラー（.msi）」と書かれた緑糸のボタンをクリック](../assets/nextjs_download_page.png)
+    ![「Windows インストーラー（.msi）」と書かれた緑色のボタンをクリック](../assets/nextjs_download_page.png)
 
 3. ダウンロードされたインストーラー（.msi）をダブルクリックします
 4. しばらく待つとSetup Wizardが表示されるので、Nextを押します
@@ -67,15 +69,51 @@
 
 </details>
 
+<details>
+<summary>GitHubのPersonal Access Tokenの発行手順</summary>
+
+1. [GitHubのダッシュボード画面](https://github.com/dashboard)の右上にあるアイコン画像をクリックします
+![画面右上のアイコン画像をクリック](../assets/github_click_icon.png)
+1. アイコン画像をクリックして表示されたメニュー中にある`Settings`をクリックします
+![展開されたメニューの中にあるSettingsをクリック](github_click_settings.png)
+
+1. settings画面の左側のサイドメニューの最下部にある`Developer settings`をクリックします
+   ![developer settingsは最下部にあるため、スクロールして見つけます](github_scroll_settings.png)
+
+   ![developer settingsをクリック](github_click_developer_settings.png)
+2. Developer settings画面の左側サイドメニュー中にある`Personal access tokens`をクリックして展開されたメニューから、`Tokens (Classic)`をクリックします
+![左側サイドメニューのPersonal access tokensをクリック](github_click_pat.png)
+1. `Generate new token (classic)`をクリックして、トークン生成画面にアクセスします
+![classicの方をクリック](github_click_generate_new_token_classic.png)
+1. 必要事項を入力して、最後にページ下部にある`Generate token`ボタンをクリックしてトークンの生成を完了させます
+   1. `read:packages`の権限を付与してください  
+   
+   ![Note, Expiration, read:packagesは必須です](github_setup_pat_info.png)
+2. 以下のようにトークン値が生成されていれば完了です
+![トークン値が表示されています](github_generated_token.png)
+> [!CAUTION]
+> トークン値は一度しか表示されないので、必ず安全なところにメモしておくようにしてください。
+
+</details>
+
+### .npmrcファイルへのPATの登録手順
+
+任意のディレクトリで以下のコマンドを実行して、.npmrcファイルを生成してください  
+`ghp_xxxYourTokenxxx`にはGitHub上で発行したPATの値を入力してください
+
+```bash
+npm config set //npm.pkg.github.com/:_authToken=ghp_xxxYourTokenxxx
+```
+
 ## AIエージェント別実行方法
 
 ### GitHub Copilot (VSCode)
 
-<details>
-<summary>セットアップ手順</summary>
-
 > [!CAUTION]
 > [VSCodeのJune 2025のアップデート (version 1.102)](https://code.visualstudio.com/updates/v1_102)により、設定方法が大きく変わっております。古いバージョンをご利用中の方は最新バージョンへの更新、あるいは公式のドキュメントをご参照ください。
+
+<details>
+<summary>セットアップ手順</summary>
 
 #### 1. 設定の追加
 
@@ -85,9 +123,9 @@
 
    ![画面上部中央に表示されている検索窓に、Open User Configurationと入力](../assets/vscode_add_mcp.png)
 
-3. 「MPC: ユーザー構成を開く」をクリックします
+3. 「MCP: ユーザー構成を開く」をクリックします
 
-  ![検索結果に出てきたMPC: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
+  ![検索結果に出てきたMCP: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
 
 4. 開いたmcp.jsonに以下の設定を追加します：
 
@@ -150,7 +188,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 ![起動と書かれたボタンをクリックして起動](../assets/vscode_settings_mcp_easy_start.png)
 
-> [!TIP]
+> 📌
 > 環境変数の入力欄は起動ボタンをクリックした後に、画面上部に表示されます。
 > 
 > ![起動ボタンを押すと、画面上部に環境変数入力欄が表示される](../assets/vscode_easy_mcp_json_input.png)
@@ -211,9 +249,9 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
         "@gmo-internet/conoha-vps-mcp@latest"
       ],
       "env": {
-        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
-        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
+        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID", // ここにテナントIDを入力
+        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID", // ここにユーザーIDを入力
+        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD" // ここにパスワードを入力
       }
     }
   }
@@ -240,19 +278,19 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 2. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
 ### Claude Desktop
 
-<details>
-<summary>セットアップ手順</summary>
-
 > [!CAUTION]
 > 2025年7月15日現在、Claude Desktopのバグと思われる事象により、`conoha_post`・`conoha_post_put_by_param`のtoolsが利用できなくなっております。
 > 修正が確認でき次第ドキュメントを更新の上、[リリースノート](https://github.com/gmo-internet/conoha_vps_mcp/releases)に記載いたします。
 > ご迷惑おかけし申し訳ございません。
+
+<details>
+<summary>セットアップ手順</summary>
 
 #### 1. Claude Desktopの設定の追加
 
@@ -279,9 +317,9 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
         "@gmo-internet/conoha-vps-mcp@latest"
       ],
       "env": {
-        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
-        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
+        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID", // ここにテナントIDを入力
+        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID", // ここにユーザーIDを入力
+        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD" // ここにパスワードを入力
       }
     }
   }
@@ -306,7 +344,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
@@ -318,6 +356,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 - **Node.jsバージョンエラー**: Node.js v18以上がインストールされているか確認してください
 - **起動エラー**: `"--@gmo-internet:registry=..."` の記述ミスや、`@gmo-internet/conoha-vps-mcp@latest` のパッケージ名が正しいかを確認してください
 - **パッケージ取得エラー**: `npm exec`の初回実行時にパッケージのダウンロードに時間がかかる場合があります
+- その他FAQは[こちら](FAQ.md)
 
 > [!TIP]
 > 問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)でお気軽にお問い合わせください。

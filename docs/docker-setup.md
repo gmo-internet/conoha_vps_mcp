@@ -31,7 +31,7 @@ Docker を使用したConoHa VPS MCPのセットアップ手順を説明しま�
 ## 前提条件
 
 - **Docker**: Windows/Mac/Linux対応
-- **WSL**: Ubuntuなどのディストリビューションがインストール済み（Windows環境の場合）
+- **WSL2**: Ubuntuなどのディストリビューションがインストール済み（Windows環境の場合）
 
 ## プロジェクトの準備
 
@@ -45,11 +45,11 @@ docker build -t conoha-vps-mcp .
 
 ### GitHub Copilot (VSCode)
 
-<details>
-<summary>セットアップ手順</summary>
-
 > [!CAUTION]
 > [VSCodeのJune 2025のアップデート (version 1.102)](https://code.visualstudio.com/updates/v1_102)により、設定方法が大きく変わっております。古いバージョンをご利用中の方は最新バージョンへの更新、あるいは公式のドキュメントをご参照ください。
+
+<details>
+<summary>セットアップ手順</summary>
 
 #### 1. 設定の追加
 
@@ -59,9 +59,9 @@ docker build -t conoha-vps-mcp .
 
    ![画面上部中央に表示されている検索窓に、Open User Configurationと入力](../assets/vscode_add_mcp.png)
 
-3. 「MPC: ユーザー構成を開く」をクリックします
+3. 「MCP: ユーザー構成を開く」をクリックします
    
-  ![検索結果に出てきたMPC: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
+  ![検索結果に出てきたMCP: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
 
 4. 開いたmcp.jsonに以下の設定を追加します：
 
@@ -168,10 +168,8 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 *https://manage.conoha.jp/V3/API/*
 
 
-> [!TIP]
+> 💡
 > 必要に応じて`.env`ファイルを用意し、`--env-file`オプションで指定することも可能です。
-
-</details>
 
 #### 3. MCPサーバーの起動
 
@@ -179,7 +177,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 ![起動と書かれたボタンをクリックして起動](../assets/vscode_settings_mcp_docker_start.png)
 
-> [!TIP]
+> 📌
 > 環境変数の入力欄は起動ボタンをクリックした後に、画面上部に表示されます。
 > 
 > ![起動ボタンを押すと、画面上部に環境変数入力欄が表示される](../assets/vscode_docker_mcp_json_input.png)
@@ -271,19 +269,19 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 2. プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
 ### Claude Desktop
 
-<details>
-<summary>セットアップ手順</summary>
-
 > [!CAUTION]
 > 2025年7月15日現在、Claude Desktopのバグと思われる事象により、`conoha_post`・`conoha_post_put_by_param`のtoolsが利用できなくなっております。
 > 修正が確認でき次第ドキュメントを更新の上、[リリースノート](https://github.com/gmo-internet/conoha_vps_mcp/releases)に記載いたします。
 > ご迷惑おかけし申し訳ございません。
+
+<details>
+<summary>セットアップ手順</summary>
 
 #### 1. Claude Desktopの設定の追加
 
@@ -339,7 +337,7 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 プロンプトを入力して操作を実行します
 
-   [サンプルプロンプト](../README.md#使用例)
+   [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
@@ -349,4 +347,8 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 - **認証エラー**: 環境変数の値が正しく設定されているか確認してください
 - **Docker起動エラー**: Dockerが正常に動作しているか確認してください
-- **WSLエラー**: Windows環境でWSLが正しく設定されているか確認してください
+- **WSL2エラー**: Windows環境でWSLが正しく設定されているか確認してください
+- その他FAQは[こちら](FAQ.md)
+
+> [!TIP]
+> 問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)でお気軽にお問い合わせください。
