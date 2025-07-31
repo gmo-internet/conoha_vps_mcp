@@ -80,6 +80,10 @@
       groupName: 'npm minor',
     },
     {
+      "matchDepTypes": ["engines"],
+      "enabled": false
+    },
+    {
       matchManagers: [
         'github-actions',
       ],
