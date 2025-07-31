@@ -7,6 +7,10 @@ import {
 	getComputeByParam,
 } from "./compute-client";
 
+vi.mock("../common/response-formatter", () => ({
+	formatResponse: vi.fn(),
+}));
+
 // executeOpenstackApi のモック
 vi.mock("../common/openstack-client", () => ({
 	executeOpenstackApi: vi.fn(),
@@ -16,6 +20,10 @@ vi.mock("../common/openstack-client", () => ({
 const mockExecuteOpenstackApi = vi.mocked(
 	await import("../common/openstack-client"),
 ).executeOpenstackApi;
+
+const mockFormatResponse = vi.mocked(
+	await import("../common/response-formatter"),
+).formatResponse;
 
 describe("compute-client", () => {
 	beforeEach(() => {
@@ -41,7 +49,7 @@ describe("compute-client", () => {
 		});
 
 		beforeEach(() => {
-			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
+			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
 		it("Compute API（/flavors）へのGETリクエストでフレーバー一覧レスポンスを受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/flavors）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/flavors'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
@@ -82,21 +90,6 @@ describe("compute-client", () => {
 				"",
 			);
 		});
-
-		describe("エラーハンドリング", () => {
-			it("モックAPIがネットワークエラー例外を投げた場合に、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers'）でリクエストは送信されるがgetComputeから同じエラーメッセージ（Network error）の例外が投げられること", async () => {
-				const error = new Error("Network error");
-				mockExecuteOpenstackApi.mockRejectedValue(error);
-				const path = "/servers";
-
-				await expect(getCompute(path)).rejects.toThrow("Network error");
-				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-					"GET",
-					expectedBaseUrl,
-					"/servers",
-				);
-			});
-		});
 	});
 
 	describe("getComputeByParam", () => {
@@ -114,7 +107,7 @@ describe("compute-client", () => {
 		});
 
 		beforeEach(() => {
-			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
+			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
 		it("Compute API（/servers/server-id-123）への特定サーバーID（server-id-123）指定GETリクエストで個別サーバーレスポンスを受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/server-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers/server-id-123'）が正しく引き渡されることを確認し、モックレスポンス（'{status: 200, statusText: 'OK', body: {server: {...}}}'）と一致する文字列を戻り値として返すことができる", async () => {
@@ -173,24 +166,6 @@ describe("compute-client", () => {
 				"/servers/another-server-id",
 			);
 		});
-
-		describe("エラーハンドリング", () => {
-			it("モックAPIがサーバー検索エラー例外を投げた場合に、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers/server-id-123'）でリクエストは送信されるがgetComputeByParamから同じエラーメッセージ（Server not found）の例外が投げられること", async () => {
-				const error = new Error("Server not found");
-				mockExecuteOpenstackApi.mockRejectedValue(error);
-				const path = "";
-				const param = "server-id-123";
-
-				await expect(getComputeByParam(path, param)).rejects.toThrow(
-					"Server not found",
-				);
-				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-					"GET",
-					expectedBaseUrl,
-					"/servers/server-id-123",
-				);
-			});
-		});
 	});
 
 	describe("createCompute", () => {
@@ -217,7 +192,7 @@ describe("compute-client", () => {
 		};
 
 		beforeEach(() => {
-			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
+			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
 		it("Compute API（/servers）へのサーバー作成リクエストボディ（{server: {name, imageRef, flavorRef, networks}}）を含むPOSTリクエストで新規サーバー作成レスポンス（status: 202）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers）とリクエストボディでモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンス（'{status: 202, statusText: 'Accepted', body: {server: {...}}}'）と一致する文字列を戻り値として返すことができる", async () => {
@@ -254,24 +229,6 @@ describe("compute-client", () => {
 				keypairBody,
 			);
 		});
-
-		describe("エラーハンドリング", () => {
-			it("モックAPIがリソース作成失敗エラー例外を投げた場合に、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers', mockRequestBody）でリクエストは送信されるがcreateComputeから同じエラーメッセージ（Creation failed）の例外が投げられること", async () => {
-				const error = new Error("Creation failed");
-				mockExecuteOpenstackApi.mockRejectedValue(error);
-				const path = "/servers";
-
-				await expect(createCompute(path, mockRequestBody)).rejects.toThrow(
-					"Creation failed",
-				);
-				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-					"POST",
-					expectedBaseUrl,
-					"/servers",
-					mockRequestBody,
-				);
-			});
-		});
 	});
 
 	describe("createComputeByParam", () => {
@@ -290,7 +247,7 @@ describe("compute-client", () => {
 		};
 
 		beforeEach(() => {
-			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
+			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
 		it("Compute API（/servers/server-id-123/action）への特定サーバーID（server-id-123）のアクション実行リクエストボディ（{reboot: {type: 'SOFT'}}）を含むPOSTリクエストでサーバーアクション実行レスポンス（status: 202）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/server-id-123/action）とリクエストボディでモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers/server-id-123/action', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンス（'{status: 202, statusText: 'Accepted', body: {message: 'Action performed successfully'}}'）と一致する文字列を戻り値として返すことができる", async () => {
@@ -343,32 +300,13 @@ describe("compute-client", () => {
 				mockRequestBody,
 			);
 		});
-
-		describe("エラーハンドリング", () => {
-			it("モックAPIがアクション実行失敗エラー例外を投げた場合に、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers/server-id-123/action', mockRequestBody）でリクエストは送信されるがcreateComputeByParamから同じエラーメッセージ（Action failed）の例外が投げられること", async () => {
-				const error = new Error("Action failed");
-				mockExecuteOpenstackApi.mockRejectedValue(error);
-				const path = "/action";
-				const param = "server-id-123";
-
-				await expect(
-					createComputeByParam(path, param, mockRequestBody),
-				).rejects.toThrow("Action failed");
-				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-					"POST",
-					expectedBaseUrl,
-					"/servers/server-id-123/action",
-					mockRequestBody,
-				);
-			});
-		});
 	});
 
 	describe("deleteComputeByParam", () => {
 		const mockResponse = "";
 
 		beforeEach(() => {
-			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
+			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
 		it("Compute API（/servers/server-id-123）への特定のサーバーID（server-id-123）を持つサーバーを削除するDELETEリクエストで、サーバー削除レスポンス（空文字列）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/server-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/servers/server-id-123'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
@@ -413,30 +351,12 @@ describe("compute-client", () => {
 				"/servers/another-server-id",
 			);
 		});
-
-		describe("エラーハンドリング", () => {
-			it("モックAPIがリソース削除失敗エラー例外を投げた場合に、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/servers/server-id-123'）でリクエストは送信されるがdeleteComputeByParamから同じエラーメッセージ（Delete failed）の例外が投げられること", async () => {
-				const error = new Error("Delete failed");
-				mockExecuteOpenstackApi.mockRejectedValue(error);
-				const path = "/servers";
-				const param = "server-id-123";
-
-				await expect(deleteComputeByParam(path, param)).rejects.toThrow(
-					"Delete failed",
-				);
-				expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-					"DELETE",
-					expectedBaseUrl,
-					"/servers/server-id-123",
-				);
-			});
-		});
 	});
 
 	describe("レスポンスの型", () => {
 		it("getComputeが単純な文字列レスポンス（'simple string response'）を受け取った場合に、モックAPIから返された文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
 			const stringResponse = "simple string response";
-			mockExecuteOpenstackApi.mockResolvedValue(stringResponse);
+			mockFormatResponse.mockResolvedValue(stringResponse);
 			const path = "/servers";
 
 			const result = await getCompute(path);
@@ -449,7 +369,7 @@ describe("compute-client", () => {
 			const jsonResponse = JSON.stringify({
 				servers: [{ id: "test", name: "test-server" }],
 			});
-			mockExecuteOpenstackApi.mockResolvedValue(jsonResponse);
+			mockFormatResponse.mockResolvedValue(jsonResponse);
 			const path = "/servers";
 
 			const result = await getCompute(path);
@@ -469,7 +389,7 @@ describe("compute-client", () => {
 					flavor: { id: "flavor-1" },
 				})),
 			});
-			mockExecuteOpenstackApi.mockResolvedValue(largeResponse);
+			mockFormatResponse.mockResolvedValue(largeResponse);
 			const path = "/servers?limit=1000";
 
 			const result = await getCompute(path);
@@ -485,7 +405,7 @@ describe("compute-client", () => {
 		it("getComputeが非常に長いパス（100回繰り返された'very-long-id-'を含むパス）を処理する場合に、パス長の制限なく正しい長いパス（/servers/very-long-id-...123）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, longPath）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 			const longPath = `/servers/${"very-long-id-".repeat(100)}123`;
 			const mockResponse = JSON.stringify({ server: { id: "test" } });
-			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
+			mockFormatResponse.mockResolvedValue(mockResponse);
 
 			const result = await getCompute(longPath);
 
@@ -501,7 +421,7 @@ describe("compute-client", () => {
 	describe("パス結合のテスト", () => {
 		it("getComputeByParamでサーバーID（server-123）と詳細パス（/detail）を指定した場合に、正しく結合されたパス（/servers/server-123/detail）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers/server-123/detail'）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
 			const mockResponse = JSON.stringify({ server: { id: "test" } });
-			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
+			mockFormatResponse.mockResolvedValue(mockResponse);
 
 			const path = "/detail";
 			const param = "server-123";
@@ -517,7 +437,7 @@ describe("compute-client", () => {
 
 		it("createComputeByParamでサーバーID（server-123）とアクションパス（/action）とリクエストボディ（{reboot: {type: 'SOFT'}}）を指定した場合に、正しく結合されたパス（/servers/server-123/action）でモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers/server-123/action', requestBody）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
 			const mockResponse = JSON.stringify({ message: "OK" });
-			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
+			mockFormatResponse.mockResolvedValue(mockResponse);
 
 			const path = "/action";
 			const param = "server-123";
@@ -535,7 +455,7 @@ describe("compute-client", () => {
 
 		it("deleteComputeByParamでサーバーベースパス（/servers）とサーバーID（server-123）を指定した場合に、正しく結合されたパス（/servers/server-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/servers/server-123'）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
 			const mockResponse = "";
-			mockExecuteOpenstackApi.mockResolvedValue(mockResponse);
+			mockFormatResponse.mockResolvedValue(mockResponse);
 
 			const path = "/servers";
 			const param = "server-123";

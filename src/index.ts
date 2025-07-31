@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { formatErrorMessage } from "./features/openstack/common/error-handler.js";
 import {
 	CreateServerRequestSchema,
 	CreateSSHKeyPairRequestSchema,
@@ -58,9 +59,17 @@ server.tool(
 		]),
 	},
 	async ({ path }) => {
-		const handler = conohaGetHandlers[path];
-		const response = await handler();
-		return { content: [{ type: "text", text: response }] };
+		try {
+			const handler = conohaGetHandlers[path];
+			const response = await handler();
+			return { content: [{ type: "text", text: response }] };
+		} catch (error) {
+			const errorMessage = formatErrorMessage(error);
+			return {
+				content: [{ type: "text", text: errorMessage }],
+				isError: true,
+			};
+		}
 	},
 );
 
@@ -79,9 +88,17 @@ server.tool(
 		param: z.string(),
 	},
 	async ({ path, param }) => {
-		const handler = conohaGetByParamHandlers[path];
-		const response = await handler(param);
-		return { content: [{ type: "text", text: response }] };
+		try {
+			const handler = conohaGetByParamHandlers[path];
+			const response = await handler(param);
+			return { content: [{ type: "text", text: response }] };
+		} catch (error) {
+			const errorMessage = formatErrorMessage(error);
+			return {
+				content: [{ type: "text", text: errorMessage }],
+				isError: true,
+			};
+		}
 	},
 );
 
@@ -113,10 +130,18 @@ server.tool(
 		]),
 	},
 	async ({ input }) => {
-		const { path, requestBody } = input;
-		const handler = conohaPostHandlers[path];
-		const response = await handler(requestBody);
-		return { content: [{ type: "text", text: response }] };
+		try {
+			const { path, requestBody } = input;
+			const handler = conohaPostHandlers[path];
+			const response = await handler(requestBody);
+			return { content: [{ type: "text", text: response }] };
+		} catch (error) {
+			const errorMessage = formatErrorMessage(error);
+			return {
+				content: [{ type: "text", text: errorMessage }],
+				isError: true,
+			};
+		}
 	},
 );
 
@@ -153,10 +178,18 @@ server.tool(
 		]),
 	},
 	async ({ input }) => {
-		const { path, param, requestBody } = input;
-		const handler = conohaPostPutByParamHandlers[path];
-		const response = await handler(param, requestBody);
-		return { content: [{ type: "text", text: response }] };
+		try {
+			const { path, param, requestBody } = input;
+			const handler = conohaPostPutByParamHandlers[path];
+			const response = await handler(param, requestBody);
+			return { content: [{ type: "text", text: response }] };
+		} catch (error) {
+			const errorMessage = formatErrorMessage(error);
+			return {
+				content: [{ type: "text", text: errorMessage }],
+				isError: true,
+			};
+		}
 	},
 );
 
@@ -174,9 +207,17 @@ server.tool(
 		param: z.string(),
 	},
 	async ({ path, param }) => {
-		const handler = conohaDeleteByParamHandlers[path];
-		const response = await handler(param);
-		return { content: [{ type: "text", text: response }] };
+		try {
+			const handler = conohaDeleteByParamHandlers[path];
+			const response = await handler(param);
+			return { content: [{ type: "text", text: response }] };
+		} catch (error) {
+			const errorMessage = formatErrorMessage(error);
+			return {
+				content: [{ type: "text", text: errorMessage }],
+				isError: true,
+			};
+		}
 	},
 );
 
