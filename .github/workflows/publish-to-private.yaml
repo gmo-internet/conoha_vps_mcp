@@ -79,7 +79,7 @@ jobs:
       # 9) Release note作成
       - name: Generate release note
         if: success() && steps.extract.outputs.skip != 'true'
-        run: gh release create --title ${{ steps.extract.outputs.VERSION }}
+        run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
 
       # 10) DXTファイルのアップロード  
       - name: Add dxt file to release note
