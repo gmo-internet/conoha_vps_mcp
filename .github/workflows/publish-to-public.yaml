@@ -38,7 +38,22 @@ jobs:
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build
 
-      # 5) 公開
+      # 5) DXTファイルのビルド
+      - name: Build dxt
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: npm run build:dxt
+
+      # 6) Release note作成
+      - name: Generate release note
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: gh release create --title ${{ steps.extract.outputs.VERSION }}
+
+      # 7) DXTファイルのアップロード  
+      - name: Add dxt file to release note
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: gh release upload ${{ steps.extract.outputs.VERSION }} conoha_vps_mcp.dxt --clobber
+
+      # 8) 公開
       - name: Publish to GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm publish
