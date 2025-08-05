@@ -43,6 +43,7 @@
 	"scripts": {
 		"build": "node esbuild.config.js",
 		"build:types": "tsc --emitDeclarationOnly",
+		"build:dxt": "dxt pack",
 		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
 		"typecheck": "tsc --noEmit",
