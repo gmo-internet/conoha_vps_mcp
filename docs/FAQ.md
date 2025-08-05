@@ -147,13 +147,6 @@ A: 2025年7月15日現在、GitHub Copilot (VSCode) 上で比較的長めのや�
 
 ![チャット画面の横幅を変更](../assets/vscodecopilot_change_chat_width.png)
 
-### Q: Claude Desktop 上でツールを実行しようとすると invalid argument エラーになります
-
-A: 2025年7月15日現在、Claude Desktop 上で conoha_post および conoha_post_put_by_param のツールが利用できない事象が確認されています。  
-これは Claude Desktop 側のバグと思われる動作であり、現在調査・対応を進めております。
-修正が確認でき次第、ドキュメントを更新し、リリースノート にてご案内いたします。
-ご不便をおかけし申し訳ございませんが、対応完了まで今しばらくお待ちください。
-
 ### Q: Windows環境でWSLエラーが発生します
 
 A: WSL2が有効になっており、Ubuntuなどのディストリビューションがインストールされていることを確認してください。

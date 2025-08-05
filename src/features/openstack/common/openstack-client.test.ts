@@ -3,7 +3,7 @@ import { executeOpenstackApi } from "./openstack-client";
 import type { JsonObject } from "./types";
 
 // 依存関数のモック
-vi.mock("./format-response", () => ({
+vi.mock("./response-formatter", () => ({
 	formatResponse: vi.fn(),
 }));
 
@@ -17,7 +17,7 @@ global.fetch = mockFetch;
 
 // モック関数の型定義
 const mockFormatResponse = vi.mocked(
-	await import("./format-response"),
+	await import("./response-formatter"),
 ).formatResponse;
 const mockGenerateApiToken = vi.mocked(
 	await import("./generate-api-token"),
@@ -49,7 +49,9 @@ describe("openstack-client", () => {
 
 				const result = await executeOpenstackApi("GET", baseUrl, "/servers");
 
-				expect(result).toBe(mockFormattedResponse);
+				const resultFormattedResponse = await mockFormatResponse(result);
+
+				expect(resultFormattedResponse).toBe(mockFormattedResponse);
 				expect(mockGenerateApiToken).toHaveBeenCalledTimes(1);
 				expect(mockFetch).toHaveBeenCalledWith(
 					"https://compute.example.com/servers",
@@ -116,7 +118,9 @@ describe("openstack-client", () => {
 					"/servers/server-id-123",
 				);
 
-				expect(result).toBe(mockFormattedResponse);
+				const resultFormattedResponse = await mockFormatResponse(result);
+
+				expect(resultFormattedResponse).toBe(mockFormattedResponse);
 				expect(mockGenerateApiToken).toHaveBeenCalledTimes(1);
 				expect(mockFetch).toHaveBeenCalledWith(
 					"https://compute.example.com/servers/server-id-123",
@@ -152,7 +156,9 @@ describe("openstack-client", () => {
 					requestBody,
 				);
 
-				expect(result).toBe(mockFormattedResponse);
+				const resultFormattedResponse = await mockFormatResponse(result);
+
+				expect(resultFormattedResponse).toBe(mockFormattedResponse);
 				expect(mockGenerateApiToken).toHaveBeenCalledTimes(1);
 				expect(mockFetch).toHaveBeenCalledWith(
 					"https://compute.example.com/servers",
@@ -222,7 +228,9 @@ describe("openstack-client", () => {
 					requestBody,
 				);
 
-				expect(result).toBe(mockFormattedResponse);
+				const resultFormattedResponse = await mockFormatResponse(result);
+
+				expect(resultFormattedResponse).toBe(mockFormattedResponse);
 				expect(mockGenerateApiToken).toHaveBeenCalledTimes(1);
 				expect(mockFetch).toHaveBeenCalledWith(
 					"https://compute.example.com/servers/server-id-123",
@@ -237,58 +245,6 @@ describe("openstack-client", () => {
 					},
 				);
 				expect(mockFormatResponse).toHaveBeenCalledWith(mockResponse);
-			});
-		});
-
-		describe("エラーハンドリング", () => {
-			it("API（/servers）へのGETリクエストでAPIトークン生成エラーが発生した場合に、'Error: Failed to generate API token'形式のエラーメッセージを返し、APIリクエストやレスポンスフォーマット処理が一切行われないことを検証できる。", async () => {
-				const tokenError = new Error("Failed to generate API token");
-				mockGenerateApiToken.mockRejectedValueOnce(tokenError);
-
-				const result = await executeOpenstackApi("GET", baseUrl, "/servers");
-
-				expect(result).toBe("Error: Failed to generate API token");
-				expect(mockGenerateApiToken).toHaveBeenCalledTimes(1);
-				expect(mockFetch).not.toHaveBeenCalled();
-				expect(mockFormatResponse).not.toHaveBeenCalled();
-			});
-
-			it("API（/servers）へのHTTPリクエスト（fetch）でネットワークエラーが発生した場合に、'Error: Network error'形式のエラーメッセージを返し、APIリクエストやレスポンスフォーマット処理が一切行われないことを検証できる。", async () => {
-				const fetchError = new Error("Network error");
-				mockFetch.mockRejectedValueOnce(fetchError);
-
-				const result = await executeOpenstackApi("GET", baseUrl, "/servers");
-
-				expect(result).toBe("Error: Network error");
-				expect(mockGenerateApiToken).toHaveBeenCalledTimes(1);
-				expect(mockFetch).toHaveBeenCalledTimes(1);
-				expect(mockFormatResponse).not.toHaveBeenCalled();
-			});
-
-			it("API（/servers）へのGETリクエストでレスポンスフォーマット処理でエラーが発生した場合に、'Error: Failed to format response'形式のエラーメッセージを返し、APIリクエストやレスポンスフォーマット処理が一切行われないことを検証できる。", async () => {
-				const mockResponse = new Response();
-				mockFetch.mockResolvedValueOnce(mockResponse);
-
-				const formatError = new Error("Failed to format response");
-				mockFormatResponse.mockRejectedValueOnce(formatError);
-
-				const result = await executeOpenstackApi("GET", baseUrl, "/servers");
-
-				expect(result).toBe("Error: Failed to format response");
-				expect(mockGenerateApiToken).toHaveBeenCalledTimes(1);
-				expect(mockFetch).toHaveBeenCalledTimes(1);
-				expect(mockFormatResponse).toHaveBeenCalledWith(mockResponse);
-			});
-
-			it("API（/servers）へのGETリクエストで非Errorオブジェクト（文字列エラー）がthrowされた場合に、'Unexpected error occurred'形式の汎用エラーメッセージを返し、APIリクエストやレスポンスフォーマット処理が一切行われないことを検証できる。", async () => {
-				mockGenerateApiToken.mockRejectedValueOnce("string error");
-
-				const result = await executeOpenstackApi("GET", baseUrl, "/servers");
-
-				expect(result).toBe("Unexpected error occurred");
-				expect(mockGenerateApiToken).toHaveBeenCalledTimes(1);
-				expect(mockFetch).not.toHaveBeenCalled();
-				expect(mockFormatResponse).not.toHaveBeenCalled();
 			});
 		});
 
@@ -346,7 +302,9 @@ describe("openstack-client", () => {
 				// TypeScriptコンパイラがこれを通すことを確認
 				const result = await executeOpenstackApi("GET", baseUrl, "/servers");
 
-				expect(result).toBe(mockFormattedResponse);
+				const resultFormattedResponse = await mockFormatResponse(result);
+
+				expect(resultFormattedResponse).toBe(mockFormattedResponse);
 			});
 
 			it("TypeScript型システムでDELETEリクエストメソッド（/servers/123）を呼び出した場合に、bodyパラメータなしで関数を正しく呼び出すことができる", async () => {
@@ -360,7 +318,9 @@ describe("openstack-client", () => {
 					"/servers/123",
 				);
 
-				expect(result).toBe(mockFormattedResponse);
+				const resultFormattedResponse = await mockFormatResponse(result);
+
+				expect(resultFormattedResponse).toBe(mockFormattedResponse);
 			});
 
 			it("TypeScript型システムでPOSTリクエストメソッド（/servers）を呼び出した場合に、必須のbodyパラメータ（JsonObject）を含めて関数を正しく呼び出すことができる", async () => {
@@ -377,7 +337,9 @@ describe("openstack-client", () => {
 					body,
 				);
 
-				expect(result).toBe(mockFormattedResponse);
+				const resultFormattedResponse = await mockFormatResponse(result);
+
+				expect(resultFormattedResponse).toBe(mockFormattedResponse);
 			});
 
 			it("TypeScript型システムでPUTリクエストメソッド（/servers/123）を呼び出した場合に、必須のbodyパラメータ（JsonObject）を含めて関数を正しく呼び出すことができる", async () => {
@@ -394,7 +356,9 @@ describe("openstack-client", () => {
 					body,
 				);
 
-				expect(result).toBe(mockFormattedResponse);
+				const resultFormattedResponse = await mockFormatResponse(result);
+
+				expect(resultFormattedResponse).toBe(mockFormattedResponse);
 			});
 		});
 

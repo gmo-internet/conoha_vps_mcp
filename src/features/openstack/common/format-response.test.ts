@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { formatResponse } from "./format-response";
+import { formatResponse } from "./response-formatter";
 
 // Responseオブジェクトのモック用ヘルパー関数
 function createMockResponse(
@@ -21,6 +21,7 @@ describe("format-response", () => {
 
 	describe("formatResponse", () => {
 		it("公開APIの200 OKのJSONレスポンスを'{status: number, statusText: string, body: json}'形式にフォーマットできる", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const mockJsonBody = { message: "success", data: { id: 1 } };
 			const mockResponse = createMockResponse(
 				200,
@@ -39,6 +40,7 @@ describe("format-response", () => {
 		});
 
 		it("公開APIの404 Not FoundのJSONレスポンスを'{status: number, statusText: string, body: string}'形式にフォーマットできる", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const mockTextBody = "Plain text response";
 			const mockResponse = createMockResponse(404, "Not Found", mockTextBody);
 
@@ -53,6 +55,7 @@ describe("format-response", () => {
 		});
 
 		it("公開APIの204 No Contentの空レスポンスを'{status: number, statusText: string, body: ''}'形式にフォーマットできる", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const mockResponse = createMockResponse(204, "No Content", "");
 
 			const result = await formatResponse(mockResponse);
@@ -66,6 +69,7 @@ describe("format-response", () => {
 		});
 
 		it("公開APIの500 Internal Server Errorの不正なJSONレスポンスを'{status: number, statusText: string, body: string}'形式にフォーマットできる", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const invalidJson = '{"invalid": json}';
 			const mockResponse = createMockResponse(
 				500,
@@ -141,6 +145,7 @@ describe("format-response", () => {
 		});
 
 		it("公開APIの400 Bad Requestのレスポンスで改行やクォートなど特殊文字を含むテキストがあった場合に、'{status: number, statusText: string, body: string}'形式に正しくフォーマットできる", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const specialText =
 				'Error: "Invalid request" with \\n newline and \\"quotes\\"';
 			const mockResponse = createMockResponse(400, "Bad Request", specialText);
@@ -214,6 +219,7 @@ describe("format-response", () => {
 		});
 
 		it("公開APIの404 Not FoundレスポンスでHTMLコンテンツが返却された場合に、'{status: number, statusText: string, body: string}'形式に正しくフォーマットできる", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const htmlContent =
 				"<html><body><h1>Error 404</h1><p>Page not found</p></body></html>";
 			const mockResponse = createMockResponse(404, "Not Found", htmlContent);
@@ -229,6 +235,7 @@ describe("format-response", () => {
 		});
 
 		it("公開APIの400 Bad RequestレスポンスでXMLコンテンツが返却された場合に、'{status: number, statusText: string, body: string}'形式に正しくフォーマットできる", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const xmlContent =
 				'<?xml version="1.0"?><root><error>Invalid request</error></root>';
 			const mockResponse = createMockResponse(400, "Bad Request", xmlContent);
@@ -258,6 +265,7 @@ describe("format-response", () => {
 		});
 
 		it("公開APIの200 OKレスポンスで部分的に破損したJSON文字列が返却された場合に、'{status: number, statusText: string, body: string}'形式のように、JSON文字列をテキストデータとして正しくフォーマットできる", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const partiallyBrokenJson = '{"valid": "data", "broken": incomplete';
 			const mockResponse = createMockResponse(200, "OK", partiallyBrokenJson);
 
