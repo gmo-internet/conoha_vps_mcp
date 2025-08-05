@@ -23,9 +23,7 @@
 
 1. Releasesより、最新リリースノートを開きます  
     [最新リリースノート](https://github.com/gmo-internet/conoha_vps_mcp/releases/latest)
-2. Assetsより`mcp-server.dxt`ファイルをダウンロードしてください（ファイル名をクリックするとダウンロードが開始されます） 
-
-    ![Assets一覧の中にあるmcp-server.dxt](../assets/github_click_dxt_file.png)
+2. Assetsより`conoha_vps_mcp.dxt`ファイルをダウンロードしてください（ファイル名をクリックするとダウンロードが開始されます）
 
 ### DXTファイルのインストール
 
