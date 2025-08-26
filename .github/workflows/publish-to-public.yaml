@@ -13,13 +13,23 @@ jobs:
     permissions:
       contents: write
       packages: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       # 1) ソース取得
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
-      # 2) Node セットアップ
+      # 2) バージョン抽出
+      - name: Extract version and check if already published
+        id: extract
+        run: |
+          VERSION="v$(jq -r '.version' package.json)"
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Extracted version: ${VERSION}"
+
+      # 3) Node セットアップ
       - name: Setup Node.js
         if: success() && steps.extract.outputs.skip != 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -28,32 +38,32 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@gmo-internet"
 
-      # 3) 依存インストール
+      # 4) 依存インストール
       - name: Install dependencies
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm ci
 
-      # 4) ビルド
+      # 5) ビルド
       - name: Build project
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build
 
-      # 5) DXTファイルのビルド
+      # 6) DXTファイルのビルド
       - name: Build dxt
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build:dxt
 
-      # 6) Release note作成
+      # 7) Release note作成
       - name: Generate release note
         if: success() && steps.extract.outputs.skip != 'true'
         run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
 
-      # 7) DXTファイルのアップロード  
+      # 8) DXTファイルのアップロード  
       - name: Add dxt file to release note
         if: success() && steps.extract.outputs.skip != 'true'
         run: gh release upload ${{ steps.extract.outputs.VERSION }} conoha_vps_mcp.dxt --clobber
 
-      # 8) 公開
+      # 9) 公開
       - name: Publish to GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm publish

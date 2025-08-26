@@ -9,5 +9,6 @@ permissions:
 
 jobs:
   push-to-public:
+    if: github.repository == 'gmo-internet/priv_conoha_vps_mcp'
     uses: gmo-internet/priv_share/.github/workflows/publish.yml@main
     secrets: inherit
