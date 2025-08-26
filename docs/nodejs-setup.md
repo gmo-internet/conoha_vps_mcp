@@ -225,11 +225,6 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 ### Claude Desktop
 
-> [!CAUTION]
-> 2025年7月15日現在、Claude Desktopのバグと思われる事象により、`conoha_post`・`conoha_post_put_by_param`のtoolsが利用できなくなっております。
-> 修正が確認でき次第ドキュメントを更新の上、[リリースノート](https://github.com/gmo-internet/conoha_vps_mcp/releases)に記載いたします。
-> ご迷惑おかけし申し訳ございません。
-
 <details>
 <summary>セットアップ手順</summary>
 

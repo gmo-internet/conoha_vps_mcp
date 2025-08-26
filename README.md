@@ -25,7 +25,7 @@
 
 ConoHa VPS MCPは、ConoHa VPSの[公開API](https://doc.conoha.jp/reference/api-vps3/)を**日本語**で簡単に操作できるオープンソースの**Model Context Protocol (MCP) サーバー**です。
 
-GitHub Copilot、Cline、ClaudeなどのAIエージェントと連携することで、**自然言語によるインフラ操作**が可能になります。
+Claude、GitHub Copilot、ClineなどのAIエージェントと連携することで、**自然言語によるインフラ操作**が可能になります。
 
 > [!CAUTION]
 > **⚠️ 本ソフトウェアは現在ベータ版です**
@@ -54,11 +54,15 @@ Model Context Protocolとは、GitHub Copilot、Cline、ClaudeなどのAIエー�
 
 ## 🚀 クイックスタート
 
-1. Node.js あるいは Dockerをご自身のローカル端末にインストール
-2. ConoHaのコントロールパネルにアクセスし、APIクレデンシャルを発行
-3. 利用中のMCP対応のAIエージェント（GitHub Copilot等）にConoHa VPS MCPの設定を記載し、MCPサーバーを起動
+### Claude Desktopで利用する場合
 
-詳細は👇
+1. ReleasesよりDXTファイルをダウンロード
+2. Claude DesktopにダウンロードしたDXTファイルをインストール
+3. Claude Desktopで環境変数を設定
+
+詳細な手順は 👉 [簡単実行ガイド](docs/easy-setup.md) を参照してください。
+
+### 🔧 Claude Desktop以外で利用する場合
 
 - 🎈 [npm パッケージインストール版実行ガイド](docs/npm-setup.md) - GitHub Packagesを利用して実行
 - 📋 [Node.js ローカルビルド版実行ガイド](docs/nodejs-setup.md) - ソースコードからビルドして実行

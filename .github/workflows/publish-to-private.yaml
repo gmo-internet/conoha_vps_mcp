@@ -14,6 +14,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       # 1) ソース取得
@@ -48,7 +50,7 @@ jobs:
         if: success() && steps.extract.outputs.skip != 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: "22.17.0"
+          node-version: "22.17.1"
           registry-url: "https://npm.pkg.github.com"
           scope: "@gmo-internet"
 
@@ -62,14 +64,29 @@ jobs:
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build
 
-      # 7) Private用のパッケージ名調整
+      # 7) DXTファイルのビルド
+      - name: Build dxt
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: npm run build:dxt
+
+      # 8) Private用のパッケージ名調整
       - name: Set package name for private packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: |
           VERSION='${{ steps.extract.outputs.VERSION }}'
           npm pkg set name="@gmo-internet/priv-conoha-vps-mcp"
 
-      # 8) 公開
+      # 9) Release note作成
+      - name: Generate release note
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
+
+      # 10) DXTファイルのアップロード  
+      - name: Add dxt file to release note
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: gh release upload ${{ steps.extract.outputs.VERSION }} priv_conoha_vps_mcp.dxt --clobber
+
+      # 11) 公開
       - name: Publish to GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm publish

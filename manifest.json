@@ -1,0 +1,49 @@
+{
+	"dxt_version": "0.1",
+	"name": "@gmo-internet/conoha-vps-mcp",
+	"display_name": "conoha-vps-mcp",
+	"version": "0.2.0",
+	"description": "ConoHa VPSの公開APIを日本語で簡単に操作できるオープンソースのModel Context Protocol (MCP) サーバーです。",
+	"icon": "conoha_dxt_icon.png",
+	"author": {
+		"name": "GMO Internet"
+	},
+	"server": {
+		"type": "node",
+		"entry_point": "dist/index.js",
+		"mcp_config": {
+			"command": "node",
+			"args": [
+				"${__dirname}/dist/index.js"
+			],
+			"env": {
+				"OPENSTACK_TENANT_ID": "${user_config.OPENSTACK_TENANT_ID}",
+				"OPENSTACK_USER_ID": "${user_config.OPENSTACK_USER_ID}",
+				"OPENSTACK_PASSWORD": "${user_config.OPENSTACK_PASSWORD}"
+			}
+		}
+	},
+	"user_config": {
+		"OPENSTACK_TENANT_ID": {
+			"title": "テナントID",
+			"type": "string",
+			"description": "OpenStack Tenant ID"
+		},
+		"OPENSTACK_USER_ID": {
+			"title": "ユーザーID",
+			"type": "string",
+			"description": "OpenStack User ID"
+		},
+		"OPENSTACK_PASSWORD": {
+			"title": "パスワード",
+			"type": "string",
+			"description": "OpenStack Password",
+			"sensitive": true
+		}
+	},
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gmo-internet/conoha_vps_mcp.git"
+	}
+}
