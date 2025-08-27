@@ -6,22 +6,13 @@ export const CreateSecurityGroupRuleRequestSchema = z
 			.object({
 				security_group_id: z.string(),
 				direction: z.enum(["ingress", "egress"], {
-					errorMap: () => ({
-						message:
-							"通信の向きは 'ingress' または 'egress' を指定してください",
-					}),
+					message: "通信の向きは 'ingress' または 'egress' を指定してください",
 				}),
 				ethertype: z.enum(["IPv4", "IPv6"], {
-					errorMap: () => ({
-						message: "イーサタイプは 'IPv4' または 'IPv6' を指定してください",
-					}),
+					message: "イーサタイプは 'IPv4' または 'IPv6' を指定してください",
 				}),
 				port_range_min: z
-					.number({
-						errorMap: () => ({
-							message: "ポート番号は数値で指定してください",
-						}),
-					})
+					.number({ message: "ポート番号は数値で指定してください" })
 					.int({
 						message: "ポート番号は整数で指定してください",
 					})
@@ -33,11 +24,7 @@ export const CreateSecurityGroupRuleRequestSchema = z
 					})
 					.optional(),
 				port_range_max: z
-					.number({
-						errorMap: () => ({
-							message: "ポート番号は数値で指定してください",
-						}),
-					})
+					.number({ message: "ポート番号は数値で指定してください" })
 					.int({
 						message: "ポート番号は整数で指定してください",
 					})
