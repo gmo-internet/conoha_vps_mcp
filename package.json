@@ -55,7 +55,7 @@
 	},
 	"dependencies": {
 		"@anthropic-ai/dxt": "^0.2.6",
-		"zod": "^3.25.76"
+		"zod": "^4.1.3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.2",

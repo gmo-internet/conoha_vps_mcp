@@ -69,15 +69,11 @@ export const RemoteConsoleRequestSchema = z
 		remote_console: z
 			.object({
 				protocol: z.enum(["vnc", "serial", "web"], {
-					errorMap: () => ({
-						message:
-							"protocol は 'vnc', 'serial', 'web' のいずれかを指定してください",
-					}),
+					message:
+						"protocol は 'vnc', 'serial', 'web' のいずれかを指定してください",
 				}),
 				type: z.enum(["novnc", "serial"], {
-					errorMap: () => ({
-						message: "type は 'novnc' または 'serial' を指定してください", //protocolで指定したプロトコル名の組み合わせと一致している必要あり
-					}),
+					message: "type は 'novnc' または 'serial' を指定してください", //protocolで指定したプロトコル名の組み合わせと一致している必要あり
 				}),
 			})
 			.strict(),
