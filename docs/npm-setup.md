@@ -109,9 +109,6 @@ npm config set //npm.pkg.github.com/:_authToken=ghp_xxxYourTokenxxx
 
 ### GitHub Copilot (VSCode)
 
-> [!CAUTION]
-> [VSCodeのJune 2025のアップデート (version 1.102)](https://code.visualstudio.com/updates/v1_102)により、設定方法が大きく変わっております。古いバージョンをご利用中の方は最新バージョンへの更新、あるいは公式のドキュメントをご参照ください。
-
 <details>
 <summary>セットアップ手順</summary>
 
