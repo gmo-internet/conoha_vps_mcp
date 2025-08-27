@@ -31,7 +31,7 @@ jobs:
 
       # 3) Node セットアップ
       - name: Setup Node.js
-        if: success() && steps.extract.outputs.skip != 'true'
+        if: success()
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22.18.0"
@@ -40,32 +40,32 @@ jobs:
 
       # 4) 依存インストール
       - name: Install dependencies
-        if: success() && steps.extract.outputs.skip != 'true'
+        if: success()
         run: npm ci
 
       # 5) ビルド
       - name: Build project
-        if: success() && steps.extract.outputs.skip != 'true'
+        if: success()
         run: npm run build
 
       # 6) DXTファイルのビルド
       - name: Build dxt
-        if: success() && steps.extract.outputs.skip != 'true'
+        if: success()
         run: npm run build:dxt
 
       # 7) Release note作成
       - name: Generate release note
-        if: success() && steps.extract.outputs.skip != 'true'
+        if: success()
         run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
 
       # 8) DXTファイルのアップロード  
       - name: Add dxt file to release note
-        if: success() && steps.extract.outputs.skip != 'true'
+        if: success()
         run: gh release upload ${{ steps.extract.outputs.VERSION }} conoha_vps_mcp.dxt --clobber
 
       # 9) 公開
       - name: Publish to GitHub Packages
-        if: success() && steps.extract.outputs.skip != 'true'
+        if: success()
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
