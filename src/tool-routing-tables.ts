@@ -4,6 +4,7 @@ import {
 	deleteComputeByParam,
 	getCompute,
 	getComputeByParam,
+	getFlavor,
 } from "./features/openstack/compute/compute-client.js";
 import { getImage } from "./features/openstack/image/image-client.js";
 import {
@@ -30,7 +31,7 @@ import type {
 export const conohaGetHandlers: Record<ConoHaGetPaths, () => Promise<string>> =
 	{
 		"/servers/detail": () => getCompute("/servers/detail"),
-		"/flavors/detail": () => getCompute("/flavors/detail"),
+		"/flavors/detail": () => getFlavor("/flavors/detail"),
 		"/os-keypairs": () => getCompute("/os-keypairs"),
 		"/types": () => getVolume("/types"),
 		"/volumes/detail": () => getVolume("/volumes/detail"),
