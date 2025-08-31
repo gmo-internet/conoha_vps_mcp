@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22.18.0-alpine3.21@sha256:2286e35d4e89a5424327b9bf9fcb1f85899dcfdcc92141b6d56d2ddb2fc0182b AS builder
+FROM node:22.19.0-alpine3.21@sha256:6b2127043c2faa4f15cdcdeb65a39fc9afbecf5559301898b754bbff561a8aa9 AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:22.18.0-alpine3.21@sha256:2286e35d4e89a5424327b9bf9fcb1f85899dcfdcc92141b6d56d2ddb2fc0182b AS production
+FROM node:22.19.0-alpine3.21@sha256:6b2127043c2faa4f15cdcdeb65a39fc9afbecf5559301898b754bbff561a8aa9 AS production
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
