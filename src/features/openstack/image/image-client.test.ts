@@ -6,8 +6,8 @@ vi.mock("../common/openstack-client", () => ({
 	executeOpenstackApi: vi.fn(),
 }));
 
-vi.mock("../common/response-formatter", () => ({
-	formatResponse: vi.fn(),
+vi.mock("./get-image-response-formatter", () => ({
+	formatGetImageResponse: vi.fn(),
 }));
 
 // モック関数の型定義
@@ -15,9 +15,9 @@ const mockExecuteOpenstackApi = vi.mocked(
 	await import("../common/openstack-client"),
 ).executeOpenstackApi;
 
-const mockFormatResponse = vi.mocked(
-	await import("../common/response-formatter"),
-).formatResponse;
+const mockFormatGetImageResponse = vi.mocked(
+	await import("./get-image-response-formatter"),
+).formatGetImageResponse;
 
 describe("image-client", () => {
 	beforeEach(() => {
@@ -40,7 +40,7 @@ describe("image-client", () => {
 		});
 
 		beforeEach(() => {
-			mockFormatResponse.mockResolvedValue(mockResponse);
+			mockFormatGetImageResponse.mockResolvedValue(mockResponse);
 		});
 
 		it("Image API（/v2/images?limit=200）へのGETリクエストで画像一覧レスポンスを受け取った場合に、正しいURL（https://image-service.c3j1.conoha.io）とパス（/v2/images?limit=200）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', 'https://image-service.c3j1.conoha.io', '/v2/images?limit=200'）が正しく引き渡されることを確認し、モックレスポンス（'{status: 200, statusText: 'OK', body: {images: [...]}}'）と一致する文字列を戻り値として返すことができる", async () => {
@@ -112,7 +112,7 @@ describe("image-client", () => {
 		describe("レスポンスの型", () => {
 			it("getImageが単純な文字列レスポンス（'simple string response'）を受け取った場合に、モックAPIから返された文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
 				const stringResponse = "simple string response";
-				mockFormatResponse.mockResolvedValue(stringResponse);
+				mockFormatGetImageResponse.mockResolvedValue(stringResponse);
 				const path = "/v2/images?limit=200";
 
 				const result = await getImage(path);
@@ -125,7 +125,7 @@ describe("image-client", () => {
 				const jsonResponse = JSON.stringify({
 					images: [{ id: "test", name: "test-image" }],
 				});
-				mockFormatResponse.mockResolvedValue(jsonResponse);
+				mockFormatGetImageResponse.mockResolvedValue(jsonResponse);
 				const path = "/v2/images?limit=200";
 
 				const result = await getImage(path);
@@ -138,7 +138,7 @@ describe("image-client", () => {
 		describe("パフォーマンス", () => {
 			it("getImageが非常に長いパス（100回繰り返された'very-long-id-'を含むパス）を処理する場合に、パス長の制限なく正しい長いパス（/v2/images/very-long-id-...123）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', 'https://image-service.c3j1.conoha.io', longPath）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 				const longPath = `/v2/images/${"very-long-id-".repeat(100)}123?limit=200`;
-				mockFormatResponse.mockResolvedValue(mockResponse);
+				mockFormatGetImageResponse.mockResolvedValue(mockResponse);
 
 				const result = await getImage(longPath);
 
