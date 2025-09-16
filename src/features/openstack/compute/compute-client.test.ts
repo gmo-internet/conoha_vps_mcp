@@ -5,10 +5,15 @@ import {
 	deleteComputeByParam,
 	getCompute,
 	getComputeByParam,
+	getFlavor,
 } from "./compute-client";
 
 vi.mock("../common/response-formatter", () => ({
 	formatResponse: vi.fn(),
+}));
+
+vi.mock("./get-flavor-response-formatter", () => ({
+	formatGetFlavorResponse: vi.fn(),
 }));
 
 // executeOpenstackApi のモック
@@ -24,6 +29,10 @@ const mockExecuteOpenstackApi = vi.mocked(
 const mockFormatResponse = vi.mocked(
 	await import("../common/response-formatter"),
 ).formatResponse;
+
+const mockFormatGetFlavorResponse = vi.mocked(
+	await import("./get-flavor-response-formatter"),
+).formatGetFlavorResponse;
 
 describe("compute-client", () => {
 	beforeEach(() => {
@@ -83,6 +92,64 @@ describe("compute-client", () => {
 
 			const result = await getCompute(path);
 
+			expect(result).toBe(mockResponse);
+			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
+				"GET",
+				expectedBaseUrl,
+				"",
+			);
+		});
+	});
+
+	describe("getFlavor", () => {
+		const mockResponse = JSON.stringify({
+			status: 200,
+			statusText: "OK",
+			body: {
+				flavors: [
+					{
+						id: "flavor-1",
+						name: "small",
+						ram: 2048,
+						vcpus: 2,
+						disk: 20,
+					},
+				],
+			},
+		});
+
+		beforeEach(() => {
+			mockFormatGetFlavorResponse.mockResolvedValue(mockResponse);
+		});
+
+		it("Compute API（/flavors）へのGETリクエストでフレーバー一覧レスポンスを受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/flavors）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/flavors'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+			const path = "/flavors";
+			const result = await getFlavor(path);
+			expect(result).toBe(mockResponse);
+			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
+				"GET",
+				expectedBaseUrl,
+				"/flavors",
+			);
+			// getFlavor は formatResponse を使わないことの明示確認
+			expect(mockFormatResponse).not.toHaveBeenCalled();
+			expect(mockFormatGetFlavorResponse).toHaveBeenCalledTimes(1);
+		});
+
+		it("Compute API（flavors/without-slash）への先頭スラッシュなしパス指定でGETリクエストした場合に、パス文字列（flavors/without-slash）をそのままモックAPIに渡してリクエストし、API呼び出しパラメータ（'GET', expectedBaseUrl, 'flavors/without-slash'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+			const path = "flavors/without-slash";
+			const result = await getFlavor(path);
+			expect(result).toBe(mockResponse);
+			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
+				"GET",
+				expectedBaseUrl,
+				"flavors/without-slash",
+			);
+		});
+
+		it("Compute APIへの空文字列パス指定でGETリクエストした場合に、空文字列パス（''）をそのまま正しいURL（https://compute.c3j1.conoha.io/v2.1）とともにモックAPIに渡してリクエストし、API呼び出しパラメータ（'GET', expectedBaseUrl, ''）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+			const path = "";
+			const result = await getFlavor(path);
 			expect(result).toBe(mockResponse);
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 				"GET",
