@@ -1,6 +1,6 @@
 {
 	"name": "@gmo-internet/conoha-vps-mcp",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "日本語対応のConoHa VPS Model Context Protocol (MCP) サーバー",
 	"author": "GMO Internet",
 	"license": "Apache-2.0",
@@ -43,7 +43,7 @@
 	"scripts": {
 		"build": "node esbuild.config.js",
 		"build:types": "tsc --emitDeclarationOnly",
-		"build:dxt": "dxt pack",
+		"build:mcpb": "mcpb pack",
 		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
 		"typecheck": "tsc --noEmit",
@@ -58,7 +58,7 @@
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
-		"@anthropic-ai/dxt": "0.2.6",
+		"@anthropic-ai/mcpb": "1.1.0",
 		"@biomejs/biome": "2.2.4",
 		"@types/node": "22.18.4",
 		"@vitest/coverage-v8": "3.2.4",

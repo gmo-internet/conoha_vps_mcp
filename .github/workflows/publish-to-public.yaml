@@ -48,20 +48,20 @@ jobs:
         if: success()
         run: npm run build
 
-      # 6) DXTファイルのビルド
-      - name: Build dxt
+      # 6) mcpbファイルのビルド
+      - name: Build mcpb
         if: success()
-        run: npm run build:dxt
+        run: npm run build:mcpb
 
       # 7) Release note作成
       - name: Generate release note
         if: success()
         run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
 
-      # 8) DXTファイルのアップロード  
-      - name: Add dxt file to release note
+      # 8) mcpbファイルのアップロード
+      - name: Add mcpb file to release note
         if: success()
-        run: gh release upload ${{ steps.extract.outputs.VERSION }} conoha_vps_mcp.dxt --clobber
+        run: gh release upload ${{ steps.extract.outputs.VERSION }} conoha_vps_mcp.mcpb --clobber
 
       # 9) 公開
       - name: Publish to GitHub Packages

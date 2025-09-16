@@ -2,9 +2,9 @@
 	"dxt_version": "0.1",
 	"name": "@gmo-internet/conoha-vps-mcp",
 	"display_name": "conoha-vps-mcp",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "ConoHa VPSの公開APIを日本語で簡単に操作できるオープンソースのModel Context Protocol (MCP) サーバーです。",
-	"icon": "conoha_dxt_icon.png",
+	"icon": "conoha_mcpb_icon.png",
 	"author": {
 		"name": "GMO Internet"
 	},
