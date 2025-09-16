@@ -64,10 +64,10 @@ jobs:
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build
 
-      # 7) DXTファイルのビルド
-      - name: Build dxt
+      # 7) mcpbファイルのビルド
+      - name: Build mcpb
         if: success() && steps.extract.outputs.skip != 'true'
-        run: npm run build:dxt
+        run: npm run build:mcpb
 
       # 8) Private用のパッケージ名調整
       - name: Set package name for private packages
@@ -81,10 +81,10 @@ jobs:
         if: success() && steps.extract.outputs.skip != 'true'
         run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
 
-      # 10) DXTファイルのアップロード  
-      - name: Add dxt file to release note
+      # 10) mcpbファイルのアップロード  
+      - name: Add mcpb file to release note
         if: success() && steps.extract.outputs.skip != 'true'
-        run: gh release upload ${{ steps.extract.outputs.VERSION }} priv_conoha_vps_mcp.dxt --clobber
+        run: gh release upload ${{ steps.extract.outputs.VERSION }} priv_conoha_vps_mcp.mcpb --clobber
 
       # 11) 公開
       - name: Publish to GitHub Packages

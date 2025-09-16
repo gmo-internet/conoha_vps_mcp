@@ -56,8 +56,8 @@ Model Context Protocolとは、GitHub Copilot、Cline、ClaudeなどのAIエー�
 
 ### Claude Desktopで利用する場合
 
-1. ReleasesよりDXTファイルをダウンロード
-2. Claude DesktopにダウンロードしたDXTファイルをインストール
+1. Releasesよりmcpbファイルをダウンロード
+2. Claude Desktopにダウンロードしたmcpbファイルをインストール
 3. Claude Desktopで環境変数を設定
 
 詳細な手順は 👉 [簡単実行ガイド](docs/easy-setup.md) を参照してください。
