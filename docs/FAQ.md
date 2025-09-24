@@ -134,7 +134,6 @@ A: 以下を確認してください：
 
 - Dockerが正常に動作しているか
 - WSLが有効になっているか（Windows環境の場合）
-- `compose.yaml`が存在するか
 
 ### Q: GitHub Copilot (VSCode) 上でツールを実行しようとするとやりとりが止まってしまいます
 

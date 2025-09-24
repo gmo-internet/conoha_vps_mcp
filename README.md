@@ -56,15 +56,40 @@ Model Context Protocolとは、GitHub Copilot、Cline、ClaudeなどのAIエー�
 
 ### Claude Desktopで利用する場合
 
-1. Releasesよりmcpbファイルをダウンロード
-2. Claude Desktopにダウンロードしたmcpbファイルをインストール
-3. Claude Desktopで環境変数を設定
+1. [Releases](https://github.com/gmo-internet/conoha_vps_mcp/releases/)よりダウンロードしたmcpbファイルをClaude Desktopに登録
+2. Claude Desktopで環境変数を設定
 
-詳細な手順は 👉 [簡単実行ガイド](docs/easy-setup.md) を参照してください。
+詳細な手順は 👉 [mcpb ファイルインストール版実行ガイド](docs/mcpb-setup.md) を参照してください。
 
-### 🔧 Claude Desktop以外で利用する場合
+### それ以外のAIエージェント (GitHub Copilot等) で利用する場合
 
-- 🎈 [npm パッケージインストール版実行ガイド](docs/npm-setup.md) - GitHub Packagesを利用して実行
+1. Node.jsをローカル端末にインストール
+2. 利用中のMCP対応のAIエージェントにConoHa VPS MCPの設定を記載し、MCPサーバーを起動
+    <details>
+    <summary>設定（簡略版）</summary>
+
+    ```json
+    {
+      "ConoHa VPS MCP": {
+        "command": "npm",
+        "args": [
+          "exec",
+          "@gmo-internet/conoha-vps-mcp@latest"
+        ],
+        "env": {
+          "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
+          "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
+          "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
+        }
+      }
+    }
+    ```
+    </details>
+
+詳細な手順は 👉 [npm パッケージインストール版実行ガイド](docs/npm-setup.md) を参照してください。
+
+### 🔧 その他の方法で利用する場合
+
 - 📋 [Node.js ローカルビルド版実行ガイド](docs/nodejs-setup.md) - ソースコードからビルドして実行
 - 🐳 [Docker ローカルビルド版実行ガイド](docs/docker-setup.md) - Dockerコンテナで実行
 
