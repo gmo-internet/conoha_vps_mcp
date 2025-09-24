@@ -39,31 +39,31 @@
 
 1. `.MCPBまたは.DXTファイルをここにドラッグしてインストールしてください`と書かれている部分に、先ほどダウンロードしたmcpbファイルをドラッグしてください
 
-    ![拡張機能を参照、詳細設定と書かれているボタンの下部にあるエリアにドラッグ](../assets/claude_desktop_drag_dxt.png)
+    ![拡張機能を参照、詳細設定と書かれているボタンの下部にあるエリアにドラッグ](../assets/claude_desktop_drag_mcpb.png)
 
 2. 内容を確認して最後に右上の**インストール**をクリックして、mcpbファイルをClaude Desktopにインストールします
 
-    ![右上にあるインストールボタンでインストール完了](../assets/claude_desktop_install_dxt.png)
+    ![右上にあるインストールボタンでインストール完了](../assets/claude_desktop_install_mcpb.png)
 </details>
 
 <details>
 <summary>他の拡張機能がインストールされていない場合</summary>
 
-3. **詳細設定**をクリックします
+1. **詳細設定**をクリックします
 
     ![画面中央にある詳細設定ボタンをクリック](../assets/claude_desktop_click_extension_detail_settings.png)
 
-4. **拡張機能をインストール...** をクリックします
+2. **拡張機能をインストール...** をクリックします
 
     ![拡張機能開発者と書かれたところにある、拡張機能をインストールをクリック](../assets/claude_desktop_click_extension_func_install.png)
 
-5. 先ほどダウンロードしたmcpbファイルを選択して**プレビュー**をクリックします
+3. 先ほどダウンロードしたmcpbファイルを選択して**プレビュー**をクリックします
 
-    ![エクスプローラが開き、先ほどダウンロードしたmcpbファイルを選択](../assets/explorer_select_dxt_file.png)
+    ![エクスプローラが開き、先ほどダウンロードしたmcpbファイルを選択](../assets/explorer_select_mcpb_file.png)
 
-6. 内容を確認して最後に右上の**インストール**をクリックして、mcpbファイルをClaude Desktopにインストールします
+4. 内容を確認して最後に右上の**インストール**をクリックして、mcpbファイルをClaude Desktopにインストールします
 
-    ![右上にあるインストールボタンでインストール完了](../assets/claude_desktop_install_dxt.png)
+    ![右上にあるインストールボタンでインストール完了](../assets/claude_desktop_install_mcpb.png)
 
 </details>
 
@@ -71,7 +71,7 @@
 
 1. 設定画面の拡張機能タブに戻って、**conoha-vps-mcp**と書かれた拡張機能の欄にある**設定**をクリックします
 
-    ![右端にある設定をクリック](../assets/claude_desktop_click_conoha_vps_mcp_dxt_settings.png)
+    ![右端にある設定をクリック](../assets/claude_desktop_click_conoha_vps_mcp_mcpb_settings.png)
 
 1. ConoHa APIのテナントID、ユーザーID、パスワードを入力します。
 
