@@ -1,4 +1,4 @@
-# stagingブランチへのpushでstaging用のパッケージのリリース
+# release/X.X.X → staging ブランチへの push で staging 用のパッケージのリリース
 name: Publish to Private GitHub Packages
 
 on:
@@ -54,39 +54,45 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@gmo-internet"
 
-      # 5) 依存インストール
+      # 5) GitHub Packages用の.npmrc生成
+      - name: Configure npm for GitHub Packages
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: |
+          echo "registry=https://registry.npmjs.org/" > .npmrc
+          echo "@gmo-internet:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> .npmrc
+
+      # 6) 依存インストール
       - name: Install dependencies
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm ci
 
-      # 6) ビルド
+      # 7) ビルド
       - name: Build project
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build
 
-      # 7) mcpbファイルのビルド
+      # 8) mcpbファイルのビルド
       - name: Build mcpb
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build:mcpb
 
-      # 8) Private用のパッケージ名調整
+      # 9) Private用のパッケージ名調整
       - name: Set package name for private packages
         if: success() && steps.extract.outputs.skip != 'true'
-        run: |
-          VERSION='${{ steps.extract.outputs.VERSION }}'
-          npm pkg set name="@gmo-internet/priv-conoha-vps-mcp"
+        run: npm pkg set name="@gmo-internet/priv-conoha-vps-mcp"
 
-      # 9) Release note作成
+      # 10) Release note作成
       - name: Generate release note
         if: success() && steps.extract.outputs.skip != 'true'
         run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
 
-      # 10) mcpbファイルのアップロード  
+      # 11) mcpbファイルのアップロード
       - name: Add mcpb file to release note
         if: success() && steps.extract.outputs.skip != 'true'
         run: gh release upload ${{ steps.extract.outputs.VERSION }} priv_conoha_vps_mcp.mcpb --clobber
 
-      # 11) 公開
+      # 12) 公開
       - name: Publish to GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm publish

@@ -38,7 +38,7 @@
 		"NOTICE"
 	],
 	"publishConfig": {
-		"registry": "https://npm.pkg.github.com"
+		"registry": "https://registry.npmjs.org/"
 	},
 	"scripts": {
 		"build": "node esbuild.config.js",
