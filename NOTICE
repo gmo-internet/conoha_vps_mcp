@@ -32,7 +32,7 @@ ISC Licensed:
   - zod-to-json-schema (3.24.6)
 
 MIT Licensed:
-  - @modelcontextprotocol/sdk (1.18.0)
+  - @modelcontextprotocol/sdk (1.18.1)
   - accepts (2.0.0)
   - ajv (6.12.6)
   - body-parser (2.2.0)
