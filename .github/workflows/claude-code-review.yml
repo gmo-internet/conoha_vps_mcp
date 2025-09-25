@@ -12,13 +12,14 @@ on:
 
 jobs:
   claude-review:
+    if: github.repository == 'gmo-internet/priv_conoha_vps_mcp'
     # Optional: Filter by PR author
     # if: |
     #   github.event.pull_request.user.login == 'external-contributor' ||
     #   github.event.pull_request.user.login == 'new-developer' ||
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-    
-    runs-on: ubuntu-latest
+
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pull-requests: read
@@ -51,4 +52,3 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/sdk#command-line for available options
           claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
-
