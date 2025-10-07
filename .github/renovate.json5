@@ -9,6 +9,7 @@
     'config:best-practices',
     ':semanticCommitTypeAll(chore)',
     'customManagers:biomeVersions',
+    ':enableVulnerabilityAlertsWithLabel(security)',
   ],
   reviewers: [
     's-hirano-ist',
@@ -30,11 +31,6 @@
   lockFileMaintenance: {
     enabled: true,
   },
-  vulnerabilityAlerts: {
-    labels: [
-      'security',
-    ],
-  },
   packageRules: [
     {
       matchPackageNames: [
@@ -44,6 +40,7 @@
         'dockerfile',
       ],
       allowedVersions: '/^[0-9]*[02468]([.-].*)?$/',
+      minimumReleaseAge: '7 days'
     },
     {
       matchManagers: [
@@ -61,6 +58,7 @@
         'peerDependencies',
       ],
       groupName: 'npm patch',
+      minimumReleaseAge: '7 days'
     },
     {
       matchManagers: [
@@ -78,6 +76,7 @@
         'peerDependencies',
       ],
       groupName: 'npm minor',
+      minimumReleaseAge: '7 days'
     },
     {
       "matchDepTypes": ["engines"],
@@ -88,6 +87,7 @@
         'github-actions',
       ],
       groupName: 'github actions',
+      minimumReleaseAge: '7 days'
     },
   ],
 }

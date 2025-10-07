@@ -1,4 +1,4 @@
-# stagingブランチへのpushでstaging用のパッケージのリリース
+# release/X.X.X → staging ブランチへの push で staging 用のパッケージのリリース
 name: Publish to Private GitHub Packages
 
 on:
@@ -20,7 +20,7 @@ jobs:
     steps:
       # 1) ソース取得
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
       # 2) ブランチ名からバージョン抽出
       - name: Extract version from branch name
@@ -48,45 +48,51 @@ jobs:
       # 4) Node セットアップ
       - name: Setup Node.js
         if: success() && steps.extract.outputs.skip != 'true'
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
-          node-version: "22.17.1"
+          node-version: "22.19.0"
           registry-url: "https://npm.pkg.github.com"
           scope: "@gmo-internet"
 
-      # 5) 依存インストール
+      # 5) GitHub Packages用の.npmrc生成
+      - name: Configure npm for GitHub Packages
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: |
+          echo "registry=https://registry.npmjs.org/" > .npmrc
+          echo "@gmo-internet:registry=https://npm.pkg.github.com" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> .npmrc
+
+      # 6) 依存インストール
       - name: Install dependencies
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm ci
 
-      # 6) ビルド
+      # 7) ビルド
       - name: Build project
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build
 
-      # 7) DXTファイルのビルド
-      - name: Build dxt
+      # 8) mcpbファイルのビルド
+      - name: Build mcpb
         if: success() && steps.extract.outputs.skip != 'true'
-        run: npm run build:dxt
+        run: npm run build:mcpb
 
-      # 8) Private用のパッケージ名調整
+      # 9) Private用のパッケージ名調整
       - name: Set package name for private packages
         if: success() && steps.extract.outputs.skip != 'true'
-        run: |
-          VERSION='${{ steps.extract.outputs.VERSION }}'
-          npm pkg set name="@gmo-internet/priv-conoha-vps-mcp"
+        run: npm pkg set name="@gmo-internet/priv-conoha-vps-mcp"
 
-      # 9) Release note作成
+      # 10) Release note作成
       - name: Generate release note
         if: success() && steps.extract.outputs.skip != 'true'
         run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
 
-      # 10) DXTファイルのアップロード  
-      - name: Add dxt file to release note
+      # 11) mcpbファイルのアップロード
+      - name: Add mcpb file to release note
         if: success() && steps.extract.outputs.skip != 'true'
-        run: gh release upload ${{ steps.extract.outputs.VERSION }} priv_conoha_vps_mcp.dxt --clobber
+        run: gh release upload ${{ steps.extract.outputs.VERSION }} priv_conoha_vps_mcp.mcpb --clobber
 
-      # 11) 公開
+      # 12) 公開
       - name: Publish to GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm publish

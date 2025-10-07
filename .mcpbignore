@@ -1,0 +1,30 @@
+# Assets and documentation
+assets/
+docs/
+reports/
+scripts/
+
+# Node.js dependencies
+node_modules/
+
+# Source and test code
+src/
+test/
+
+# Docker files
+compose.yaml
+Dockerfile
+.dockerignore
+
+# Editor and project config
+.vscode/
+.git/
+biome.json
+esbuild.config.js
+LICENSE
+NOTICE
+vitest.config.ts
+
+# Markdown, logs, and misc
+*.md
+*.log

@@ -11,8 +11,8 @@
 [![GitHub Release](https://img.shields.io/github/v/release/gmo-internet/conoha_vps_mcp?style=flat-square)](https://github.com/gmo-internet/conoha_vps_mcp/releases)
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=flat-square&logo=node.js)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Docker](https://img.shields.io/badge/Docker-blue?style=flat-square&logo=docker)](https://www.docker.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-white?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-white?style=flat-square&logo=docker)](https://www.docker.com/)
 [![OpenStack](https://img.shields.io/badge/OpenStack-API-red?style=flat-square&logo=openstack)](https://docs.openstack.org/)
 
 [🚀 クイックスタート](#-クイックスタート) • [📚 使用例](#-使用例) • [よくある質問（FAQ）](docs/FAQ.md)
@@ -22,6 +22,10 @@
 ---
 
 ## 🌟 概要
+
+> [!IMPORTANT]
+> v0.3.0 以降、本パッケージの配布元を GitHub Packages から npm レジストリへ移行しました。
+> 最新バージョンは npm から入手してください。
 
 ConoHa VPS MCPは、ConoHa VPSの[公開API](https://doc.conoha.jp/reference/api-vps3/)を**日本語**で簡単に操作できるオープンソースの**Model Context Protocol (MCP) サーバー**です。
 
@@ -56,15 +60,40 @@ Model Context Protocolとは、GitHub Copilot、Cline、ClaudeなどのAIエー�
 
 ### Claude Desktopで利用する場合
 
-1. ReleasesよりDXTファイルをダウンロード
-2. Claude DesktopにダウンロードしたDXTファイルをインストール
-3. Claude Desktopで環境変数を設定
+1. [Releases](https://github.com/gmo-internet/conoha_vps_mcp/releases/)よりダウンロードしたmcpbファイルをClaude Desktopに登録
+2. Claude Desktopで環境変数を設定
 
-詳細な手順は 👉 [簡単実行ガイド](docs/easy-setup.md) を参照してください。
+詳細な手順は 👉 [mcpb ファイルインストール版実行ガイド](docs/mcpb-setup.md) を参照してください。
 
-### 🔧 Claude Desktop以外で利用する場合
+### それ以外のAIエージェント (GitHub Copilot等) で利用する場合
 
-- 🎈 [npm パッケージインストール版実行ガイド](docs/npm-setup.md) - GitHub Packagesを利用して実行
+1. Node.jsをローカル端末にインストール
+2. 利用中のMCP対応のAIエージェントにConoHa VPS MCPの設定を記載し、MCPサーバーを起動
+    <details>
+    <summary>設定（簡略版）</summary>
+
+    ```json
+    {
+      "ConoHa VPS MCP": {
+        "command": "npm",
+        "args": [
+          "exec",
+          "@gmo-internet/conoha-vps-mcp@latest"
+        ],
+        "env": {
+          "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
+          "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
+          "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
+        }
+      }
+    }
+    ```
+    </details>
+
+詳細な手順は 👉 [npm パッケージインストール版実行ガイド](docs/npm-setup.md) を参照してください。
+
+### 🔧 その他の方法で利用する場合
+
 - 📋 [Node.js ローカルビルド版実行ガイド](docs/nodejs-setup.md) - ソースコードからビルドして実行
 - 🐳 [Docker ローカルビルド版実行ガイド](docs/docker-setup.md) - Dockerコンテナで実行
 
