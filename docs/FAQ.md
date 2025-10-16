@@ -60,12 +60,12 @@ A: プロジェクトをクローンしたディレクトリの絶対パスを�
 
 ### Q: どのAIエージェントで利用できますか？
 
-A: Claude Desktop、Cline（VSCode）、GitHub Copilot（VSCode）など、MCPプロトコルに対応したAIエージェントで利用できます。
+A: Cursor、Claude Desktop、GitHub Copilot（VSCode/CLI）、Codex CLI、Cline（VSCode）など、MCPプロトコルに対応したAIエージェントで利用できます。
 
 ### Q: GitHub Copilot や Cline において、使用するAIモデルによるツール実行結果や応答の違いはありますか？
 
 A: 使用する AI モデルによってツール実行の精度や意図の汲み取り方に違いがあります。本MCPサーバーの操作においては、Claude Sonnet が GPT 系モデルと比べてツール呼び出しやパラメータ指定の解釈において精度が高く、より意図通りに動作する傾向があります。  
-そのため、Cline や GitHub Copilot 上でツールを実行する際には、Claude Sonnet を使用することを推奨しています。
+そのため、CursorやGitHub Copilot（VSCode/CLI）、Codex CLI、Cline上でツールを実行する際には、Claude Sonnet を使用することを推奨しています。
 
 ### Q: 日本語でコマンドを実行できますか？
 
@@ -116,6 +116,7 @@ A: 以下を確認してください：
 
 A: docs/配下の各実行ガイド末尾のトラブルシューティングをご覧ください。
 
+- [mcpb ファイルインストール版実行ガイド](./mcpb-setup.md)
 - [npm パッケージインストール版実行ガイド](./npm-setup.md)
 - [Node.js ローカルビルド版実行ガイド](./nodejs-setup.md)
 - [Docker ローカルビルド版実行ガイド](./docker-setup.md)
@@ -135,16 +136,10 @@ A: 以下を確認してください：
 - Dockerが正常に動作しているか
 - WSLが有効になっているか（Windows環境の場合）
 
-### Q: GitHub Copilot (VSCode) 上でツールを実行しようとするとやりとりが止まってしまいます
+### Q: GitHub Copilot (CLI)でMCPサーバーの設定をしたところ、そのサーバーが呼び出されません。
 
-A: 2025年7月15日現在、GitHub Copilot (VSCode) 上で比較的長めのやり取りをすると、下記の画像のように途中でやりとりが止まっているように見える事象が確認されています。  
-
-![やりとりが途中で止まってしまっており、先に進める操作ができない状態](../assets/vscodecopilot_stop_chat.png)
-
-これはGitHub Copilot (VSCode) 側のバグと思われる動作であり、現在調査・対応を進めております。  
-現状の対策方法としては、途中でやりとりが止まってしまった際にチャット画面の横幅を広げたり狭めたりすることで、やりとりを進めることができることを確認しております。 
-
-![チャット画面の横幅を変更](../assets/vscodecopilot_change_chat_width.png)
+A: まずは入力したプロンプト文を見直してください。プロンプト文によってはうまく意図が伝わらない場合があります。
+それでも解決しない場合は、Copilotの再起動、ターミナルの再起動などを行ってください。
 
 ### Q: Windows環境でWSLエラーが発生します
 

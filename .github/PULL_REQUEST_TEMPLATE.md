@@ -17,4 +17,4 @@
 - [ ] GitHub ActionsのCIがすべて通ることを確認しました
 - [ ] NOTICEを更新しました（`npm run generate:notice`コマンドの実行）※ パッケージの更新があった場合
 - [ ] release前にはpackage.jsonとmanifest.jsonのバージョン更新を行いました
-- [ ] npmで新規のAccess tokenを発行しました
+- [ ] npmへのpublishはGitHub Action経由で、Trusted Publishingにて行うため、内容を確認しました
