@@ -23,8 +23,6 @@
 
 ## 🌟 概要
 
-⚠️ 注意: v0.3.0 以降、本パッケージの配布元を GitHub Packages から npm レジストリへ移行しました。最新バージョンは npm から入手してください。
-
 ConoHa VPS MCPは、ConoHa VPSの[公開API](https://doc.conoha.jp/reference/api-vps3/)を**日本語**で簡単に操作できるオープンソースの**Model Context Protocol (MCP) サーバー**です。
 
 Claude、GitHub Copilot、ClineなどのAIエージェントと連携することで、**自然言語によるインフラ操作**が可能になります。
