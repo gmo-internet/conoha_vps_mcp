@@ -1,0 +1,3 @@
+# CODEOWNERS
+.github/CODEOWNERS @s-hirano-ist @masayay
+.github/workflows/ @s-hirano-ist @masayay
