@@ -13,6 +13,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+      id-token: write # for OIDC on npm publish
+
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -37,12 +39,9 @@ jobs:
           node-version: "22.19.0"
           registry-url: "https://registry.npmjs.org/"
 
-      # 4) NPM Registry用の.npmrc生成
-      - name: Configure npm for NPM Registry
-        if: success()
-        run: |
-          echo "registry=https://registry.npmjs.org/" > .npmrc
-          echo "//registry.npmjs.org/:_authToken=\${NODE_AUTH_TOKEN}" >> .npmrc
+      # 4) npm 11.5.1以降が必要 TODO: delete when nodejs updates to v24
+      - name: Update npm
+        run: npm install -g npm@latest
 
       # 5) 依存インストール
       - name: Install dependencies
@@ -72,6 +71,4 @@ jobs:
       # 10) 公開
       - name: Publish to NPM Registry
         if: success()
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public

@@ -7,20 +7,30 @@
   - [前提条件](#前提条件)
   - [プロジェクトの準備](#プロジェクトの準備)
   - [AIエージェント別設定方法](#aiエージェント別設定方法)
-    - [GitHub Copilot (VSCode)](#github-copilot-vscode)
-      - [1. 設定の追加](#1-設定の追加)
-      - [2. 設定値の確認](#2-設定値の確認)
+    - [Cursor](#cursor)
+      - [1. mcp.jsonに設定を記述](#1-mcpjsonに設定を記述)
+      - [2. 必要な環境変数](#2-必要な環境変数)
       - [3. MCPサーバーの起動](#3-mcpサーバーの起動)
       - [4. ツールの使用](#4-ツールの使用)
+    - [GitHub Copilot (VSCode)](#github-copilot-vscode)
+      - [1. 設定の追加](#1-設定の追加)
+      - [2. 必要な環境変数](#2-必要な環境変数-1)
+      - [3. 起動方法/Copilot Chatでの利用方法](#3-起動方法copilot-chatでの利用方法)
+      - [4. プロンプトを入力して操作を実行します](#4-プロンプトを入力して操作を実行します)
+    - [GitHub Copilot (CLI)](#github-copilot-cli)
+      - [1. 設定の追加](#1-設定の追加-1)
+      - [2. サーバーの利用](#2-サーバーの利用)
+    - [Codex CLI](#codex-cli)
+      - [1. config.tomlに設定を記述](#1-configtomlに設定を記述)
+      - [2. サーバーの利用](#2-サーバーの利用-1)
     - [Cline (VSCode)](#cline-vscode)
-      - [1. VSCodeにおけるClineのインストール](#1-vscodeにおけるclineのインストール)
-      - [2. Clineの設定の追加](#2-clineの設定の追加)
-      - [3. 設定値の確認](#3-設定値の確認)
-      - [4. ツールの使用](#4-ツールの使用-1)
+      - [1. cline\_mcp\_settings.jsonに設定を記述](#1-cline_mcp_settingsjsonに設定を記述)
+      - [2. 必要な環境変数](#2-必要な環境変数-2)
+      - [3. ツールの使用](#3-ツールの使用-1)
     - [Claude Desktop](#claude-desktop)
-      - [1. Claude Desktopの設定の追加](#1-claude-desktopの設定の追加)
-      - [2. 設定値の確認](#2-設定値の確認-1)
-      - [3. ツールの使用](#3-ツールの使用)
+      - [1. claude\_desktop\_config.jsonに設定を記述](#1-claude_desktop_configjsonに設定を記述)
+      - [2. 設定値の確認](#2-設定値の確認)
+      - [3. ツールの使用](#3-ツールの使用-2)
   - [トラブルシューティング](#トラブルシューティング)
     - [よくある問題](#よくある問題)
 
@@ -50,67 +60,46 @@ ls dist/index.js
 
 ## AIエージェント別設定方法
 
-### GitHub Copilot (VSCode)
+### Cursor
 
 <details>
 <summary>セットアップ手順</summary>
 
-#### 1. 設定の追加
+#### 1. mcp.jsonに設定を記述
+mcp.jsonに起動に必要なコマンド、環境変数を設定してください。
 
-1. VSCode上の画面で`ctrl + Shift + P`を実行してコマンドパレットを開きます
+以下の設定を行います：
 
-2. 上部の検索窓で`Open User Configuration`と入力します（大文字小文字は区別しません）
+- **コマンド**: `npm`
+- **引数**: 
+  - `--prefix`,
+  - `PATH_TO_DIRECTORY`,
+  - `start`
+- **環境変数**:
+  - `OPENSTACK_TENANT_ID`: `YOUR_OPENSTACK_TENANT_ID`
+  - `OPENSTACK_USER_ID`: `YOUR_OPENSTACK_USER_ID`
+  - `OPENSTACK_PASSWORD`: `YOUR_OPENSTACK_PASSWORD`
 
-   ![画面上部中央に表示されている検索窓に、Open User Configurationと入力](../assets/vscode_add_mcp.png)
+##### mcp.jsonの書き方
+以下のURL先の公式ドキュメントを参照してください。
 
-3. 「MCP: ユーザー構成を開く」をクリックします
+公式ドキュメント：https://cursor.com/ja/docs/context/mcp#mcpjson
 
-![検索結果に出てきたMCP: ユーザー構成を開くを選択](../assets/vscode_open_user_configuration.png)
+##### mcp.jsonの設置場所
 
-4. 開いたmcp.jsonに以下の設定を追加します：
-
-```json
-{
-  "inputs": [
-    {
-      "type": "promptString",
-      "id": "openstack-tenant-id",
-      "description": "OpenStack Tenant ID"
-    },
-    {
-      "type": "promptString",
-      "id": "openstack-user-id",
-      "description": "OpenStack User ID"
-    },
-    {
-      "type": "promptString",
-      "id": "openstack-password",
-      "description": "OpenStack Password",
-      "password": true
-    }
-  ],
-  "servers": {
-    "ConoHa VPS MCP": {
-      "command": "npm",
-      "args": [
-        "--prefix",
-        "PATH_TO_DIRECTORY",
-        "start"
-      ],
-      "env": {
-        "OPENSTACK_TENANT_ID": "${input:openstack-tenant-id}",
-        "OPENSTACK_USER_ID": "${input:openstack-user-id}",
-        "OPENSTACK_PASSWORD": "${input:openstack-password}"
-      }
-    }
-  }
-}
+特定のプロジェクト専用のツールとして設定する場合
+```txt
+使用するプロジェクト内に以下のディレクトリ、ファイルを作成
+.cursor/mcp.json
 ```
 
-#### 2. 設定値の確認
+どこからでも使えるツールとして設定する場合
+```txt
+~/.cursor/mcp.json
+```
 
-- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパスに置き換えてください
-- 環境変数の設定値：
+
+#### 2. 必要な環境変数
 
 ```txt
 OPENSTACK_TENANT_ID: テナントID
@@ -125,79 +114,44 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 #### 3. MCPサーバーの起動
 
-編集したjsonファイル上に表示される起動ボタンをクリックして、MCPサーバーを起動します。その際、環境変数の初期設定を求められるので、確認した設定値を入力してください。
-
-![起動と書かれたボタンをクリックして起動](../assets/vscode_settings_mcp_npm_start.png)
-
-> 📌
-> 環境変数の入力欄は起動ボタンをクリックした後に、画面上部に表示されます。
-> 
-> ![起動ボタンを押すと、画面上部に環境変数入力欄が表示される](../assets/vscode_npm_mcp_json_input.png)
+mcp.jsonを設定後、設定内容に問題がない場合は自動的に起動します。
 
 #### 4. ツールの使用
 
-1. GitHub Copilotを起動します
-   - **Windows/Linux**: `Ctrl + Shift + I`
-   - **Mac**: `Command + Shift + I`
+1. チャット欄左下の切り替えメニューから**Agent**モードを選択します
 
-2. チャット欄のドロップダウンメニューから**Agent**モードを選択します
-
-3. チャット欄の**ツール**ボタンをクリックして、**MCPサーバー：ConoHa VPS MCP**を選択します
-
-   ![MCPサーバー：ConoHa VPS MCPと表示される](../assets/view_tools.png)
-
-4. プロンプトを入力して操作を実行します
+2. プロンプトを入力して操作を実行します
 
    [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
-### Cline (VSCode)
+### GitHub Copilot (VSCode)
 
 <details>
 <summary>セットアップ手順</summary>
 
-#### 1. VSCodeにおけるClineのインストール
+#### 1. 設定の追加
 
-1. VSCode左側の拡張機能メニューを開きます
+mcp.jsonに起動に必要なコマンド、環境変数を設定してください。
 
-   ![VSCodeの拡張機能メニューを開く](../assets/vscode_install.png)
+以下の設定を行います：
 
-2. 上部の検索窓で「cline」と検索し、Clineをインストールします
+- **コマンド**: `npm`
+- **引数**: 
+  - `--prefix`,
+  - `PATH_TO_DIRECTORY`,
+  - `start`
 
-   ![Clineをインストール](../assets/cline_install.png)
+また、以下の入力プロンプトを設定します：
+- `openstack-tenant-id` (OpenStack Tenant ID)
+- `openstack-user-id` (OpenStack User ID)
+- `openstack-password` (OpenStack Password、パスワードタイプ)
 
-#### 2. Clineの設定の追加
+mcp.jsonの詳しい書き方や配置場所は、公式ドキュメント（ https://docs.github.com/ja/copilot/how-tos/provide-context/use-mcp/extend-copilot-chat-with-mcp#configuring-mcp-servers-manually ）を参照してください
 
-1. VSCode左側のClineメニューを開き、適切なプランを選択するとMCPサーバーアイコンが表示されるため、これをクリックします
+#### 2. 必要な環境変数
 
-   ![ClineのMCPサーバー設定を開く](../assets/cline_setting.png)
-
-2. 歯車アイコンから設定を開き、 **[Configure MCP Servers]** をクリックします
-
-   ![ClineのMCPサーバーconfigファイルを開く](../assets/cline_setting_config.png)
-
-3. `cline_mcp_settings.json`に以下の設定を追加します：
-
-```json
-{
-  "mcpServers": {
-    "ConoHa VPS MCP": {
-      "command": "npm",
-      "args": ["--prefix", "PATH_TO_DIRECTORY", "start"],
-      "env": {
-        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
-        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
-      }
-    }
-  }
-}
-```
-
-#### 3. 設定値の確認
-
-- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパスに置き換えてください
 - 環境変数の設定値：
 
 ```txt
@@ -209,55 +163,165 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 各値はConoHaコントロールパネルのAPI設定で確認できます。
 
 ![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
 
-#### 4. ツールの使用
 
-1. チャット欄右下の切り替えメニューから**Act**モードを選択します
+💡必要に応じて`.env`ファイルを用意し、`--env-file`オプションで指定することも可能です。
 
-2. プロンプトを入力して操作を実行します
+#### 3. 起動方法/Copilot Chatでの利用方法
+
+下記の公式ドキュメントを参照してください
+
+起動方法：https://docs.github.com/ja/copilot/how-tos/provide-context/use-mcp/extend-copilot-chat-with-mcp#configuring-mcp-servers-manually
+
+Copilot Chatでの利用方法：https://docs.github.com/ja/copilot/how-tos/provide-context/use-mcp/extend-copilot-chat-with-mcp#copilot-chat-%E3%81%A7%E3%81%AE-mcp-%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%AE%E4%BD%BF%E7%94%A8
+
+
+#### 4. プロンプトを入力して操作を実行します
 
    [サンプルプロンプト](../README.md#-使用例)
 
 </details>
 
-### Claude Desktop
+### GitHub Copilot (CLI)
+<details>
+<summary>セットアップ手順</summary>
+
+GitHub Copilot (CLI)のインストール方法や起動方法などは、下記の公式ドキュメントを参照してください。
+[インストール方法]("https://docs.github.com/ja/copilot/how-tos/set-up/install-copilot-cli")
+[起動方法]("https://docs.github.com/ja/copilot/how-tos/use-copilot-agents/use-copilot-cli")
+
+#### 1. 設定の追加
+1. GitHub Copilot (CLI)を起動させて、以下のコマンドを入力します。
+
+```
+/mcp add
+```
+
+コマンドを入力して実行後、MCPサーバーの実行に必要な情報を入力する欄が出力されます。
+それぞれの項目では以下のように入力してください。
+
+**Server Name:**
+
+この項目では、ユーザー自身が識別できる名前であれば任意の名前を入力することができます。
+ただし英数字、アンダースコア、ハイフンのみを入力することができます（空白などを含めることはできません）。
+```
+例：ConoHa-VPS-MCP
+```
+
+**Server Type:**
+```
+[1] Local
+```
+
+**Command:**
+```
+npm --prefix PATH_TO_DIRECTORY start
+```
+
+**Environment Variables:**
+```
+OPENSTACK_TENANT_ID=YOUR_OPENSTACK_TENANT_ID, OPENSTACK_USER_ID=YOUR_OPENSTACK_USER_ID, OPENSTACK_PASSWORD=YOUR_OPENSTACK_PASSWORD
+```
+それぞれの環境変数の設定値：
+
+```txt
+OPENSTACK_TENANT_ID: テナントID
+OPENSTACK_USER_ID: APIユーザーのユーザーID
+OPENSTACK_PASSWORD: APIユーザーのパスワード
+```
+
+各値はConoHaコントロールパネルのAPI設定で確認できます。
+
+![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
+
+**Tools**
+すべてのtoolを使用したい場合は``*``を、使用したいtoolを指定したい場合はカンマ区切りでtool名を入力してください（デフォルト値は``*``）
+
+[tool一覧](./tool.md)
+
+以上の入力が完了したら、``ctrl`` + ``s``で登録情報を保存します。
+``MCP configuration saved successfully! Changes will take effect immediately.``というメッセージが出力されたら``q``キーを押して終了させます。
+
+#### 2. サーバーの利用
+プロンプトを入力して操作を実行します。
+[サンプルプロンプト](../README.md#-使用例)
+
+</details>
+
+### Codex CLI
 
 <details>
 <summary>セットアップ手順</summary>
 
-#### 1. Claude Desktopの設定の追加
+Codex CLIのインストール方法や起動方法などは、下記の公式ドキュメントを参照してください。
+[インストール/起動方法](https://github.com/openai/codex/blob/main/README.md)
 
-1. メニューバーから **[ファイル]** → **[設定]** を開きます
+### 1. config.tomlに設定を記述
+config.tomlに起動に必要なコマンド、環境変数を設定してください。
 
-   ![Claude Desktopの設定を開く](../assets/claude_desktop_setting.png)
+以下の設定を行います：
 
-2. 左側のメニューから **[開発者]** タブを選択します
+- **コマンド**: `npm`
+- **引数**: 
+  - `--prefix`,
+  - `PATH_TO_DIRECTORY`,
+  - `start`
+- **環境変数**:
+  - `OPENSTACK_TENANT_ID`: `YOUR_OPENSTACK_TENANT_ID`
+  - `OPENSTACK_USER_ID`: `YOUR_OPENSTACK_USER_ID`
+  - `OPENSTACK_PASSWORD`: `YOUR_OPENSTACK_PASSWORD`
 
-   ![開発者タブ](../assets/claude_desktop_setting_config.png)
+config.tomlの場所：``~/.codex/config.toml``
 
-3. **[構成を編集]** をクリックします
+config.tomlでの詳しい設定方法は、下記の公式ドキュメントを参照してください。
+[config.tomlでMCPサーバーを設定する方法](https://github.com/openai/codex/blob/main/docs/config.md#connecting-to-mcp-servers)
 
-4. `claude_desktop_config.json`を開き、以下の設定を追加します：
+初めてMCPサーバーを追加する場合などはconfig.tomlが作成されていない場合があります。
+その際はご自身でconfig.tomlを作成してください。
 
-```json
-{
-  "mcpServers": {
-    "ConoHa VPS MCP": {
-      "command": "node",
-      "args": ["PATH_TO_DIRECTORY", "dist/index.js"],
-      "env": {
-        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
-        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
-      }
-    }
-  }
-}
+それぞれの環境変数の設定値：
+
+```txt
+OPENSTACK_TENANT_ID: テナントID
+OPENSTACK_USER_ID: APIユーザーのユーザーID
+OPENSTACK_PASSWORD: APIユーザーのパスワード
 ```
 
-#### 2. 設定値の確認
+各値はConoHaコントロールパネルのAPI設定で確認できます。
 
-- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパスに置き換えてください
+![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
+
+#### 2. サーバーの利用
+プロンプトを入力して操作を実行します。
+[サンプルプロンプト](../README.md#-使用例)
+
+</details>
+
+### Cline (VSCode)
+
+<details>
+<summary>セットアップ手順</summary>
+
+#### 1. cline_mcp_settings.jsonに設定を記述
+cline_mcp_settings.jsonに起動に必要なコマンド、環境変数を設定してください。
+
+以下の設定を行います：
+
+- **コマンド**: `npm`
+- **引数**: 
+  - `--prefix`,
+  - `PATH_TO_DIRECTORY`,
+  - `start`
+
+##### cline_mcp_settings.jsonの書き方
+
+cline_mcp_settings.jsonの詳しい書き方や設定方法は、公式ドキュメント（ https://docs.cline.bot/mcp/configuring-mcp-servers ）を参照してください。
+
+#### 2. 必要な環境変数
+
 - 環境変数の設定値：
 
 ```txt
@@ -272,12 +336,50 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 
 #### 3. ツールの使用
 
-1. 設定が完了したら、メニューバーの **[ファイル]** → **[終了]** からClaude Desktopを終了し、再起動します  
-※右上の「×」ボタンで終了すると設定が正しく反映されないため、必ず **[ファイル]** → **[終了]** を使用してください
-
-   ![Claude 再起動](../assets/claude_desktop_reboot.png)
+1. チャット欄右下の切り替えメニューから**Act**モードを選択します
 
 2. プロンプトを入力して操作を実行します
+
+   [サンプルプロンプト](../README.md#-使用例)
+
+</details>
+
+### Claude Desktop
+
+<details>
+<summary>セットアップ手順</summary>
+
+#### 1. claude_desktop_config.jsonに設定を記述
+claude_desktop_config.jsonに起動に必要なコマンド、環境変数を設定してください。
+
+以下の設定を行います：
+
+- **コマンド**: `node`
+- **作業ディレクトリ (cwd)**: PATH_TO_DIRECTORY（プロジェクトディレクトリのパスを指定）
+- **引数**: 
+  - `dist/index.js`
+
+##### claude_desktop_config.jsonの書き方
+
+claude_desktop_config.jsonの詳しい書き方や設定方法は、公式ドキュメント（ https://mcp-jp.apidog.io/claude-デスクトップ-ユーザー向け-870862m0 ）を参照してください。
+
+#### 2. 設定値の確認
+
+- 環境変数の設定値：
+
+```txt
+OPENSTACK_TENANT_ID: テナントID
+OPENSTACK_USER_ID: APIユーザーのユーザーID
+OPENSTACK_PASSWORD: APIユーザーのパスワード
+```
+
+各値はConoHaコントロールパネルのAPI設定で確認できます。
+
+![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+
+#### 3. ツールの使用
+
+プロンプトを入力して操作を実行します
 
    [サンプルプロンプト](../README.md#-使用例)
 
@@ -294,5 +396,4 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 - **ファイル不存在エラー**: `npm run build`が正常に完了し、`dist/index.js`ファイルが存在するか確認してください
 - その他FAQは[こちら](FAQ.md)
 
-> [!TIP]
-> 問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)でお気軽にお問い合わせください。
+**💡 ヒント:** 問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)でお気軽にお問い合わせください。

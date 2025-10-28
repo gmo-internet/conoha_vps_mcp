@@ -23,23 +23,11 @@
 
 ## 🌟 概要
 
-> [!IMPORTANT]
-> v0.3.0 以降、本パッケージの配布元を GitHub Packages から npm レジストリへ移行しました。
-> 最新バージョンは npm から入手してください。
-
 ConoHa VPS MCPは、ConoHa VPSの[公開API](https://doc.conoha.jp/reference/api-vps3/)を**日本語**で簡単に操作できるオープンソースの**Model Context Protocol (MCP) サーバー**です。
 
 Claude、GitHub Copilot、ClineなどのAIエージェントと連携することで、**自然言語によるインフラ操作**が可能になります。
 
-> [!CAUTION]
-> **⚠️ 本ソフトウェアは現在ベータ版です**
->
-> - いかなる保証もなく現状のまま提供されます。
-> - 機能・動作は予告なく変更される場合があります。
-> - 本番環境での使用前に十分なテストを行ってください。
-> - バグやフィードバックは GitHub Issues からご報告願います。
->
-> このベータ版 ConoHa VPS MCP を使用することで、これらの条件に同意したものとみなされます。
+⚠️ 注意: 本ソフトウェアは現在ベータ版です。機能や動作が予告なく変更される場合があります。本番環境での使用前には十分なテストを行ってください。このベータ版 ConoHa VPS MCP を使用することで、これらの条件に同意したものとみなされます。
 
 ## ✨ 主な特徴
 
@@ -89,6 +77,10 @@ Model Context Protocolとは、GitHub Copilot、Cline、ClaudeなどのAIエー�
     }
     ```
     </details>
+  
+  | Cursor | VS Code |
+  |:------:|:-------:|
+  | [![Install MCP Server](https://cursor.com/deeplink/mcp-install-light.svg)](https://cursor.com/ja/install-mcp?name=ConoHa%20VPS%20MCP&config=eyJlbnYiOnsiT1BFTlNUQUNLX1RFTkFOVF9JRCI6IiIsIk9QRU5TVEFDS19VU0VSX0lEIjoiIiwiT1BFTlNUQUNLX1BBU1NXT1JEIjoiIn0sImNvbW1hbmQiOiJucG0gZXhlYyBAZ21vLWludGVybmV0L2Nvbm9oYS12cHMtbWNwQGxhdGVzdCJ9) | [![Install VS Code](https://img.shields.io/badge/Install-VS_Code-FF9900?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=ConoHa%20VPS%20MCP&config=%7B%22command%22%3A%22npm%22%2C%22args%22%3A%5B%22exec%22%2C%22%40gmo-internet%2Fconoha-vps-mcp%40latest%22%5D%2C%22env%22%3A%7B%22OPENSTACK_TENANT_ID%22%3A%22%22%2C%22OPENSTACK_USER_ID%22%3A%22%22%2C%22OPENSTACK_PASSWORD%22%3A%22%22%7D%2C%22type%22%3A%22stdio%22%7D) |
 
 詳細な手順は 👉 [npm パッケージインストール版実行ガイド](docs/npm-setup.md) を参照してください。
 
@@ -125,14 +117,13 @@ Ubuntu 24.04でメモリ1GBのサーバーを、rootパスワード：vG7#kLp9zX
 ネームタグ：test-1、セキュリティグループ：defaultとして作ってください。
 ```
 
-> [!CAUTION]
-> **パスワードセキュリティに関する重要な警告**
->
-> - 上記のパスワード例は**絶対に実際に使用しないでください**（公開されているため）
-> - 実際の運用では、十分に複雑で一意なパスワードを生成してください
-> - サーバー作成後は、**直ちに**パスワードの変更、またはパスワード認証の無効化を行ってください
-> - SSHキー認証への変更を強く推奨します
-> - AIエージェントとの会話履歴にパスワードが残ることに注意してください
+**⚠️ 注意: パスワードセキュリティに関する重要な警告**
+
+- 上記のパスワード例は**絶対に実際に使用しないでください**（公開されているため）
+- 実際の運用では、十分に複雑で一意なパスワードを生成してください
+- サーバー作成後は、**直ちに**パスワードの変更、またはパスワード認証の無効化を行ってください
+- SSHキー認証への変更を強く推奨します
+- AIエージェントとの会話履歴にパスワードが残ることに注意してください
 
 ### セキュリティ設定
 
@@ -145,8 +136,7 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 
 ### 対応プラットフォーム
 
-> [!IMPORTANT]
-> 今後のバージョンアップによってサポート対象外となる可能性があります。
+**💡 重要:** 今後のバージョンアップによってサポート対象外となる可能性があります。
 
 #### MCPサーバー実行環境
 
@@ -156,13 +146,13 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 
 #### AIエージェント統合
 
+- ✅ [Cursor](https://cursor.com/ja/download)
 - ✅ [Claude Desktop](https://claude.ai/download)
 - ✅ [Cline (VS Code)](https://github.com/cline/cline)
 - ✅ [GitHub Copilot (VS Code)](https://docs.github.com/ja/copilot)
+- ✅ [Codex CLI](https://github.com/openai/codex)
 
-> [!NOTE]
-> MCPに対応した他のAIエージェントでも利用できます。
-> 詳細は各AIエージェントのドキュメントを参照して下さい。
+**📝 注記:** MCPに対応した他のAIエージェントでも利用できます。詳細は各AIエージェントのドキュメントを参照して下さい。
 
 #### ConoHa環境
 
