@@ -13,13 +13,15 @@ interface ApiResponse {
 }
 
 export async function formatGetImageResponse(response: Response) {
+	const status = response.status;
+	const statusText = response.statusText;
 	try {
 		const body = (await response.json()) as ApiResponse;
 
 		if (!body?.images || !Array.isArray(body.images)) {
 			return JSON.stringify({
-				status: response.status,
-				statusText: response.statusText,
+				status: status,
+				statusText: statusText,
 				body: body,
 			});
 		}
@@ -37,17 +39,17 @@ export async function formatGetImageResponse(response: Response) {
 				};
 				return slim;
 			}),
-		};
+		} satisfies ApiResponse;
 		return JSON.stringify({
-			status: response.status,
-			statusText: response.statusText,
+			status: status,
+			statusText: statusText,
 			body: slimmed,
 		});
 	} catch (error) {
 		console.error("Error formatting response:", error);
 		return JSON.stringify({
-			status: response.status,
-			statusText: response.statusText,
+			status: status,
+			statusText: statusText,
 			body: "<error>",
 		});
 	}

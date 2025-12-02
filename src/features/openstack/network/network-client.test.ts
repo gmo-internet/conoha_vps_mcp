@@ -4,11 +4,16 @@ import {
 	deleteNetworkByParam,
 	getNetwork,
 	getNetworkByParam,
+	getSecurityGroup,
 	updateNetworkByParam,
 } from "./network-client";
 
 vi.mock("../common/response-formatter", () => ({
 	formatResponse: vi.fn(),
+}));
+
+vi.mock("./get-security-group-response-formatter", () => ({
+	formatGetSecurityGroupResponse: vi.fn(),
 }));
 
 // executeOpenstackApi のモック
@@ -24,6 +29,10 @@ const mockExecuteOpenstackApi = vi.mocked(
 const mockFormatResponse = vi.mocked(
 	await import("../common/response-formatter"),
 ).formatResponse;
+
+const mockFormatGetSecurityGroupResponse = vi.mocked(
+	await import("./get-security-group-response-formatter"),
+).formatGetSecurityGroupResponse;
 
 describe("network-client", () => {
 	beforeEach(() => {
@@ -282,6 +291,69 @@ describe("network-client", () => {
 				"DELETE",
 				expectedBaseUrl,
 				"/v2.0/ports/another-port-id",
+			);
+		});
+	});
+
+	describe("getSecurityGroup", () => {
+		const mockResponse = JSON.stringify({
+			status: 200,
+			statusText: "OK",
+			body: {
+				security_groups: [
+					{
+						id: "security-group-id-123",
+						name: "test-security-group",
+						description: "Test security group",
+						security_group_rules: [],
+					},
+				],
+			},
+		});
+
+		beforeEach(() => {
+			mockFormatGetSecurityGroupResponse.mockResolvedValue(mockResponse);
+		});
+
+		it("Network API（/v2.0/security-groups）へのGETリクエストでセキュリティグループ一覧レスポンスを受け取った場合に、正しいURL（https://networking.c3j1.conoha.io）とパス（/v2.0/security-groups）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/v2.0/security-groups'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+			const path = "/v2.0/security-groups";
+
+			const result = await getSecurityGroup(path);
+
+			expect(result).toBe(mockResponse);
+			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
+				"GET",
+				expectedBaseUrl,
+				"/v2.0/security-groups",
+			);
+			// getSecurityGroup は formatResponse を使わないことの明示確認
+			expect(mockFormatResponse).not.toHaveBeenCalled();
+			expect(mockFormatGetSecurityGroupResponse).toHaveBeenCalledTimes(1);
+		});
+
+		it("パスの先頭にスラッシュがない場合も正しく処理する", async () => {
+			const path = "v2.0/security-groups";
+
+			const result = await getSecurityGroup(path);
+
+			expect(result).toBe(mockResponse);
+			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
+				"GET",
+				expectedBaseUrl,
+				"v2.0/security-groups",
+			);
+		});
+
+		it("空のパスでも正しく処理する", async () => {
+			const path = "";
+
+			const result = await getSecurityGroup(path);
+
+			expect(result).toBe(mockResponse);
+			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
+				"GET",
+				expectedBaseUrl,
+				"",
 			);
 		});
 	});

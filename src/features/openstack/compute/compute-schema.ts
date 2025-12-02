@@ -33,6 +33,7 @@ export const CreateServerRequestSchema = z
 					)
 					.optional(),
 				key_name: z.string().optional(),
+				user_data: z.string().optional(),
 			})
 			.strict(),
 	})

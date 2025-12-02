@@ -1,5 +1,5 @@
 export const conohaGetDescription = `
-   JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
+   JA: ConoHa の 公開 API を利用してサーバー操作を行います。
 
          • 引数 ‘path’ でアクセス先リソースを指定
 
@@ -12,12 +12,13 @@ export const conohaGetDescription = `
                /v2.0/security-groups      (セキュリティグループ一覧取得)
                /v2.0/security-group-rules (セキュリティグループルール一覧取得)
                /v2.0/ports                (ポート一覧取得)
+               startup-scripts            (スタートアップスクリプト一覧取得)
                
          • 契約に紐づくサーバー管理用途にのみ使用可
    `;
 
 export const conohaGetByParamDescription = `
-   JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
+   JA: ConoHa の 公開 API を利用してサーバー操作を行います。
 
          • 引数 ‘path’ でアクセス先リソースを指定
 
@@ -38,7 +39,7 @@ export const conohaGetByParamDescription = `
    `;
 
 export const conohaPostDescription = `
-   JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
+   JA: ConoHa の 公開 API を利用してサーバー操作を行います。
 
          • inputに‘path’と‘requestBody’を指定
          
@@ -52,12 +53,22 @@ export const conohaPostDescription = `
          
          • 利用可能パス: 
                /volumes                   (ボリューム作成)
-               /servers                   (サーバー作成 ※adminPass はユーザーが指定する必要があります)
+               /servers                   (サーバー作成 ※adminPass はユーザーが指定する必要があります・user_data はBase64エンコードされた文字列を指定する必要があります)
                /os-keypairs               (SSHキーペア作成)
                /v2.0/security-groups      (セキュリティグループ作成)
                /v2.0/security-group-rules (セキュリティグループルール作成 ※port_range_min と port_range_max はユーザーが指定する必要があります)
 
          • サーバー作成時の adminPass はユーザーが指定する必要があります。自動設定しないでください。
+
+         • スタートアップスクリプトを利用する場合、user_data にスタートアップスクリプトを指定する必要があります。
+
+         • スタートアップスクリプト一覧に必要なスクリプトがある場合は、fetch_url ツールを用いて内容を該当のスクリプトの URL から取得し、encode_base64 ツールを用いてその内容をBase64エンコードした文字列を user_data に指定してください。スタートアップスクリプトにパラメータを渡す必要がある場合は、内容にパラメータを含めた上で encode_base64 ツールを用いてBase64エンコードした文字列を user_data に指定してください。
+
+         • スタートアップスクリプト一覧に必要なスクリプトがない場合は、新たにスタートアップスクリプトを作成し、そのスクリプトの内容を encode_base64 ツールを用いてBase64エンコードした文字列を user_data に指定してください。
+
+         • スタートアップスクリプトにはインストールしたいソフトウェアやライブラリのインストールコマンドなどを記載してください。必要に応じてスタートアップスクリプト一覧から fetch_url ツールを用いて取得したスクリプトを参考にしてください。
+
+         • user_data を指定する場合は、必ず encode_base64 ツールを用いてBase64エンコードされた文字列を指定してください。自動エンコードしないでください。
 
          • セキュリティグループルールの tcp または udp プロトコルを使用する場合、port_range_min と port_range_max の値はユーザーが指定する必要があります。自動設定しないでください。
 
@@ -75,7 +86,8 @@ export const conohaPostDescription = `
                      "security_groups": [                // List of security groups (optional)
                         {  "name": string  }             // Name of the security group
                      ],
-                     "key_name": string                 // Name of the SSH key pair (optional)
+                     "key_name": string                  // Name of the SSH key pair (optional)
+                     "user_data": string                 // Base64 encoded startup script (optional)
                   }
                }
 
@@ -120,7 +132,7 @@ export const conohaPostDescription = `
    `;
 
 export const conohaPostPutByParamDescription = `
-   JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
+   JA: ConoHa の 公開 API を利用してサーバー操作を行います。
    
          • inputに‘path’, ‘param’, ‘requestBody’を指定
          
@@ -202,7 +214,7 @@ export const conohaPostPutByParamDescription = `
    `;
 
 export const conohaDeleteByParamDescription = `
-   JA: ConoHa の OpenStack API を利用してサーバー操作を行います。
+   JA: ConoHa の 公開 API を利用してサーバー操作を行います。
    
          • 引数 ‘path’ でアクセス先リソースを指定
 
@@ -224,9 +236,25 @@ export const conohaDeleteByParamDescription = `
    `;
 
 export const createServerDescription = `
-   JA: ConoHa の OpenStack API を利用して新しいサーバーを作成します。
+   JA: ConoHa の 公開 API を利用して新しいサーバーを作成します。
         • rootパスワードは必ずユーザー自身が指定したものを設定してください。
         • rootパスワードは9~70文字の半角英数記号の組み合わせで指定してください。
         • rootパスワードにはアルファベット大文字、小文字、数字、記号をそれぞれ含めてください。(利用可能な記号は \^$+-*/|()[]{}.,?!_=&@~%#:;'" です)
         • rootパスワードの作成条件に誤りがあった場合でも、必ずユーザー自身にパスワードの再入力を依頼し、ユーザーが指定した値のみをadminPassに設定してください。
    `;
+
+export const fetchUrlDescription = `
+  JA: 指定したURLからコンテンツを取得します。
+
+         • 引数 'url' に取得したいURLを指定
+         • URLはhttp://またはhttps://で始まる必要があります
+         • 取得したコンテンツはテキスト形式で返されます
+`;
+
+export const encodeBase64Description = `
+  JA: 指定した文字列をBase64エンコードします。
+
+         • 引数 'text' にエンコードしたい文字列を指定
+         • エンコードされた文字列はテキスト形式で返されます
+         • 1文字以上10000文字以下のテキストを指定してください
+`;
