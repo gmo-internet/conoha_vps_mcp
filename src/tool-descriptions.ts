@@ -52,12 +52,14 @@ export const conohaPostDescription = `
          • 引数 ‘path’ でアクセス先リソースを指定
          
          • 利用可能パス: 
-               /volumes                   (ボリューム作成)
+               /volumes                   (ボリューム作成 ※imageRef はブートボリューム作成時には必須)
                /servers                   (サーバー作成 ※adminPass はユーザーが指定する必要があります・user_data はBase64エンコードされた文字列を指定する必要があります)
                /os-keypairs               (SSHキーペア作成)
                /v2.0/security-groups      (セキュリティグループ作成)
                /v2.0/security-group-rules (セキュリティグループルール作成 ※port_range_min と port_range_max はユーザーが指定する必要があります)
 
+         • ボリューム作成時の imageRef はブートボリューム作成時には必須です。必ず指定してください。それ以外の場合は任意で構いません。
+         
          • サーバー作成時の adminPass はユーザーが指定する必要があります。自動設定しないでください。
 
          • スタートアップスクリプトを利用する場合、user_data にスタートアップスクリプトを指定する必要があります。
@@ -104,7 +106,7 @@ export const conohaPostDescription = `
                      "description": string,          // Description of the volume (nullable)
                      "name": string,                 // Name of the volume (1-255 alphanumeric characters, underscores, or hyphens)
                      "volume_type": string,          // Type of the volume (name or ID)
-                     "imageRef": string              // Image ID to create the volume from
+                     "imageRef": string              // Image ID to create the volume from (optional, required for boot volume)
                   }
                }
 
@@ -148,12 +150,13 @@ export const conohaPostPutByParamDescription = `
          • 利用可能パス: 
                /action               (サーバー操作)
                /remote-consoles      (リモートコンソールURL取得)
+               /os-volume_attachments (ボリュームアタッチ)
                /v2.0/security-groups (セキュリティグループ更新)
                /volumes              (ボリューム更新)
                /v2.0/ports           (ポート更新)
 
-         • 引数 ‘param’ で必要な値を指定
-               /action, /remote-consoles: サーバーID
+         • 引数 'param' で必要な値を指定
+               /action, /remote-consoles, /os-volume_attachments: サーバーID
                /v2.0/security-groups: セキュリティグループID
                /volumes: ボリュームID
                /v2.0/ports: ポートID
@@ -187,6 +190,12 @@ export const conohaPostPutByParamDescription = `
                {  "remote_console": {
                      "protocol": "vnc" | "spice" | "serial",   // Protocol for the remote console
                      "type": "novnc" | "serial"                // Type of the remote console
+                  }
+               }
+
+               /os-volume_attachments:
+               {  "volumeAttachment": {
+                     "volumeId": string                        // Volume ID to attach
                   }
                }
 

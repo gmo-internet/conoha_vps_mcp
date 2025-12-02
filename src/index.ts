@@ -5,6 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { formatErrorMessage } from "./features/openstack/common/error-handler.js";
 import {
+	AttachVolumeRequestSchema,
 	CreateServerRequestSchema,
 	CreateSSHKeyPairRequestSchema,
 	OperateServerRequestSchema,
@@ -261,6 +262,11 @@ server.registerTool(
 					path: z.literal("/remote-consoles"),
 					param: z.string(),
 					requestBody: RemoteConsoleRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/os-volume_attachments"),
+					param: z.string(),
+					requestBody: AttachVolumeRequestSchema,
 				}),
 				z.object({
 					path: z.literal("/v2.0/security-groups"),

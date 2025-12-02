@@ -80,6 +80,8 @@ export const conohaPostPutByParamHandlers: Record<
 		createComputeByParam("/action", param, requestBody),
 	"/remote-consoles": (param, requestBody) =>
 		createComputeByParam("/remote-consoles", param, requestBody),
+	"/os-volume_attachments": (param, requestBody) =>
+		createComputeByParam("/os-volume_attachments", param, requestBody),
 	"/v2.0/security-groups": (param, requestBody) =>
 		updateNetworkByParam("/v2.0/security-groups", param, requestBody),
 	"/v2.0/ports": (param, requestBody) =>

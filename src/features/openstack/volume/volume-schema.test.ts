@@ -35,6 +35,21 @@ describe("Volume Schema Tests", () => {
 			expect(result.success).toBe(true);
 		});
 
+		it("CreateVolumeRequestSchemaがimageRefを省略したボリューム作成リクエストデータ（size、name、volume_type）を受け取った場合に、imageRefなしでも正しく検証され、safeParse結果のsuccessがtrueになること", () => {
+			const requestWithoutImageRef = {
+				volume: {
+					size: 30,
+					name: "data-volume",
+					volume_type: "Standard",
+				},
+			};
+
+			const result = CreateVolumeRequestSchema.safeParse(
+				requestWithoutImageRef,
+			);
+			expect(result.success).toBe(true);
+		});
+
 		it("CreateVolumeRequestSchemaがnullのdescriptionを含むボリューム作成リクエストデータを受け取った場合に、nullableフィールドが正しく許可され、safeParse結果のsuccessがtrueになること", () => {
 			const requestWithNullDescription = {
 				volume: {
@@ -220,7 +235,6 @@ describe("Volume Schema Tests", () => {
 						// size が欠けている
 						name: "test-volume",
 						volume_type: "SSD",
-						imageRef: "image-12345",
 					},
 				},
 				{
@@ -228,7 +242,6 @@ describe("Volume Schema Tests", () => {
 						size: 10,
 						// name が欠けている
 						volume_type: "SSD",
-						imageRef: "image-12345",
 					},
 				},
 				{
@@ -236,15 +249,6 @@ describe("Volume Schema Tests", () => {
 						size: 10,
 						name: "test-volume",
 						// volume_type が欠けている
-						imageRef: "image-12345",
-					},
-				},
-				{
-					volume: {
-						size: 10,
-						name: "test-volume",
-						volume_type: "SSD",
-						// imageRef が欠けている
 					},
 				},
 			];

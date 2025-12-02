@@ -80,3 +80,13 @@ export const RemoteConsoleRequestSchema = z
 			.strict(),
 	})
 	.strict();
+
+export const AttachVolumeRequestSchema = z
+	.object({
+		volumeAttachment: z
+			.object({
+				volumeId: z.string(),
+			})
+			.strict(),
+	})
+	.strict();

@@ -207,6 +207,30 @@ describe("index", () => {
 				});
 			}
 		});
+
+		it("conoha_post_put_by_paramハンドラーが/actionパスに対してPOSTリクエストを実行し、パラメータとリクエストボディを含めてcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
+			mockCreateComputeByParam.mockResolvedValue("test response");
+			const handler = toolHandlers["conoha_post_put_by_param"];
+
+			if (handler) {
+				const input = {
+					path: "/action" as const,
+					param: "test-server-id",
+					requestBody: { "os-start": null },
+				};
+				const result = await handler({ input });
+				expect(mockCreateComputeByParam).toHaveBeenCalledWith(
+					"/action",
+					"test-server-id",
+					input.requestBody,
+				);
+				const output = { response: "test response" };
+				expect(result).toEqual({
+					content: [{ type: "text", text: JSON.stringify(output) }],
+					structuredContent: output,
+				});
+			}
+		});
 	});
 
 	describe("プロンプトハンドラーの基本動作", () => {

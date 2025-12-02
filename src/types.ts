@@ -35,6 +35,7 @@ export type ConoHaPostPaths =
 export type ConoHaPostPutByParamPaths =
 	| "/action"
 	| "/remote-consoles"
+	| "/os-volume_attachments"
 	| "/v2.0/security-groups"
 	| "/v2.0/ports"
 	| "/volumes";
