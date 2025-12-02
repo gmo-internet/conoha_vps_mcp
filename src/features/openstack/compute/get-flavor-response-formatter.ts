@@ -11,13 +11,15 @@ interface ApiResponse {
 }
 
 export async function formatGetFlavorResponse(response: Response) {
+	const status = response.status;
+	const statusText = response.statusText;
 	try {
 		const body = (await response.json()) as ApiResponse;
 
 		if (!body?.flavors || !Array.isArray(body.flavors)) {
 			return JSON.stringify({
-				status: response.status,
-				statusText: response.statusText,
+				status: status,
+				statusText: statusText,
 				body: body,
 			});
 		}
@@ -33,17 +35,17 @@ export async function formatGetFlavorResponse(response: Response) {
 				};
 				return slim;
 			}),
-		};
+		} satisfies ApiResponse;
 		return JSON.stringify({
-			status: response.status,
-			statusText: response.statusText,
+			status: status,
+			statusText: statusText,
 			body: slimmed,
 		});
 	} catch (error) {
 		console.error("Error formatting response:", error);
 		return JSON.stringify({
-			status: response.status,
-			statusText: response.statusText,
+			status: status,
+			statusText: statusText,
 			body: "<error>",
 		});
 	}
