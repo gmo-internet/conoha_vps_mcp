@@ -1,4 +1,4 @@
-# release/X.X.X → staging ブランチへの push で staging 用のパッケージのリリース
+# release/vX.X.X → staging ブランチへの push で staging 用のパッケージのリリース
 name: Publish to Private GitHub Packages
 
 on:
