@@ -1,5 +1,5 @@
 {
-	"dxt_version": "0.1",
+	"manifest_version": "0.1",
 	"name": "@gmo-internet/conoha-vps-mcp",
 	"display_name": "conoha-vps-mcp",
 	"version": "0.3.0",
