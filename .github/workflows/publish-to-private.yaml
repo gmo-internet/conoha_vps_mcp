@@ -122,6 +122,6 @@ jobs:
       # 14) 公開
       - name: Publish to GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
-        run: npm publish
+        run: npm publish --tag rc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
