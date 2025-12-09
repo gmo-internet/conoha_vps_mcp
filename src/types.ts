@@ -14,7 +14,8 @@ export type ConoHaGetPaths =
 	| "/v2/images?limit=200"
 	| "/v2.0/security-groups"
 	| "/v2.0/security-group-rules"
-	| "/v2.0/ports";
+	| "/v2.0/ports"
+	| "/startup-scripts";
 
 export type ConoHaGetByParamsPaths =
 	| "/ips"
@@ -34,6 +35,7 @@ export type ConoHaPostPaths =
 export type ConoHaPostPutByParamPaths =
 	| "/action"
 	| "/remote-consoles"
+	| "/os-volume_attachments"
 	| "/v2.0/security-groups"
 	| "/v2.0/ports"
 	| "/volumes";

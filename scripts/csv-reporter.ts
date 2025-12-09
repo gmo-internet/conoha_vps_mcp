@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import type { File, Reporter, Task } from "vitest";
+import type { TestModule } from "vitest/node";
+import type { Reporter } from "vitest/reporters";
 
 interface TestCaseData {
 	fileName: string;
@@ -15,52 +16,74 @@ interface TestCaseData {
 export class CSVReporter implements Reporter {
 	private testCases: TestCaseData[] = [];
 
-	onFinished(files: File[] = []) {
+	onTestRunEnd(testModules: ReadonlyArray<TestModule>) {
 		console.log("\n📊 Generating CSV test report...");
 
-		for (const file of files) {
-			this.processFile(file);
+		for (const module of testModules) {
+			this.processModule(module);
 		}
 
 		this.generateCSVReport();
 	}
 
-	private processFile(file: File) {
-		const fileName = file.filepath
+	private processModule(module: TestModule) {
+		const fileName = module.moduleId
 			.replace(process.cwd(), "")
 			.replace(/\\/g, "/");
 
-		if (file.tasks) {
-			for (const task of file.tasks) {
-				this.processTask(task, fileName, "");
+		for (const child of module.children) {
+			if (child.type === "suite") {
+				this.processSuite(child, fileName, "");
+			} else if (child.type === "test") {
+				this.processTest(child, fileName, "");
 			}
 		}
 	}
 
-	private processTask(task: Task, fileName: string, parentSuite: string) {
-		if (task.type === "suite") {
-			const currentSuite = parentSuite
-				? `${parentSuite} > ${task.name}`
-				: task.name;
+	private processSuite(suite: any, fileName: string, parentSuite: string) {
+		const currentSuite = parentSuite
+			? `${parentSuite} > ${suite.name}`
+			: suite.name;
 
-			if (task.tasks) {
-				for (const childTask of task.tasks) {
-					this.processTask(childTask, fileName, currentSuite);
-				}
+		for (const child of suite.children) {
+			if (child.type === "suite") {
+				this.processSuite(child, fileName, currentSuite);
+			} else if (child.type === "test") {
+				this.processTest(child, fileName, currentSuite);
 			}
-		} else if (task.type === "test") {
-			const testCase: TestCaseData = {
-				fileName,
-				suiteName: parentSuite,
-				testName: task.name,
-				category: this.categorizeTest(task.name, fileName),
-				functionalArea: this.determineFunctionalArea(fileName),
-				status: this.getTaskStatus(task),
-				duration: task.result?.duration || 0,
-				priority: this.assessPriority(task.name),
-			};
+		}
+	}
 
-			this.testCases.push(testCase);
+	private processTest(test: any, fileName: string, suiteName: string) {
+		const result = test.result();
+		const diagnostic = test.diagnostic();
+
+		const testCase: TestCaseData = {
+			fileName,
+			suiteName,
+			testName: test.name,
+			category: this.categorizeTest(test.name, fileName),
+			functionalArea: this.determineFunctionalArea(fileName),
+			status: this.getTestStatus(result),
+			duration: diagnostic?.duration || 0,
+			priority: this.assessPriority(test.name),
+		};
+
+		this.testCases.push(testCase);
+	}
+
+	private getTestStatus(result: any): string {
+		if (!result || result.state === "pending") return "pending";
+
+		switch (result.state) {
+			case "passed":
+				return "passed";
+			case "failed":
+				return "failed";
+			case "skipped":
+				return "skipped";
+			default:
+				return "unknown";
 		}
 	}
 
@@ -118,23 +141,6 @@ export class CSVReporter implements Reporter {
 		if (fileName.includes("index.test.ts")) return "Core";
 
 		return "General";
-	}
-
-	private getTaskStatus(task: Task): string {
-		if (!task.result) return "pending";
-
-		switch (task.result.state) {
-			case "pass":
-				return "passed";
-			case "fail":
-				return "failed";
-			case "skip":
-				return "skipped";
-			case "todo":
-				return "todo";
-			default:
-				return "unknown";
-		}
 	}
 
 	private assessPriority(testName: string): string {

@@ -20,14 +20,17 @@ const mockCreateVolume = vi.fn();
 const mockUpdateVolumeByParam = vi.fn();
 const mockDeleteVolumeByParam = vi.fn();
 
-const mockTool = vi.fn();
-const mockPrompt = vi.fn();
+const mockRegisterTool = vi.fn();
+const mockRegisterPrompt = vi.fn();
 const mockConnect = vi.fn();
-const mockMcpServer = vi.fn().mockImplementation(() => ({
-	tool: mockTool,
-	prompt: mockPrompt,
-	connect: mockConnect,
-}));
+
+const mockMcpServer = vi.fn().mockImplementation(function () {
+	return {
+		registerTool: mockRegisterTool,
+		registerPrompt: mockRegisterPrompt,
+		connect: mockConnect,
+	};
+});
 const mockStdioServerTransport = vi.fn();
 
 vi.mock("./features/openstack/compute/compute-client", () => ({
@@ -101,8 +104,8 @@ describe("index", () => {
 		it("MCP SDK関数群が正常にモックされた状態である", () => {
 			expect(mockMcpServer).toBeDefined();
 			expect(mockStdioServerTransport).toBeDefined();
-			expect(mockTool).toBeDefined();
-			expect(mockPrompt).toBeDefined();
+			expect(mockRegisterTool).toBeDefined();
+			expect(mockRegisterPrompt).toBeDefined();
 			expect(mockConnect).toBeDefined();
 		});
 	});
@@ -116,19 +119,19 @@ describe("index", () => {
 			// index.tsをインポートしてツールを登録
 			await import("./index");
 			// 登録されたツールハンドラーを取得
-			const toolCalls = mockTool.mock.calls;
+			const toolCalls = mockRegisterTool.mock.calls;
 			toolHandlers = {
-				conoha_get: toolCalls.find((call) => call[0] === "conoha_get")?.[3],
+				conoha_get: toolCalls.find((call) => call[0] === "conoha_get")?.[2],
 				conoha_get_by_param: toolCalls.find(
 					(call) => call[0] === "conoha_get_by_param",
-				)?.[3],
-				conoha_post: toolCalls.find((call) => call[0] === "conoha_post")?.[3],
+				)?.[2],
+				conoha_post: toolCalls.find((call) => call[0] === "conoha_post")?.[2],
 				conoha_post_put_by_param: toolCalls.find(
 					(call) => call[0] === "conoha_post_put_by_param",
-				)?.[3],
+				)?.[2],
 				conoha_delete_by_param: toolCalls.find(
 					(call) => call[0] === "conoha_delete_by_param",
-				)?.[3],
+				)?.[2],
 			};
 		});
 
@@ -139,8 +142,10 @@ describe("index", () => {
 			if (handler) {
 				const result = await handler({ path: "/servers/detail" });
 				expect(mockGetCompute).toHaveBeenCalledWith("/servers/detail");
+				const output = { response: "test response" };
 				expect(result).toEqual({
-					content: [{ type: "text", text: "test response" }],
+					content: [{ type: "text", text: JSON.stringify(output) }],
+					structuredContent: output,
 				});
 			}
 		});
@@ -155,8 +160,10 @@ describe("index", () => {
 					"/ips",
 					"test-param",
 				);
+				const output = { response: "test response" };
 				expect(result).toEqual({
-					content: [{ type: "text", text: "test response" }],
+					content: [{ type: "text", text: JSON.stringify(output) }],
+					structuredContent: output,
 				});
 			}
 		});
@@ -175,8 +182,10 @@ describe("index", () => {
 					"/servers",
 					input.requestBody,
 				);
+				const output = { response: "test response" };
 				expect(result).toEqual({
-					content: [{ type: "text", text: "test response" }],
+					content: [{ type: "text", text: JSON.stringify(output) }],
+					structuredContent: output,
 				});
 			}
 		});
@@ -191,8 +200,34 @@ describe("index", () => {
 					"/servers",
 					"test-param",
 				);
+				const output = { response: "test response" };
 				expect(result).toEqual({
-					content: [{ type: "text", text: "test response" }],
+					content: [{ type: "text", text: JSON.stringify(output) }],
+					structuredContent: output,
+				});
+			}
+		});
+
+		it("conoha_post_put_by_paramハンドラーが/actionパスに対してPOSTリクエストを実行し、パラメータとリクエストボディを含めてcomputeクライアントを呼び出してテキスト形式のレスポンスを返すことを確認する", async () => {
+			mockCreateComputeByParam.mockResolvedValue("test response");
+			const handler = toolHandlers["conoha_post_put_by_param"];
+
+			if (handler) {
+				const input = {
+					path: "/action" as const,
+					param: "test-server-id",
+					requestBody: { "os-start": null },
+				};
+				const result = await handler({ input });
+				expect(mockCreateComputeByParam).toHaveBeenCalledWith(
+					"/action",
+					"test-server-id",
+					input.requestBody,
+				);
+				const output = { response: "test response" };
+				expect(result).toEqual({
+					content: [{ type: "text", text: JSON.stringify(output) }],
+					structuredContent: output,
 				});
 			}
 		});
@@ -204,11 +239,11 @@ describe("index", () => {
 		beforeEach(async () => {
 			vi.clearAllMocks();
 			await import("./index");
-			const promptCalls = mockPrompt.mock.calls;
+			const promptCalls = mockRegisterPrompt.mock.calls;
 			const createServerPromptCall = promptCalls.find(
 				(call) => call[0] === "create_server",
 			);
-			promptHandler = createServerPromptCall?.[3];
+			promptHandler = createServerPromptCall?.[2];
 		});
 
 		it("create_serverプロンプトハンドラーが指定されたrootPasswordを含む適切なメッセージ形式でユーザー向けサーバー作成指示を生成することを確認する", () => {
@@ -237,12 +272,12 @@ describe("index", () => {
 		beforeEach(async () => {
 			vi.clearAllMocks();
 			await import("./index");
-			const toolCalls = mockTool.mock.calls;
+			const toolCalls = mockRegisterTool.mock.calls;
 			toolHandlers = {
-				conoha_get: toolCalls.find((call) => call[0] === "conoha_get")?.[3],
+				conoha_get: toolCalls.find((call) => call[0] === "conoha_get")?.[2],
 				conoha_get_by_param: toolCalls.find(
 					(call) => call[0] === "conoha_get_by_param",
-				)?.[3],
+				)?.[2],
 			};
 		});
 

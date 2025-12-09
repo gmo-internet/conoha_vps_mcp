@@ -21,7 +21,7 @@ jobs:
     steps:
       # 1) ソース取得
       - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
 
       # 2) バージョン抽出
       - name: Extract version and check if already published
@@ -34,9 +34,9 @@ jobs:
       # 3) Node セットアップ
       - name: Setup Node.js
         if: success()
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
         with:
-          node-version: "22.19.0"
+          node-version: "24.11.1"
           registry-url: "https://registry.npmjs.org/"
 
       # 4) npm 11.5.1以降が必要 TODO: delete when nodejs updates to v24

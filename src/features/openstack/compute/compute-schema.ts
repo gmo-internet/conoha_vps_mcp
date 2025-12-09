@@ -33,6 +33,7 @@ export const CreateServerRequestSchema = z
 					)
 					.optional(),
 				key_name: z.string().optional(),
+				user_data: z.string().optional(),
 			})
 			.strict(),
 	})
@@ -75,6 +76,16 @@ export const RemoteConsoleRequestSchema = z
 				type: z.enum(["novnc", "serial"], {
 					message: "type は 'novnc' または 'serial' を指定してください", //protocolで指定したプロトコル名の組み合わせと一致している必要あり
 				}),
+			})
+			.strict(),
+	})
+	.strict();
+
+export const AttachVolumeRequestSchema = z
+	.object({
+		volumeAttachment: z
+			.object({
+				volumeId: z.string(),
 			})
 			.strict(),
 	})

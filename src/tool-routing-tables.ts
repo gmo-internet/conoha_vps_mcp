@@ -12,6 +12,7 @@ import {
 	deleteNetworkByParam,
 	getNetwork,
 	getNetworkByParam,
+	getSecurityGroup,
 	updateNetworkByParam,
 } from "./features/openstack/network/network-client.js";
 import {
@@ -36,10 +37,11 @@ export const conohaGetHandlers: Record<ConoHaGetPaths, () => Promise<string>> =
 		"/types": () => getVolume("/types"),
 		"/volumes/detail": () => getVolume("/volumes/detail"),
 		"/v2/images?limit=200": () => getImage("/v2/images?limit=200"),
-		"/v2.0/security-groups": () => getNetwork("/v2.0/security-groups"),
+		"/v2.0/security-groups": () => getSecurityGroup("/v2.0/security-groups"),
 		"/v2.0/security-group-rules": () =>
 			getNetwork("/v2.0/security-group-rules"),
 		"/v2.0/ports": () => getNetwork("/v2.0/ports"),
+		"/startup-scripts": () => getCompute("/startup-scripts"),
 	};
 
 export const conohaGetByParamHandlers: Record<
@@ -78,6 +80,8 @@ export const conohaPostPutByParamHandlers: Record<
 		createComputeByParam("/action", param, requestBody),
 	"/remote-consoles": (param, requestBody) =>
 		createComputeByParam("/remote-consoles", param, requestBody),
+	"/os-volume_attachments": (param, requestBody) =>
+		createComputeByParam("/os-volume_attachments", param, requestBody),
 	"/v2.0/security-groups": (param, requestBody) =>
 		updateNetworkByParam("/v2.0/security-groups", param, requestBody),
 	"/v2.0/ports": (param, requestBody) =>

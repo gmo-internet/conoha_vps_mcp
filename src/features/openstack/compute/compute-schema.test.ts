@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+	AttachVolumeRequestSchema,
 	CreateServerRequestSchema,
 	CreateSSHKeyPairRequestSchema,
 	OperateServerRequestSchema,
@@ -598,6 +599,54 @@ describe("Compute Schema Tests", () => {
 				const result = RemoteConsoleRequestSchema.safeParse(request);
 				expect(result.success).toBe(false);
 			}
+		});
+	});
+
+	describe("AttachVolumeRequestSchema", () => {
+		it("AttachVolumeRequestSchemaが有効なボリュームアタッチリクエストデータ（volumeId）を受け取った場合に、必須フィールドが正しく検証され、safeParse結果のsuccessがtrueになること", () => {
+			const validRequest = {
+				volumeAttachment: {
+					volumeId: "volume-12345",
+				},
+			};
+
+			const result = AttachVolumeRequestSchema.safeParse(validRequest);
+			expect(result.success).toBe(true);
+		});
+
+		it("AttachVolumeRequestSchemaがvolumeIdが欠落したボリュームアタッチリクエストデータを受け取った場合に、必須フィールド検証が失敗し、safeParse結果のsuccessがfalseになること", () => {
+			const incompleteRequest = {
+				volumeAttachment: {},
+			};
+
+			const result = AttachVolumeRequestSchema.safeParse(incompleteRequest);
+			expect(result.success).toBe(false);
+		});
+
+		it("AttachVolumeRequestSchemaがスキーマで定義されていない余分なフィールドを含むボリュームアタッチリクエストデータを受け取った場合に、厳密なスキーマ検証により余分なフィールドが拒否され、safeParse結果のsuccessがfalseになること", () => {
+			const requestWithExtraFields = {
+				volumeAttachment: {
+					volumeId: "volume-12345",
+					extra_field: "not allowed",
+				},
+			};
+
+			const result = AttachVolumeRequestSchema.safeParse(
+				requestWithExtraFields,
+			);
+			expect(result.success).toBe(false);
+		});
+
+		it("AttachVolumeRequestSchemaがvolumeIdが空文字列のボリュームアタッチリクエストデータを受け取った場合に、string型の検証は通過するがAPIでエラーになる可能性があることを確認", () => {
+			const invalidRequest = {
+				volumeAttachment: {
+					volumeId: "",
+				},
+			};
+
+			const result = AttachVolumeRequestSchema.safeParse(invalidRequest);
+			// 空文字列でも型としてはstring型なので検証は通る
+			expect(result.success).toBe(true);
 		});
 	});
 });

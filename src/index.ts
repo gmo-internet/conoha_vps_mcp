@@ -1,9 +1,11 @@
+import { Buffer } from "node:buffer";
 import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { formatErrorMessage } from "./features/openstack/common/error-handler.js";
 import {
+	AttachVolumeRequestSchema,
 	CreateServerRequestSchema,
 	CreateSSHKeyPairRequestSchema,
 	OperateServerRequestSchema,
@@ -26,6 +28,8 @@ import {
 	conohaPostDescription,
 	conohaPostPutByParamDescription,
 	createServerDescription,
+	encodeBase64Description,
+	fetchUrlDescription,
 } from "./tool-descriptions.js";
 import {
 	conohaDeleteByParamHandlers,
@@ -42,27 +46,104 @@ const server = new McpServer({
 	version: packageJson.version,
 });
 
-server.tool(
-	"conoha_get",
-	conohaGetDescription,
+server.registerTool(
+	"fetch_url",
 	{
-		path: z.enum([
-			"/servers/detail",
-			"/flavors/detail",
-			"/os-keypairs",
-			"/types",
-			"/volumes/detail",
-			"/v2/images?limit=200",
-			"/v2.0/security-groups",
-			"/v2.0/security-group-rules",
-			"/v2.0/ports",
-		]),
+		title: "URL取得",
+		description: fetchUrlDescription.trim(),
+		inputSchema: {
+			url: z.string().url(),
+		},
+		outputSchema: {
+			text: z.string(),
+		},
+	},
+	async ({ url }) => {
+		try {
+			const response = await fetch(url);
+			if (!response.ok) {
+				throw new Error(
+					`Failed to fetch: ${response.status} ${response.statusText}`,
+				);
+			}
+			const text = await response.text();
+			const output = { text };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			};
+		} catch (error) {
+			const errorMessage = formatErrorMessage(error);
+			return {
+				content: [{ type: "text", text: errorMessage }],
+				isError: true,
+			};
+		}
+	},
+);
+
+server.registerTool(
+	"encode_base64",
+	{
+		title: "Base64エンコード",
+		description: encodeBase64Description.trim(),
+		inputSchema: {
+			text: z.string().min(1).max(10000),
+		},
+		outputSchema: {
+			encoded: z.string(),
+		},
+	},
+	async ({ text }) => {
+		try {
+			const encoded = Buffer.from(text, "utf-8").toString("base64");
+			const output = { encoded };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			};
+		} catch (error) {
+			const errorMessage = formatErrorMessage(error);
+			return {
+				content: [{ type: "text", text: errorMessage }],
+				isError: true,
+			};
+		}
+	},
+);
+
+server.registerTool(
+	"conoha_get",
+	{
+		title: "ConoHa API取得",
+		description: conohaGetDescription.trim(),
+		inputSchema: {
+			path: z.enum([
+				"/servers/detail",
+				"/flavors/detail",
+				"/os-keypairs",
+				"/types",
+				"/volumes/detail",
+				"/v2/images?limit=200",
+				"/v2.0/security-groups",
+				"/v2.0/security-group-rules",
+				"/v2.0/ports",
+				"/startup-scripts",
+			]),
+		},
+		outputSchema: {
+			response: z.string(),
+		},
 	},
 	async ({ path }) => {
 		try {
 			const handler = conohaGetHandlers[path];
 			const response = await handler();
-			return { content: [{ type: "text", text: response }] };
+			const output = { response };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			};
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -73,25 +154,35 @@ server.tool(
 	},
 );
 
-server.tool(
+server.registerTool(
 	"conoha_get_by_param",
-	conohaGetByParamDescription,
 	{
-		path: z.enum([
-			"/ips",
-			"/os-security-groups",
-			"/rrd/cpu",
-			"/rrd/disk",
-			"/v2.0/security-groups",
-			"/v2.0/security-group-rules",
-		]),
-		param: z.string(),
+		title: "ConoHa API取得（パラメータ指定）",
+		description: conohaGetByParamDescription.trim(),
+		inputSchema: {
+			path: z.enum([
+				"/ips",
+				"/os-security-groups",
+				"/rrd/cpu",
+				"/rrd/disk",
+				"/v2.0/security-groups",
+				"/v2.0/security-group-rules",
+			]),
+			param: z.string(),
+		},
+		outputSchema: {
+			response: z.string(),
+		},
 	},
 	async ({ path, param }) => {
 		try {
 			const handler = conohaGetByParamHandlers[path];
 			const response = await handler(param);
-			return { content: [{ type: "text", text: response }] };
+			const output = { response };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			};
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -102,39 +193,49 @@ server.tool(
 	},
 );
 
-server.tool(
+server.registerTool(
 	"conoha_post",
-	conohaPostDescription,
 	{
-		input: z.discriminatedUnion("path", [
-			z.object({
-				path: z.literal("/servers"),
-				requestBody: CreateServerRequestSchema,
-			}),
-			z.object({
-				path: z.literal("/os-keypairs"),
-				requestBody: CreateSSHKeyPairRequestSchema,
-			}),
-			z.object({
-				path: z.literal("/volumes"),
-				requestBody: CreateVolumeRequestSchema,
-			}),
-			z.object({
-				path: z.literal("/v2.0/security-groups"),
-				requestBody: CreateSecurityGroupRequestSchema,
-			}),
-			z.object({
-				path: z.literal("/v2.0/security-group-rules"),
-				requestBody: CreateSecurityGroupRuleRequestSchema,
-			}),
-		]),
+		title: "ConoHa API作成",
+		description: conohaPostDescription.trim(),
+		inputSchema: {
+			input: z.discriminatedUnion("path", [
+				z.object({
+					path: z.literal("/servers"),
+					requestBody: CreateServerRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/os-keypairs"),
+					requestBody: CreateSSHKeyPairRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/volumes"),
+					requestBody: CreateVolumeRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/v2.0/security-groups"),
+					requestBody: CreateSecurityGroupRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/v2.0/security-group-rules"),
+					requestBody: CreateSecurityGroupRuleRequestSchema,
+				}),
+			]),
+		},
+		outputSchema: {
+			response: z.string(),
+		},
 	},
 	async ({ input }) => {
 		try {
 			const { path, requestBody } = input;
 			const handler = conohaPostHandlers[path];
 			const response = await handler(requestBody);
-			return { content: [{ type: "text", text: response }] };
+			const output = { response };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			};
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -145,44 +246,59 @@ server.tool(
 	},
 );
 
-server.tool(
+server.registerTool(
 	"conoha_post_put_by_param",
-	conohaPostPutByParamDescription,
 	{
-		input: z.discriminatedUnion("path", [
-			z.object({
-				path: z.literal("/action"),
-				param: z.string(),
-				requestBody: OperateServerRequestSchema,
-			}),
-			z.object({
-				path: z.literal("/remote-consoles"),
-				param: z.string(),
-				requestBody: RemoteConsoleRequestSchema,
-			}),
-			z.object({
-				path: z.literal("/v2.0/security-groups"),
-				param: z.string(),
-				requestBody: UpdateSecurityGroupRequestSchema,
-			}),
-			z.object({
-				path: z.literal("/v2.0/ports"),
-				param: z.string(),
-				requestBody: UpdatePortRequestSchema,
-			}),
-			z.object({
-				path: z.literal("/volumes"),
-				param: z.string(),
-				requestBody: UpdateVolumeRequestSchema,
-			}),
-		]),
+		title: "ConoHa API更新・操作",
+		description: conohaPostPutByParamDescription.trim(),
+		inputSchema: {
+			input: z.discriminatedUnion("path", [
+				z.object({
+					path: z.literal("/action"),
+					param: z.string(),
+					requestBody: OperateServerRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/remote-consoles"),
+					param: z.string(),
+					requestBody: RemoteConsoleRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/os-volume_attachments"),
+					param: z.string(),
+					requestBody: AttachVolumeRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/v2.0/security-groups"),
+					param: z.string(),
+					requestBody: UpdateSecurityGroupRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/v2.0/ports"),
+					param: z.string(),
+					requestBody: UpdatePortRequestSchema,
+				}),
+				z.object({
+					path: z.literal("/volumes"),
+					param: z.string(),
+					requestBody: UpdateVolumeRequestSchema,
+				}),
+			]),
+		},
+		outputSchema: {
+			response: z.string(),
+		},
 	},
 	async ({ input }) => {
 		try {
 			const { path, param, requestBody } = input;
 			const handler = conohaPostPutByParamHandlers[path];
 			const response = await handler(param, requestBody);
-			return { content: [{ type: "text", text: response }] };
+			const output = { response };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			};
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -193,24 +309,34 @@ server.tool(
 	},
 );
 
-server.tool(
+server.registerTool(
 	"conoha_delete_by_param",
-	conohaDeleteByParamDescription,
 	{
-		path: z.enum([
-			"/servers",
-			"/os-keypairs",
-			"/v2.0/security-groups",
-			"/v2.0/security-group-rules",
-			"/volumes",
-		]),
-		param: z.string(),
+		title: "ConoHa API削除",
+		description: conohaDeleteByParamDescription.trim(),
+		inputSchema: {
+			path: z.enum([
+				"/servers",
+				"/os-keypairs",
+				"/v2.0/security-groups",
+				"/v2.0/security-group-rules",
+				"/volumes",
+			]),
+			param: z.string(),
+		},
+		outputSchema: {
+			response: z.string(),
+		},
 	},
 	async ({ path, param }) => {
 		try {
 			const handler = conohaDeleteByParamHandlers[path];
 			const response = await handler(param);
-			return { content: [{ type: "text", text: response }] };
+			const output = { response };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			};
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -221,13 +347,16 @@ server.tool(
 	},
 );
 
-server.prompt(
+server.registerPrompt(
 	"create_server",
-	createServerDescription,
 	{
-		rootPassword: z.string().regex(
-			/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\\^$+\-*/|()[\]{}.,?!_=&@~%#:;'"])[A-Za-z0-9\\^$+\-*/|()[\]{}.,?!_=&@~%#:;'"]{9,70}$/, // 9文字以上70文字以下で、英大文字、英小文字、数字、記号を含む、利用可能な記号は \^$+-*/|()[]{}.,?!_=&@~%#:;'"
-		),
+		title: "サーバー作成",
+		description: createServerDescription.trim(),
+		argsSchema: {
+			rootPassword: z.string().regex(
+				/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[\\^$+\-*/|()[\]{}.,?!_=&@~%#:;'"])[A-Za-z0-9\\^$+\-*/|()[\]{}.,?!_=&@~%#:;'"]{9,70}$/, // 9文字以上70文字以下で、英大文字、英小文字、数字、記号を含む、利用可能な記号は \^$+-*/|()[]{}.,?!_=&@~%#:;'"
+			),
+		},
 	},
 	({ rootPassword }) => ({
 		messages: [
