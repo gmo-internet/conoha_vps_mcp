@@ -35,17 +35,39 @@ jobs:
             echo "skip=true" >> $GITHUB_OUTPUT
           fi
 
-      # 3) タグ付け
+      # 3) RC番号の自動決定
+      - name: Determine RC version
+        id: rc_version
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: |
+          BASE_VERSION="${{ steps.extract.outputs.VERSION }}"
+          git fetch --tags
+
+          # 既存のRCタグを検索して最大番号を取得
+          EXISTING_RC=$(git tag -l "${BASE_VERSION}-rc-*" | sort -V | tail -1)
+
+          if [ -z "$EXISTING_RC" ]; then
+            RC_NUM=1
+          else
+            # 既存の最大RC番号を取得して+1
+            LAST_NUM=$(echo "$EXISTING_RC" | sed "s/${BASE_VERSION}-rc-//")
+            RC_NUM=$((LAST_NUM + 1))
+          fi
+
+          FULL_VERSION="${BASE_VERSION}-rc-${RC_NUM}"
+          echo "RC_VERSION=$FULL_VERSION" >> $GITHUB_OUTPUT
+          echo "Releasing version: $FULL_VERSION"
+
+      # 4) タグ付け
       - name: Tag and push
         if: success() && steps.extract.outputs.skip != 'true'
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git fetch --tags
-          git tag ${{ steps.extract.outputs.VERSION }}
-          git push origin ${{ steps.extract.outputs.VERSION }}
+          git tag ${{ steps.rc_version.outputs.RC_VERSION }}
+          git push origin ${{ steps.rc_version.outputs.RC_VERSION }}
 
-      # 4) Node セットアップ
+      # 5) Node セットアップ
       - name: Setup Node.js
         if: success() && steps.extract.outputs.skip != 'true'
         uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6
@@ -54,7 +76,7 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@gmo-internet"
 
-      # 5) GitHub Packages用の.npmrc生成
+      # 6) GitHub Packages用の.npmrc生成
       - name: Configure npm for GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: |
@@ -62,37 +84,42 @@ jobs:
           echo "@gmo-internet:registry=https://npm.pkg.github.com" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> .npmrc
 
-      # 6) 依存インストール
+      # 7) 依存インストール
       - name: Install dependencies
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm ci
 
-      # 7) ビルド
+      # 8) ビルド
       - name: Build project
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build
 
-      # 8) mcpbファイルのビルド
+      # 9) mcpbファイルのビルド
       - name: Build mcpb
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm run build:mcpb
 
-      # 9) Private用のパッケージ名調整
+      # 10) package.jsonのバージョン設定
+      - name: Set package version
+        if: success() && steps.extract.outputs.skip != 'true'
+        run: npm version ${{ steps.rc_version.outputs.RC_VERSION }} --no-git-tag-version --allow-same-version
+
+      # 11) Private用のパッケージ名調整
       - name: Set package name for private packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm pkg set name="@gmo-internet/priv-conoha-vps-mcp"
 
-      # 10) Release note作成
+      # 12) Release note作成
       - name: Generate release note
         if: success() && steps.extract.outputs.skip != 'true'
-        run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
+        run: gh release create ${{ steps.rc_version.outputs.RC_VERSION }} --title ${{ steps.rc_version.outputs.RC_VERSION }}
 
-      # 11) mcpbファイルのアップロード
+      # 13) mcpbファイルのアップロード
       - name: Add mcpb file to release note
         if: success() && steps.extract.outputs.skip != 'true'
-        run: gh release upload ${{ steps.extract.outputs.VERSION }} priv_conoha_vps_mcp.mcpb --clobber
+        run: gh release upload ${{ steps.rc_version.outputs.RC_VERSION }} priv_conoha_vps_mcp.mcpb --clobber
 
-      # 12) 公開
+      # 14) 公開
       - name: Publish to GitHub Packages
         if: success() && steps.extract.outputs.skip != 'true'
         run: npm publish
