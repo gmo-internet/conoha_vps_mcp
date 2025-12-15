@@ -1,6 +1,6 @@
 {
 	"name": "@gmo-internet/conoha-vps-mcp",
-	"version": "0.4.1",
+	"version": "0.4.2",
 	"description": "日本語対応のConoHa VPS Model Context Protocol (MCP) サーバー",
 	"author": "GMO Internet",
 	"license": "Apache-2.0",
