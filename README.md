@@ -150,7 +150,7 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 
 #### MCPサーバー実行環境
 
-- ✅ Node.js v18以上
+- ✅ Node.js v20以上
 - ✅ Docker
 - ✅ Linux / macOS / Windows
 
