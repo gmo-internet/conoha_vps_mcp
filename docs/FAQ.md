@@ -30,7 +30,7 @@ A: 現在開発中のソフトウェアで、機能や動作が予告なく変�
 
 ### Q: Node.jsのバージョンはどれが必要ですか？
 
-A: Node.js v18以上が必要です。最新のLTS版を推奨します。[ダウンロード](https://nodejs.org/ja/download)
+A: Node.js v20以上が必要です。最新のLTS版を推奨します。[ダウンロード](https://nodejs.org/ja/download)
 
 ### Q: Docker版とNode.js版の違いは何ですか？
 
