@@ -6,13 +6,14 @@ export const conohaGetDescription = `
          • 利用可能パス: 
                /servers/detail            (サーバー一覧取得)
                /flavors/detail            (フレーバー一覧取得)
+               /os-keypairs               (SSHキーペア一覧取得)
                /types                     (ボリュームタイプ一覧取得)
                /volumes/detail            (ボリューム一覧取得)
                /v2/images?limit=200       (イメージ一覧取得)
                /v2.0/security-groups      (セキュリティグループ一覧取得)
                /v2.0/security-group-rules (セキュリティグループルール一覧取得)
                /v2.0/ports                (ポート一覧取得)
-               startup-scripts            (スタートアップスクリプト一覧取得)
+               /startup-scripts           (スタートアップスクリプト一覧取得)
                
          • 契約に紐づくサーバー管理用途にのみ使用可
    `;
