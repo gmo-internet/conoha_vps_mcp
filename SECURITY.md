@@ -48,7 +48,7 @@ ConoHa VPS MCP に関する脆弱性を発見された場合は、責任ある�
 
 環境情報:
 - OS: Ubuntu 22.04
-- Node.js: v18.17.0
+- Node.js: v24.0.0
 - ConoHa VPS MCP: v0.1.0
 ```
 

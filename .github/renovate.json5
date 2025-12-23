@@ -40,7 +40,7 @@
         'dockerfile',
       ],
       allowedVersions: '/^[0-9]*[02468]([.-].*)?$/',
-      minimumReleaseAge: '7 days'
+      minimumReleaseAge: '2 days'
     },
     {
       matchManagers: [
@@ -58,7 +58,7 @@
         'peerDependencies',
       ],
       groupName: 'npm patch',
-      minimumReleaseAge: '7 days'
+      minimumReleaseAge: '2 days'
     },
     {
       matchManagers: [
@@ -76,7 +76,7 @@
         'peerDependencies',
       ],
       groupName: 'npm minor',
-      minimumReleaseAge: '7 days'
+      minimumReleaseAge: '2 days'
     },
     {
       "matchDepTypes": ["engines"],
@@ -87,7 +87,7 @@
         'github-actions',
       ],
       groupName: 'github actions',
-      minimumReleaseAge: '7 days'
+      minimumReleaseAge: '2 days'
     },
   ],
 }
