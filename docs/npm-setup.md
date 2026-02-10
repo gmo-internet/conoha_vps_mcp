@@ -444,4 +444,4 @@ OPENSTACK_PASSWORD: APIユーザーのパスワード
 - **パッケージ取得エラー**: `npm exec`の初回実行時にパッケージのダウンロードに時間がかかる場合があります
 - その他FAQは[こちら](FAQ.md)
 
-**💡 ヒント:** 問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)でお気軽にお問い合わせください。
+問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)で気軽に質問してください。
