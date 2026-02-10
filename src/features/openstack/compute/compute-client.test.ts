@@ -49,9 +49,23 @@ describe("compute-client", () => {
 				servers: [
 					{
 						id: "server-id-123",
-						name: "test-server",
-						status: "ACTIVE",
+						name: "vm-37806450-5c",
+						status: "SHUTOFF",
+						tenant_id: "test-tenant-id",
 						flavor: { id: "flavor-1" },
+						metadata: {
+							instance_name_tag: "test-server-1",
+						},
+					},
+					{
+						id: "server-id-456",
+						name: "vm-086f83cb-24",
+						status: "ACTIVE",
+						tenant_id: "test-tenant-id",
+						flavor: { id: "flavor-2" },
+						metadata: {
+							instance_name_tag: "test-server-2",
+						},
 					},
 				],
 			},
@@ -61,8 +75,8 @@ describe("compute-client", () => {
 			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Compute API（/flavors）へのGETリクエストでフレーバー一覧レスポンスを受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/flavors）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/flavors'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
-			const path = "/flavors";
+		it("Compute API（/servers/detail - サーバー詳細一覧取得）へのGETリクエストでサーバー詳細一覧レスポンス（2つのサーバー情報）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/detail）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers/detail'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+			const path = "/servers/detail";
 
 			const result = await getCompute(path);
 
@@ -70,11 +84,11 @@ describe("compute-client", () => {
 			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
 				"GET",
 				expectedBaseUrl,
-				"/flavors",
+				"/servers/detail",
 			);
 		});
 
-		it("Compute API（/servers）への先頭スラッシュなしパス指定でGETリクエストした場合に、パス文字列（servers）をそのままモックAPIに渡してリクエストし、API呼び出しパラメータ（'GET', expectedBaseUrl, 'servers'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+		it("Compute API（/servers - サーバー一覧取得）への先頭スラッシュなしパス指定でGETリクエストした場合に、パス文字列（servers）をそのままモックAPIに渡してリクエストし、API呼び出しパラメータ（'GET', expectedBaseUrl, 'servers'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "servers";
 
 			const result = await getCompute(path);
@@ -122,7 +136,7 @@ describe("compute-client", () => {
 			mockFormatGetFlavorResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Compute API（/flavors）へのGETリクエストでフレーバー一覧レスポンスを受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/flavors）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/flavors'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+		it("Compute API（/flavors - フレーバー一覧取得）へのGETリクエストでフレーバー一覧レスポンスを受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/flavors）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/flavors'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/flavors";
 			const result = await getFlavor(path);
 			expect(result).toBe(mockResponse);
@@ -177,7 +191,7 @@ describe("compute-client", () => {
 			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Compute API（/servers/server-id-123）への特定サーバーID（server-id-123）指定GETリクエストで個別サーバーレスポンスを受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/server-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers/server-id-123'）が正しく引き渡されることを確認し、モックレスポンス（'{status: 200, statusText: 'OK', body: {server: {...}}}'）と一致する文字列を戻り値として返すことができる", async () => {
+		it("Compute API（/servers/{server_id} - サーバー詳細取得）への特定サーバーID（server-id-123）指定GETリクエストで個別サーバーレスポンスを受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/server-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers/server-id-123'）が正しく引き渡されることを確認し、モックレスポンス（'{status: 200, statusText: 'OK', body: {server: {...}}}'）と一致する文字列を戻り値として返すことができる", async () => {
 			const path = "";
 			const param = "server-id-123";
 
@@ -192,35 +206,7 @@ describe("compute-client", () => {
 			);
 		});
 
-		it("Compute API（/servers/server-id-123/detail）への特定サーバーID（server-id-123）の詳細情報パス（/detail）指定GETリクエストでサーバー詳細レスポンスを受け取った場合に、正しいパス（/servers/server-id-123/detail）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers/server-id-123/detail'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
-			const path = "/detail";
-			const param = "server-id-123";
-
-			const result = await getComputeByParam(path, param);
-
-			expect(result).toBe(mockResponse);
-			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-				"GET",
-				expectedBaseUrl,
-				"/servers/server-id-123/detail",
-			);
-		});
-
-		it("Compute API（/servers/server-id-123/os-instance-actions）への特定サーバーID（server-id-123）のアクション履歴パス（/os-instance-actions）指定GETリクエストでインスタンスアクション履歴レスポンスを受け取った場合に、正しいパス（/servers/server-id-123/os-instance-actions）でモックAPIを呼び出し、レスポンスを文字列形式で正しく返すことができる", async () => {
-			const path = "/os-instance-actions";
-			const param = "server-id-123";
-
-			const result = await getComputeByParam(path, param);
-
-			expect(result).toBe(mockResponse);
-			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-				"GET",
-				expectedBaseUrl,
-				"/servers/server-id-123/os-instance-actions",
-			);
-		});
-
-		it("Compute API（/servers/another-server-id）への異なるサーバーID（another-server-id）指定GETリクエストで個別サーバーレスポンスを受け取った場合に、指定されたIDを含む正しいパス（/servers/another-server-id）でモックAPIを呼び出し、レスポンスを文字列形式で正しく返すことができる", async () => {
+		it("Compute API（/servers/{server_id} - サーバー詳細取得）への異なるサーバーID（another-server-id）指定GETリクエストで個別サーバーレスポンスを受け取った場合に、指定されたIDを含む正しいパス（/servers/another-server-id）でモックAPIを呼び出し、レスポンスを文字列形式で正しく返すことができる", async () => {
 			const path = "";
 			const param = "another-server-id";
 
@@ -262,7 +248,7 @@ describe("compute-client", () => {
 			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Compute API（/servers）へのサーバー作成リクエストボディ（{server: {name, imageRef, flavorRef, networks}}）を含むPOSTリクエストで新規サーバー作成レスポンス（status: 202）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers）とリクエストボディでモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンス（'{status: 202, statusText: 'Accepted', body: {server: {...}}}'）と一致する文字列を戻り値として返すことができる", async () => {
+		it("Compute API（/servers - サーバー作成）へのサーバー作成リクエストボディ（{server: {name, imageRef, flavorRef, networks}}）を含むPOSTリクエストで新規サーバー作成レスポンス（status: 202）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers）とリクエストボディでモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンス（'{status: 202, statusText: 'Accepted', body: {server: {...}}}'）と一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/servers";
 
 			const result = await createCompute(path, mockRequestBody);
@@ -277,7 +263,7 @@ describe("compute-client", () => {
 			);
 		});
 
-		it("Compute API（/os-keypairs）へのキーペア作成リクエストボディ（{keypair: {name: 'test-keypair', public_key: 'ssh-rsa AAAAB3...'}}）を含むPOSTリクエストでキーペア作成レスポンスを受け取った場合に、正しいパス（/os-keypairs）とリクエストボディでモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/os-keypairs', keypairBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+		it("Compute API（/os-keypairs - SSHキーペア作成）へのキーペア作成リクエストボディ（{keypair: {name: 'test-keypair', public_key: 'ssh-rsa AAAAB3...'}}）を含むPOSTリクエストでキーペア作成レスポンスを受け取った場合に、正しいパス（/os-keypairs）とリクエストボディでモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/os-keypairs', keypairBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/os-keypairs";
 			const keypairBody = {
 				keypair: {
@@ -317,7 +303,7 @@ describe("compute-client", () => {
 			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Compute API（/servers/server-id-123/action）への特定サーバーID（server-id-123）のアクション実行リクエストボディ（{reboot: {type: 'SOFT'}}）を含むPOSTリクエストでサーバーアクション実行レスポンス（status: 202）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/server-id-123/action）とリクエストボディでモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers/server-id-123/action', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンス（'{status: 202, statusText: 'Accepted', body: {message: 'Action performed successfully'}}'）と一致する文字列を戻り値として返すことができる", async () => {
+		it("Compute API（/servers/{server_id}/action - サーバー再起動）への特定サーバーID（server-id-123）のアクション実行リクエストボディ（{reboot: {type: 'SOFT'}}）を含むPOSTリクエストでサーバーアクション実行レスポンス（status: 202）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/server-id-123/action）とリクエストボディでモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers/server-id-123/action', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンス（'{status: 202, statusText: 'Accepted', body: {message: 'Action performed successfully'}}'）と一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/action";
 			const param = "server-id-123";
 
@@ -333,12 +319,12 @@ describe("compute-client", () => {
 			);
 		});
 
-		it("Compute API（/servers/server-id-123/action）への特定サーバーID（server-id-123）のリブートアクションリクエストボディ（{reboot: {type: 'HARD'}}）を含むPOSTリクエストでサーバーハードリブート実行レスポンスを受け取った場合に、正しいパス（/servers/server-id-123/action）とリクエストボディでモックAPIを呼び出し、レスポンスを文字列形式で正しく返すことができる", async () => {
+		it("Compute API（/servers/{server_id}/action - サーバー強制停止）への特定サーバーID（server-id-123）のリブートアクションリクエストボディ（{reboot: {type: 'HARD'}}）を含むPOSTリクエストでサーバーハードリブート実行レスポンスを受け取った場合に、正しいパス（/servers/server-id-123/action）とリクエストボディでモックAPIを呼び出し、レスポンスを文字列形式で正しく返すことができる", async () => {
 			const path = "/action";
 			const param = "server-id-123";
 			const rebootBody = {
-				reboot: {
-					type: "HARD",
+				"os-stop": {
+					force_shutdown: true,
 				},
 			};
 
@@ -353,7 +339,7 @@ describe("compute-client", () => {
 			);
 		});
 
-		it("Compute API（/servers/another-server-id/action）への異なるサーバーID（another-server-id）のアクション実行リクエストボディ（{reboot: {type: 'SOFT'}}）を含むPOSTリクエストで別サーバーアクション実行レスポンスを受け取った場合に、指定されたIDを含む正しいパス（/servers/another-server-id/action）とリクエストボディでモックAPIを呼び出し、レスポンスを文字列形式で正しく返すことができる", async () => {
+		it("Compute API（/servers/{server_id}/action - サーバー再起動）への異なるサーバーID（another-server-id）のアクション実行リクエストボディ（{reboot: {type: 'SOFT'}}）を含むPOSTリクエストで別サーバーアクション実行レスポンスを受け取った場合に、指定されたIDを含む正しいパス（/servers/another-server-id/action）とリクエストボディでモックAPIを呼び出し、レスポンスを文字列形式で正しく返すことができる", async () => {
 			const path = "/action";
 			const param = "another-server-id";
 
@@ -376,7 +362,7 @@ describe("compute-client", () => {
 			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Compute API（/servers/server-id-123）への特定のサーバーID（server-id-123）を持つサーバーを削除するDELETEリクエストで、サーバー削除レスポンス（空文字列）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/server-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/servers/server-id-123'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
+		it("Compute API（/servers/{server_id} - サーバー削除）への特定のサーバーID（server-id-123）を持つサーバーを削除するDELETEリクエストで、サーバー削除レスポンス（空文字列）を受け取った場合に、正しいURL（https://compute.c3j1.conoha.io/v2.1）とパス（/servers/server-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/servers/server-id-123'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/servers";
 			const param = "server-id-123";
 
@@ -391,7 +377,7 @@ describe("compute-client", () => {
 			);
 		});
 
-		it("Compute API（/os-keypairs/keypair-name）への特定のサーバーID（server-id-123）を持つサーバーを削除するDELETEリクエストでキーペア削除レスポンス（空文字列）を受け取った場合に、正しいパス（/os-keypairs/keypair-name）でモックAPIを呼び出し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
+		it("Compute API（/os-keypairs/{keypair_name} - SSHキーペア削除）への特定のキーペア名（keypair-name）を持つキーペアを削除するDELETEリクエストでキーペア削除レスポンス（空文字列）を受け取った場合に、正しいパス（/os-keypairs/keypair-name）でモックAPIを呼び出し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/os-keypairs";
 			const param = "keypair-name";
 
@@ -405,7 +391,7 @@ describe("compute-client", () => {
 			);
 		});
 
-		it("Compute API（/servers/another-server-id）への特定のサーバーID（server-id-123）を持つサーバーを削除するDELETEリクエストで別サーバー削除レスポンス（空文字列）を受け取った場合に、指定されたIDを含む正しいパス（/servers/another-server-id）でモックAPIを呼び出し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
+		it("Compute API（/servers/{server_id} - サーバー削除）への異なるサーバーID（another-server-id）を持つサーバーを削除するDELETEリクエストで別サーバー削除レスポンス（空文字列）を受け取った場合に、指定されたIDを含む正しいパス（/servers/another-server-id）でモックAPIを呼び出し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/servers";
 			const param = "another-server-id";
 
@@ -421,18 +407,7 @@ describe("compute-client", () => {
 	});
 
 	describe("レスポンスの型", () => {
-		it("getComputeが単純な文字列レスポンス（'simple string response'）を受け取った場合に、モックAPIから返された文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
-			const stringResponse = "simple string response";
-			mockFormatResponse.mockResolvedValue(stringResponse);
-			const path = "/servers";
-
-			const result = await getCompute(path);
-
-			expect(result).toBe(stringResponse);
-			expect(typeof result).toBe("string");
-		});
-
-		it("getComputeがJSON形式のサーバー一覧レスポンス（{servers: [{id: 'test', name: 'test-server'}]}）を文字列として受け取った場合に、モックAPIから返されたJSON文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
+		it("Compute API（/servers - サーバー一覧取得）のgetComputeがJSON形式のサーバー一覧レスポンス（{servers: [{id: 'test', name: 'test-server'}]}）を文字列として受け取った場合に、モックAPIから返されたJSON文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
 			const jsonResponse = JSON.stringify({
 				servers: [{ id: "test", name: "test-server" }],
 			});
@@ -447,7 +422,7 @@ describe("compute-client", () => {
 	});
 
 	describe("パフォーマンス", () => {
-		it("getComputeが大量サーバーデータ（1000件のサーバー配列）を含むJSON文字列レスポンスを受け取った場合に、パフォーマンスの問題なく正しいパス（/servers?limit=1000）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers?limit=1000'）が正しく引き渡されることを確認し、大量データモックレスポンスと一致する戻り値を返すことができる", async () => {
+		it("Compute API（/servers - サーバー一覧取得）のgetComputeが大量サーバーデータ（1000件のサーバー配列）を含むJSON文字列レスポンスを受け取った場合に、パフォーマンスの問題なく正しいパス（/servers?limit=1000）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers?limit=1000'）が正しく引き渡されることを確認し、大量データモックレスポンスと一致する戻り値を返すことができる", async () => {
 			const largeResponse = JSON.stringify({
 				servers: Array.from({ length: 1000 }, (_, i) => ({
 					id: `server-${i}`,
@@ -486,23 +461,7 @@ describe("compute-client", () => {
 	});
 
 	describe("パス結合のテスト", () => {
-		it("getComputeByParamでサーバーID（server-123）と詳細パス（/detail）を指定した場合に、正しく結合されたパス（/servers/server-123/detail）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/servers/server-123/detail'）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
-			const mockResponse = JSON.stringify({ server: { id: "test" } });
-			mockFormatResponse.mockResolvedValue(mockResponse);
-
-			const path = "/detail";
-			const param = "server-123";
-
-			await getComputeByParam(path, param);
-
-			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-				"GET",
-				expectedBaseUrl,
-				"/servers/server-123/detail",
-			);
-		});
-
-		it("createComputeByParamでサーバーID（server-123）とアクションパス（/action）とリクエストボディ（{reboot: {type: 'SOFT'}}）を指定した場合に、正しく結合されたパス（/servers/server-123/action）でモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers/server-123/action', requestBody）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
+		it("Compute API（/servers/{server_id}/action - サーバーアクション実行）のcreateComputeByParamでサーバーID（server-123）とアクションパス（/action）とリクエストボディ（{reboot: {type: 'SOFT'}}）を指定した場合に、正しく結合されたパス（/servers/server-123/action）でモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/servers/server-123/action', requestBody）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
 			const mockResponse = JSON.stringify({ message: "OK" });
 			mockFormatResponse.mockResolvedValue(mockResponse);
 
@@ -520,7 +479,7 @@ describe("compute-client", () => {
 			);
 		});
 
-		it("deleteComputeByParamでサーバーベースパス（/servers）とサーバーID（server-123）を指定した場合に、正しく結合されたパス（/servers/server-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/servers/server-123'）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
+		it("Compute API（/servers/{server_id} - サーバー削除）のdeleteComputeByParamでサーバーベースパス（/servers）とサーバーID（server-123）を指定した場合に、正しく結合されたパス（/servers/server-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/servers/server-123'）が正しく引き渡されることを確認し、パス結合処理が正しく動作すること", async () => {
 			const mockResponse = "";
 			mockFormatResponse.mockResolvedValue(mockResponse);
 

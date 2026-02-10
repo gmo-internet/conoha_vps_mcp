@@ -53,7 +53,7 @@ describe("volume-client", () => {
 			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Volume API（/volumes/detail）へのGETリクエストでボリューム一覧レスポンスを受け取った場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/detail）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes/detail'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+		it("Volume API（/volumes/detail - ボリューム一覧取得）へのGETリクエストでボリューム一覧レスポンスを受け取った場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/detail）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes/detail'）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/volumes/detail";
 
 			const result = await getVolume(path);
@@ -67,7 +67,7 @@ describe("volume-client", () => {
 			);
 		});
 
-		it("Volume API（/volumes/detail）へのGETリクエストでクエリパラメータ（limit=10）付きのボリューム検索を実行する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes?limit=10）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes?limit=10'）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
+		it("Volume API（/volumes/detail - ボリューム一覧取得）へのGETリクエストでクエリパラメータ（limit=10）付きのボリューム検索を実行する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes?limit=10）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes?limit=10'）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 			const path = "/volumes/detail?limit=10";
 
 			const result = await getVolume(path);
@@ -90,19 +90,6 @@ describe("volume-client", () => {
 				"GET",
 				expectedBaseUrl,
 				"volumes/detail",
-			);
-		});
-
-		it("空のパス（''）でもVolume APIを正しく呼び出せる", async () => {
-			const path = "";
-
-			const result = await getVolume(path);
-
-			expect(result).toBe(mockResponse);
-			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
-				"GET",
-				expectedBaseUrl,
-				"",
 			);
 		});
 	});
@@ -135,7 +122,7 @@ describe("volume-client", () => {
 			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Volume API（/volumes）へのPOSTリクエストでボリューム作成リクエストボディ（volume情報）を送信した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes）でモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/volumes', volumeBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+		it("Volume API（/volumes - ボリューム作成）へのPOSTリクエストでボリューム作成リクエストボディ（volume情報）を送信した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes）でモックAPIを呼び出し、API呼び出しパラメータ（'POST', expectedBaseUrl, '/volumes', volumeBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/volumes";
 
 			const result = await createVolume(path, mockRequestBody);
@@ -176,7 +163,7 @@ describe("volume-client", () => {
 			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Volume API（/volumes/{id}）へのPUTリクエストで特定のボリューム（volume-id-123）を更新するリクエストボディ（volume情報）を送信した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/volume-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/volumes/volume-id-123', volumeBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
+		it("Volume API（/volumes/{volume_id} - ボリューム更新）へのPUTリクエストで特定のボリューム（volume-id-123）を更新するリクエストボディ（volume情報）を送信した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/volume-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/volumes/volume-id-123', volumeBody）が正しく引き渡されることを確認し、モックレスポンスと一致する文字列を戻り値として返すことができる", async () => {
 			const path = "/volumes";
 			const param = "volume-id-123";
 
@@ -192,7 +179,7 @@ describe("volume-client", () => {
 			);
 		});
 
-		it("Volume API（/volumes/{id}）へのPUTリクエストで異なるボリュームID（another-volume-id）を指定してボリューム更新を実行する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/another-volume-id）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/volumes/another-volume-id', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
+		it("Volume API（/volumes/{volume_id} - ボリューム更新）へのPUTリクエストで異なるボリュームID（another-volume-id）を指定してボリューム更新を実行する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/another-volume-id）でモックAPIを呼び出し、API呼び出しパラメータ（'PUT', expectedBaseUrl, '/volumes/another-volume-id', mockRequestBody）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 			const path = "/volumes";
 			const param = "another-volume-id";
 
@@ -230,7 +217,7 @@ describe("volume-client", () => {
 			mockFormatResponse.mockResolvedValue(mockResponse);
 		});
 
-		it("Volume API（/volumes/{id}）へのDELETEリクエストで特定のボリューム（volume-id-123）を削除した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/volume-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/volumes/volume-id-123'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
+		it("Volume API（/volumes/{volume_id} - ボリューム削除）へのDELETEリクエストで特定のボリューム（volume-id-123）を削除した場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/volume-id-123）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/volumes/volume-id-123'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/volumes";
 			const param = "volume-id-123";
 
@@ -245,7 +232,7 @@ describe("volume-client", () => {
 			);
 		});
 
-		it("Volume API（/volumes/{id}）へのDELETEリクエストで異なるボリュームID（another-volume-id）を指定して削除する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/another-volume-id）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/volumes/another-volume-id'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
+		it("Volume API（/volumes/{volume_id} - ボリューム削除）へのDELETEリクエストで異なるボリュームID（another-volume-id）を指定して削除する場合に、正しいURL（https://block-storage.c3j1.conoha.io/v3/{tenant_id}）とパス（/volumes/another-volume-id）でモックAPIを呼び出し、API呼び出しパラメータ（'DELETE', expectedBaseUrl, '/volumes/another-volume-id'）が正しく引き渡されることを確認し、モックレスポンス（空文字列）と一致する戻り値を返すことができる", async () => {
 			const path = "/volumes";
 			const param = "another-volume-id";
 
@@ -275,18 +262,7 @@ describe("volume-client", () => {
 	});
 
 	describe("レスポンスの型", () => {
-		it("Volume API（/volumes/detail）へのGETリクエストで単純な文字列レスポンス（'simple string response'）を受け取った場合に、モックAPIから返された文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
-			const stringResponse = "simple string response";
-			mockFormatResponse.mockResolvedValue(stringResponse);
-			const path = "/volumes/detail";
-
-			const result = await getVolume(path);
-
-			expect(result).toBe(stringResponse);
-			expect(typeof result).toBe("string");
-		});
-
-		it("Volume API（/volumes/detail）へのGETリクエストでJSON形式のボリューム一覧レスポンス（{volumes: [{id: 'test', name: 'test-volume'}]}）を文字列として受け取った場合に、モックAPIから返されたJSON文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
+		it("Volume API（/volumes/detail - ボリューム詳細一覧取得）へのGETリクエストでJSON形式のボリューム一覧レスポンス（{volumes: [{id: 'test', name: 'test-volume'}]}）を文字列として受け取った場合に、モックAPIから返されたJSON文字列と一致する戻り値を返し、TypeScriptの型システムで文字列型として正しく型付けされること", async () => {
 			const jsonResponse = JSON.stringify({
 				volumes: [{ id: "test", name: "test-volume" }],
 			});
@@ -301,7 +277,7 @@ describe("volume-client", () => {
 	});
 
 	describe("パフォーマンス", () => {
-		it("Volume API（/volumes/detail）へのGETリクエストで大量のボリュームデータ（1000件のボリューム一覧）を処理する場合に、データ量の制限なく正しいパス（/volumes/detail?limit=1000）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes/detail?limit=1000'）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
+		it("Volume API（/volumes/detail - ボリューム詳細一覧取得）へのGETリクエストで大量のボリュームデータ（1000件のボリューム一覧）を処理する場合に、データ量の制限なく正しいパス（/volumes/detail?limit=1000）でモックAPIを呼び出し、API呼び出しパラメータ（'GET', expectedBaseUrl, '/volumes/detail?limit=1000'）が正しく引き渡されることを確認し、モックレスポンスと一致する戻り値を返すことができる", async () => {
 			const largeResponse = JSON.stringify({
 				volumes: Array.from({ length: 1000 }, (_, i) => ({
 					id: `volume-${i}`,
@@ -335,6 +311,31 @@ describe("volume-client", () => {
 				"GET",
 				expectedBaseUrl,
 				longPath,
+			);
+		});
+	});
+
+	describe("エラー処理", () => {
+		const mockResponse = JSON.stringify({
+			status: 404,
+			statusText: "Not Found",
+			body: "<html><body><h1>404 Not Found</h1>\nThe requested resource could not be found.\n</body></html>",
+		});
+
+		beforeEach(() => {
+			mockFormatResponse.mockResolvedValue(mockResponse);
+		});
+
+		it("GETリクエストで空のパスのときに404エラーが返されることを確認する", async () => {
+			const path = "";
+
+			const result = await getVolume(path);
+
+			expect(result).toBe(mockResponse);
+			expect(mockExecuteOpenstackApi).toHaveBeenCalledWith(
+				"GET",
+				expectedBaseUrl,
+				"",
 			);
 		});
 	});

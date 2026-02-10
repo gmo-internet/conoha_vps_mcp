@@ -20,7 +20,7 @@ describe("format-get-flavor-response", () => {
 	});
 
 	describe("formatGetFlavorResponse", () => {
-		it("正常なflavorレスポンスを'{status: number, statusText: string, body: {flavors: FlavorData[]}}'形式にフォーマットできる", async () => {
+		it("公開API（/flavors/detail - フレーバー一覧取得）の正常なflavorレスポンスを'{status: number, statusText: string, body: {flavors: FlavorData[]}}'形式にフォーマットできる", async () => {
 			const mockBody = {
 				flavors: [
 					{

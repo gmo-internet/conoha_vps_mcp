@@ -20,7 +20,7 @@ describe("format-get-image-response", () => {
 	});
 
 	describe("formatGetImageResponse", () => {
-		it("正常なimageレスポンスを'{status: number, statusText: string, body: {images: ImageData[]}}'形式にフォーマットできる", async () => {
+		it("公開API（/v2/images?limit=200 - イメージ一覧取得）の正常なimageレスポンスを'{status: number, statusText: string, body: {images: ImageData[]}}'形式にフォーマットできる", async () => {
 			const mockBody = {
 				images: [
 					{

@@ -20,7 +20,7 @@ describe("format-get-security-group-response", () => {
 	});
 
 	describe("formatGetSecurityGroupResponse", () => {
-		it("正常なsecurity_groupレスポンスを'{status: number, statusText: string, body: {security_groups: SecurityGroupData[]}}'形式にフォーマットできる", async () => {
+		it("公開API（/v2.0/security-groups - セキュリティグループ一覧取得）の正常なsecurity_groupレスポンスを'{status: number, statusText: string, body: {security_groups: SecurityGroupData[]}}'形式にフォーマットできる", async () => {
 			const mockBody = {
 				security_groups: [
 					{
