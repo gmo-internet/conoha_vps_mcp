@@ -5,7 +5,7 @@ const config = {
 	bundle: true,
 	outfile: "dist/index.js",
 	platform: "node",
-	target: "node18",
+	target: "node22",
 	format: "esm",
 	packages: "bundle",
 	external: [],

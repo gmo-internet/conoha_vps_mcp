@@ -63,7 +63,7 @@
 	"devDependencies": {
 		"@anthropic-ai/mcpb": "2.1.2",
 		"@biomejs/biome": "2.3.11",
-		"@types/node": "^20.19.0",
+		"@types/node": "^22.0.0",
 		"@vitest/coverage-v8": "4.0.17",
 		"esbuild": "0.27.2",
 		"tsx": "4.21.0",
@@ -72,6 +72,6 @@
 		"vitest": "4.0.17"
 	},
 	"engines": {
-		"node": ">=20.0.0"
+		"node": ">=22.0.0"
 	}
 }
