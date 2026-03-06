@@ -10,7 +10,7 @@
 	"plugins": [
 		{
 			"name": "conoha-vps-mcp",
-			"source": "./plugin"
+			"source": "./"
 		}
 	]
 }

@@ -9,5 +9,14 @@
 	"homepage": "https://github.com/gmo-internet/conoha_vps_mcp",
 	"repository": "https://github.com/gmo-internet/conoha_vps_mcp",
 	"license": "Apache-2.0",
-	"keywords": ["conoha", "vps", "mcp", "openstack", "server-management"]
+	"keywords": [
+		"conoha",
+		"vps",
+		"mcp",
+		"openstack",
+		"server-management"
+	],
+	"skills": [
+		"./skills"
+	]
 }
