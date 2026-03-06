@@ -1,0 +1,16 @@
+{
+	"name": "conoha-vps-mcp",
+	"owner": {
+		"name": "GMO Internet"
+	},
+	"metadata": {
+		"description": "ConoHa VPS MCPサーバーの操作をガイドするClaude Codeプラグイン",
+		"version": "1.0.0"
+	},
+	"plugins": [
+		{
+			"name": "conoha-vps-mcp",
+			"source": "./"
+		}
+	]
+}
