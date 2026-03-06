@@ -1,127 +1,101 @@
 # CLAUDE.md
 
-このファイルは、このリポジトリでコードを扱う際のClaude Code (claude.ai/code)への指針を提供します。
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 必須コマンド
+## コマンド
 
-### 開発
-- `npm run dev` - tsxを使用して開発サーバーを起動
-- `npm run build` - esbuildを使用してプロダクションバンドルをビルド
+### ビルド・実行
+- `npm run build` - esbuildでプロダクションバンドルをビルド
 - `npm run build:types` - TypeScript宣言ファイルを生成
-- `npm start` - ビルドされたアプリケーションを実行
+- `npm run build:mcpb` - mcpbでMCPバンドルをパック
+- `npm start` - ビルド済みアプリケーションを実行
+- `npm run dev` - tsxで開発サーバーを起動
 
-### 品質保証
-- `npm run typecheck` - ファイルを出力せずに型チェックを実行
-- `npm run biome:ci` - BiomeのCIチェック（フォーマット/リンティング）を実行
+### 品質チェック
+- `npm run typecheck` - 型チェック（出力なし）
+- `npm run biome:ci` - BiomeのCIチェック（フォーマット/リンティング）
 - `npm run biome:fix` - Biomeの問題を自動修正
-- `npm test` - Vitestを使用してカバレッジ付きでテストを実行
-
-### MCP開発
-- `npm run dev:inspector` - デバッグ用のMCPインスペクターを起動（エイリアス: `npm run inspector`）
-- `npm run start:inspector` - ビルドされたコードでMCPインスペクターを起動
-
-### その他のコマンド
-- `npm run commit` - commitizenを使用してconventional commitsを作成
+- `npm test` - Vitestでカバレッジ付きテストを実行
 - `npm test -- <filename>` - 特定のテストファイルを実行（例: `npm test -- compute-client.test.ts`）
 
-## アーキテクチャ概要
+### その他
+- `npm run inspector` - MCPインスペクターを起動
+- `npm run generate:notice` - NOTICEファイルを生成
+- `npm run docs:build` - typedocでAPIドキュメントを生成
 
-これは、AIアシスタントにConoHa VPS OpenStack APIへのアクセスを提供する**Model Context Protocol (MCP)サーバー**です。サーバーは機能ベースの組織化によるクリーンアーキテクチャに従っています。
+## アーキテクチャ
 
-### コア構造
-- **MCPサーバー**: `@modelcontextprotocol/sdk`を使用して構築、`src/index.ts`でツールとプロンプトを登録
-- **OpenStack統合**: 異なるOpenStackサービス用のモジュラークライアント
-- **機能別組織化**: 各OpenStackサービスは`src/features/openstack/`下に独自のディレクトリを持つ
+ConoHa VPS OpenStack APIへのアクセスをAIアシスタントに提供するMCPサーバー。`@modelcontextprotocol/sdk` + Zod v4 + stdio トランスポート。
 
-### 主要コンポーネント
+### リクエストフロー
 
-#### MCPツール (src/index.ts)
-- `conoha_get` - OpenStack APIへのGETリクエスト
-- `conoha_get_by_param` - パスパラメータ付きGETリクエスト
-- `conoha_post` - リソース作成用のPOSTリクエスト
-- `conoha_post_put_by_param` - パラメータ付きPOST/PUTリクエスト
-- `conoha_delete_by_param` - パラメータ付きDELETEリクエスト
+```
+ツール呼び出し → src/index.ts → src/tool-routing-tables.ts → feature client → openstack-client.ts → API
+※ storageのみ openstack-client.ts を経由せず generateApiToken() を直接使用
+```
 
-#### ツールルーティングパターン
-- ツールは`tool-routing-tables.ts`を介してハンドラーにマッピングされる
-- 各ツールパスは特定のハンドラー関数に対応
-- すべてのツール説明は日本語（`tool-descriptions.ts`を参照）
+### MCPツール一覧（10ツール + 1プロンプト）
 
-#### OpenStackサービス (src/features/openstack/)
-- **compute/** - サーバー管理（作成、削除、起動、停止、リサイズ）
-- **volume/** - ボリューム管理（作成、削除、更新）
-- **image/** - イメージ一覧
-- **network/** - セキュリティグループ、ポート、ネットワーキング
-- **common/** - 共有ユーティリティ（APIクライアント、トークン生成、レスポンスフォーマット）
+| ツール名 | 種別 | 概要 |
+|---|---|---|
+| `fetch_url` | ユーティリティ | URL取得 |
+| `encode_base64` | ユーティリティ | Base64エンコード |
+| `conoha_get` | ConoHa API | リソース一覧取得（GET） |
+| `conoha_get_by_param` | ConoHa API | パラメータ指定で個別取得（GET） |
+| `conoha_post` | ConoHa API | リソース作成（POST） |
+| `conoha_post_put` | ConoHa API | ストレージ コンテナ作成・オブジェクトアップロード（PUT） |
+| `conoha_post_put_by_param` | ConoHa API | リソース更新・操作（POST/PUT + パラメータ） |
+| `conoha_post_by_header_param` | ConoHa API | ストレージ メタデータ設定（POST + ヘッダー） |
+| `conoha_delete_by_param` | ConoHa API | リソース削除（DELETE + パラメータ） |
+| `conoha_head` | ConoHa API | アカウント情報・コンテナ詳細取得（HEAD） |
+| `create_server`（プロンプト） | プロンプト | サーバー作成ウィザード |
 
-#### 認証
-- OpenStackトークンベース認証を使用
-- トークンは`common/generate-api-token.ts`の`generateApiToken()`で生成
-- 必要な環境変数: ConoHa API認証情報
+ツール説明の詳細は `src/tool-descriptions.ts` を参照。
 
-### 設定
-- **TypeScript**: 厳密な型チェックが有効
-- **Biome**: タブ、ダブルクォートでのコードフォーマット
-- **Vitest**: カバレッジレポート付きテストフレームワーク
-- **esbuild**: プロダクション用の高速バンドリング
+### パス型の更新手順
 
-### 環境変数
-API認証に必要:
-- `OPENSTACK_TENANT_ID` - ConoHaテナントID
-- `OPENSTACK_USER_ID` - ConoHaユーザーID  
-- `OPENSTACK_PASSWORD` - ConoHa APIパスワード
+新しいAPIパスを追加する場合、以下の3箇所を同時に更新する:
+1. `src/types.ts` — パス型（`ConoHaGetPaths` 等）にリテラルを追加
+2. `src/tool-routing-tables.ts` — ハンドラーマッピングにエントリを追加
+3. `src/index.ts` — ツールの `inputSchema` にあるZodスキーマにパスを追加
 
-### APIスキーマ検証
-- 各サービスでのリクエスト/レスポンス検証用Zodスキーマ
-- 異なるリクエストタイプ用の判別共用体
-- コードベース全体での強い型付け
+### 機能モジュール（src/features/openstack/）
 
-## 開発ノート
+| モジュール | 内容 |
+|---|---|
+| `common/` | APIクライアント（`openstack-client.ts`）、トークン生成（`generate-api-token.ts`）、レスポンスフォーマット（`response-formatter.ts`）、エラーハンドラー |
+| `compute/` | サーバー管理（作成、削除、起動、停止、リサイズ）、SSHキーペア、フレーバー |
+| `volume/` | ボリューム管理（作成、削除、更新）、ボリュームタイプ |
+| `image/` | イメージ一覧 |
+| `network/` | セキュリティグループ、セキュリティグループルール、ポート |
+| `storage/` | オブジェクトストレージ（コンテナ・オブジェクトのCRUD、メタデータ） |
 
-### 環境セットアップ
-環境変数として設定されたConoHa VPS API認証情報が必要です。詳細は`docs/`のセットアップドキュメントを参照してください。
+## 規約
 
-### テスト
-- ソースファイルと同じ場所にあるユニットテスト (*.test.ts)
-- `reports/coverage/`に生成されるカバレッジレポート
-- カスタムレポーターで生成されるCSVテストレポート
-- テストには日本語と英語の両方の説明を含めるべき
-- メインインデックスファイルにはモックテストを使用
+### コミット・PR
+- Conventional Commits 必須（例: `feat:`, `fix:`, `docs:`, `test:`, `chore:`）
+- PRチェックリスト: CI通過、NOTICE更新（`npm run generate:notice`）、リリース時はバージョン更新（`package.json` + `manifest.json`）
 
 ### コードスタイル
-- 一貫したフォーマットとリンティングのためにBiomeを使用
-- タブインデント、文字列にはダブルクォート
-- インポート整理が有効
-- テストファイルに対するいくつかの例外を除く厳格なリンティングルール
+- Biome: タブインデント、ダブルクォート、インポート整理有効
+- テストファイルに対する一部リンティングルール除外あり
+- ESM only、Node.js >= 22.0.0
 
-### 実装ノート
-- **パスワード要件**: サーバーパスワードは9-70文字で、大文字、小文字、数字、記号を含む必要がある
-- **APIリージョン**: すべてのエンドポイントは`constants.ts`でConoHaのc3j1リージョンにハードコードされている
-- **レスポンスフォーマット**: すべてのAPIレスポンスは`format-response.ts`を通じて一貫してフォーマットされる
-- **エラーハンドリング**: エラーは適切なステータスコードとメッセージでキャッチされフォーマットされる
+### テスト
+- ソースファイルと同じディレクトリに配置（`*.test.ts`）
+- テスト記述（`describe` / `it`）は日本語の詳細な1文で記述
+- `**/index.ts` はカバレッジ対象外（`vitest.config.ts` で除外済み）
+- カバレッジレポートは `reports/coverage/` に生成
 
-## ツール使用例
+### 実装上の注意
+- **認証トークン**: リクエストごとに `generateApiToken()` で取得（キャッシュなし）
+- **APIリージョン**: c3j1固定（`src/features/openstack/constants.ts`）
+- **パスワード要件**: 9-70文字、大小英字+数字+記号を含むこと
+- **レスポンスフォーマット**: すべてのAPIレスポンスは `response-formatter.ts` で統一的にフォーマット
+- **エラーハンドリング**: エラーは `error-handler.ts` でステータスコードとメッセージ付きでフォーマット
 
-### GET操作
-```
-conoha_get with path "/servers" - すべてのサーバーを一覧表示
-conoha_get_by_param with path "/servers/{id}" - 特定のサーバーの詳細を取得
-```
-
-### CREATE操作
-```
-conoha_post with path "/servers" - 新しいサーバーを作成
-conoha_post with path "/volumes" - 新しいボリュームを作成
-```
-
-### UPDATE/ACTION操作
-```
-conoha_post_put_by_param with path "/servers/{id}/action" - サーバーの起動/停止/リサイズ
-conoha_post_put_by_param with path "/volumes/{id}" - ボリュームプロパティの更新
-```
-
-### DELETE操作
-```
-conoha_delete_by_param with path "/servers/{id}" - サーバーを削除
-conoha_delete_by_param with path "/volumes/{id}" - ボリュームを削除
-```
+### 環境変数
+API認証に必要（すべて必須）:
+- `OPENSTACK_TENANT_ID` - ConoHaテナントID
+- `OPENSTACK_USER_ID` - ConoHaユーザーID
+- `OPENSTACK_PASSWORD` - ConoHa APIパスワード
