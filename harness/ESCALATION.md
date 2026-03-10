@@ -10,7 +10,7 @@
 |--------|-----------|---------|
 | **L1: ドキュメント** | `CODING_PATTERN.md` / `harness/patterns/` | 初期状態 |
 | **L2: AIスキルチェック** | `coding-pattern-check` スキル | PRレビューで1回以上違反検出 |
-| **L3: CIルール** | Biome / dependency-cruiser | スキルチェックで3回以上検出 + 自動検出手段あり |
+| **L3: CIルール** | Biome / dependency-cruiser / knip / jscpd / npm audit / actionlint / Stryker | スキルチェックで3回以上検出 + 自動検出手段あり |
 | **L4: 構造テスト** | `src/architecture.test.ts` | アーキテクチャ不変条件 |
 
 ### 昇格フロー
@@ -109,6 +109,40 @@ L4 (構造テスト)
 | ID | ルール | レベル |
 |----|--------|--------|
 | — | セクション14全体 | L3 |
+
+### カテゴリ I: アーキテクチャ境界
+
+| ID | ルール | レベル | ツール |
+|----|--------|--------|--------|
+| I-1 | 循環依存禁止 | L3 | dependency-cruiser |
+| I-2 | feature間直接インポート禁止 | L3 | dependency-cruiser |
+| I-3 | featureからrootファイルへのインポート警告 | L3 | dependency-cruiser |
+
+### カテゴリ J: コード衛生
+
+| ID | ルール | レベル | ツール |
+|----|--------|--------|--------|
+| J-1 | 未使用ファイル・エクスポート検出 | L3 | knip |
+| J-2 | コード重複 < 10% | L3 (advisory) | jscpd |
+
+### カテゴリ K: セキュリティ・品質
+
+| ID | ルール | レベル | ツール |
+|----|--------|--------|--------|
+| K-1 | 高リスク脆弱性なし | L3 | npm audit |
+| K-2 | GitHub Actionsワークフロー構文検証 | L3 | actionlint |
+| K-3 | ミューテーションスコア ≥ 50% | L3 (advisory) | Stryker |
+
+---
+
+## エントロピー管理
+
+週次スケジュールで `.github/workflows/entropy-scan.yaml` が以下を自動実行:
+- `npm audit --audit-level=high` — 新規CVE検出
+- `npm run knip` — 未使用コードドリフト検出
+- `npm run depcruise` — 依存関係違反検出
+
+違反時はGitHub Issueを自動作成する。
 
 ---
 
