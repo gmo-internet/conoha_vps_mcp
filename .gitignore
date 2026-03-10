@@ -21,3 +21,9 @@ settings.local.json
 
 # cursor
 .cursor/
+
+# npm
+.npmrc
+
+# outputs
+test-results
