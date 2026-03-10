@@ -1,0 +1,96 @@
+name: E2E Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_groups:
+        description: "テストグループ（例: 'A,B,C' or 'all'）"
+        required: false
+        default: "all"
+        type: string
+
+jobs:
+  e2e-test:
+    if: github.repository == 'gmo-internet/priv_conoha_vps_mcp'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    timeout-minutes: 120
+    concurrency:
+      group: e2e-test
+      cancel-in-progress: false # 途中キャンセルはリソース孤立を招くため
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          fetch-depth: 1
+
+      - name: Install Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: "24.13.0"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build MCP server
+        run: npm run build
+
+      - name: Create MCP config from secrets
+        run: |
+          jq -n \
+            --arg tenant "${{ secrets.OPENSTACK_TENANT_ID }}" \
+            --arg user "${{ secrets.OPENSTACK_USER_ID }}" \
+            --arg pass "${{ secrets.OPENSTACK_PASSWORD }}" \
+            '{
+              mcpServers: {
+                "conoha-vps-mcp": {
+                  command: "node",
+                  args: ["dist/index.js"],
+                  env: {
+                    OPENSTACK_TENANT_ID: $tenant,
+                    OPENSTACK_USER_ID: $user,
+                    OPENSTACK_PASSWORD: $pass
+                  }
+                }
+              }
+            }' > .mcp.json
+
+      - name: Run E2E tests with Claude Code
+        id: e2e
+        uses: anthropics/claude-code-action@a017b830c03e23789b11fb69ed571ea61c12e45c # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            ConoHa VPS MCP の E2E テストを実行してください。
+
+            ## 指示
+            1. スキル「conoha-vps-mcp-test」(skills/conoha-vps-mcp-test/SKILL.md)の手順に従ってテストを実行
+            2. テスト対象グループ: ${{ github.event.inputs.test_groups || 'all' }}
+               - 「all」の場合は全グループ(A-S)を順に実行
+               - それ以外は指定グループのみ実行
+            3. テスト前の準備（SSHキー生成、テスト用HTMLファイル作成）もSKILL.mdに従って実施
+            4. 各グループ完了後のクリーンアップを必ず実行
+            5. 結果は ./test-results/ にMarkdownで出力
+
+            ## 注意
+            - MCPサーバー「conoha-vps-mcp」は .mcp.json で設定済み
+            - エラー発生時もクリーンアップを優先し、次のグループへ進む
+            - 最終的なテスト結果サマリーを出力すること
+          claude_args: >-
+            --allowed-tools
+            "mcp__conoha-vps-mcp__fetch_url,mcp__conoha-vps-mcp__encode_base64,mcp__conoha-vps-mcp__conoha_get,mcp__conoha-vps-mcp__conoha_get_by_param,mcp__conoha-vps-mcp__conoha_post,mcp__conoha-vps-mcp__conoha_post_put,mcp__conoha-vps-mcp__conoha_post_put_by_param,mcp__conoha-vps-mcp__conoha_post_by_header_param,mcp__conoha-vps-mcp__conoha_delete_by_param,mcp__conoha-vps-mcp__conoha_head,Bash,Read,Write,Glob"
+            --max-turns 200
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 90
+          if-no-files-found: warn
