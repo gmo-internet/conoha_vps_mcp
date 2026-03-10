@@ -39,13 +39,16 @@ jobs:
             - テストカバレッジ
 
             特に以下のセマンティックルール（機械チェック不可）を重点確認:
-            - B-4: クライアント関数名が {get|create|delete|update}{Service} パターンに従うか
             - B-5: 非storageクライアントが executeOpenstackApi() → formatResponse() チェーンか
             - B-6: storageクライアントが generateApiToken() を直接使用しているか
-            - D-5: response-formatterのcatchが JSON.stringify({status, statusText, body: "<error>"}) を返すか
-            - E-1/E-2: テストが vi.mock() / vi.mocked(await import(...)) パターンを使用しているか
+            - E-1: 外部依存テストが vi.mock() でモジュールモックしているか
+            - E-2: モック戻り値設定が vi.mocked(await import(...)) パターンか
             - F-3: JSDocが日本語で記述されているか
-            - H-4: 真の定数が UPPER_SNAKE_CASE か
+
+            Taste Invariants（主観的品質基準、harness/patterns/taste-invariants.md 参照）:
+            - APIレスポンスは次のアクション判断に必要な情報のみに絞られているか
+            - エラーメッセージは「何が起きたか」+「何をすべきか」の2要素で構成されているか
+            - 1関数 = 1 API操作の単一責任が守られているか
 
             違反があれば ERROR（必須修正）として指摘してください。
             違反を検出した場合、各違反のルールIDをPRラベルとして付与してください（例: `gh pr edit --add-label "pattern-violation:B-4"`）。

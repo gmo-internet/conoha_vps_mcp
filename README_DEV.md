@@ -3,6 +3,22 @@
 本プロジェクトでは **ハーネスエンジニアリング** の考え方を採用し、AIコーディングエージェントの出力品質を構造的に担保している。
 ドキュメント → AIスキル → CI → テストの4段階で段階的にルールを執行し、品質の「手綱（harness）」を握る。
 
+### 何を担保しているか
+
+- **コード構造の一貫性** — ファイル配置（feature/ディレクトリ）、命名規約（kebab-case / camelCase / PascalCase）、アーキテクチャ境界（feature間インポート禁止）
+- **実装パターンの統一** — API呼び出しチェーン（`executeOpenstackApi()` → `formatResponse()`）、レスポンスフォーマット、エラーハンドリング（`formatErrorMessage()`）
+- **テスト品質** — モックパターン（`vi.mock()` / `vi.mocked()`）、カバレッジ、ミューテーションスコア
+- **コード衛生** — 未使用コード排除（knip）、重複排除（jscpd）、セキュリティ脆弱性検出（npm audit）、循環依存検出（dependency-cruiser）
+- **ドキュメント整合性** — CLAUDE.md・パターンファイル・ESCALATION.md間のルールID一致を自動検証
+
+### どうやって担保しているか
+
+- **L1（ドキュメント）**: 15のパターンファイル（`harness/patterns/*.md`）にルールを定義し、開発者・AIの参照元とする
+- **L2（AIセマンティック）**: `CLAUDE.md` に8つのセマンティックルールを明記し開発時に予防 + Claude Code Review CI でPR時に自動検知
+- **L3（CIツール）**: Biome / dependency-cruiser / knip / npm audit / actionlint 等で機械的に強制（PRマージをブロック）
+- **L4（構造テスト）**: `architecture.test.ts` で23のアーキテクチャ不変条件を `npm test` で検証
+- **エントロピースキャン（週次）**: パターン鮮度劣化・依存関係変化等のドリフトを検出し、GitHub Issue を自動作成
+
 ---
 
 ## 1. エスカレーションラダー（4段階モデル）
@@ -10,7 +26,7 @@
 違反の頻度・検出可能性に応じて執行レベルを段階的に引き上げる。
 
 - **L1 — ドキュメント**: パターン定義のみ。すべてのルールの出発点
-  - `harness/patterns/*.md`（14ファイル）に記述
+  - `harness/patterns/*.md`（15ファイル）に記述
 - **L2 — AIセマンティックチェック**: 機械的チェック不可のセマンティックルール（8ルール）
   - `CLAUDE.md` に明記 → 開発時にClaude Codeが自動的に遵守（予防）
   - `claude-code-review.yml` → PR時にClaudeが自動検知（検知）
@@ -18,9 +34,9 @@
 - **L3 — CIルール**: 3回以上検出され自動検出可能なルールを昇格
   - Biome（`useImportType`, `useNodejsImportProtocol` 含む） / dependency-cruiser / knip / jscpd / npm audit / actionlint / Stryker
 - **L4 — 構造テスト**: アーキテクチャ不変条件を自動テストで保証
-  - `src/architecture.test.ts`（Vitest）で22ルールを検証
+  - `src/architecture.test.ts`（Vitest）で23ルールを検証
 
-**ルール体系**: 12カテゴリ・44ルール
+**ルール体系**: 13カテゴリ・48ルール（Biome含む）
 
 | カテゴリ | 内容 | ルール数 |
 |---------|------|---------|
@@ -32,9 +48,10 @@
 | F | JSDoc | 3 |
 | G | インポートルール | 4 |
 | H | 命名規約 | 4 |
-| I | アーキテクチャ境界 | 3 |
+| I | アーキテクチャ境界 | 5 |
 | J | コード衛生 | 2 |
 | K | セキュリティ・品質 | 3 |
+| L | ドキュメント整合性 | 3 |
 
 詳細: `harness/ESCALATION.md`
 
@@ -42,10 +59,11 @@
 
 ## 2. パターンドキュメント
 
-### harness/patterns/（14ファイル）
+### harness/patterns/（15ファイル）
 
 各ファイルは YAML frontmatter（`id`, `title`, `enforcement-level`, `related-rules`, `checked-by`）で管理。
 
+- `architecture-layers.md` — アーキテクチャ境界ルール（feature間インポート禁止等）
 - `file-structure.md` — ディレクトリ構成、テストファイル配置ルール
 - `client-module.md` — `executeOpenstackApi()` → `formatResponse()` チェーンパターン
 - `schema.md` — Zod v4 スキーマ定義（`.strict()` 必須、`.describe()` 日本語）
@@ -67,6 +85,8 @@
 - `KDR-0002` — L4テストスコープの選定基準
 - `KDR-0003` — CODING_PATTERN.md（681行）を14ファイルへ分割した理由
 - `KDR-0004` — L3ツールスイート導入（blocking/advisory分類、エントロピー管理）
+- `KDR-0005` — L2セマンティックルールの昇格基準
+- `KDR-0006` — ハーネスエンジニアリング全体レビュー
 
 ---
 
@@ -99,6 +119,7 @@
 
 - **build**: esbuild によるプロダクションビルド検証
 - **biome**: `npm run biome:ci` でフォーマット・リンティングチェック
+- **typecheck**: `npm run typecheck` で TypeScript 型チェック
 - **test**: Vitest 実行 → カバレッジ・テスト結果を PR にコメント → CSV/Markdown レポートをアーティファクト保存
 - **knip**: 未使用ファイル・エクスポート・依存関係の検出
 - **depcruise**: dependency-cruiser による循環依存・アーキテクチャ境界違反の検出
@@ -126,9 +147,10 @@
 
 ### エントロピースキャン（entropy-scan.yaml）
 
-- 週次スケジュール（毎週月曜 9:00 UTC）+ 手動トリガー
-- `npm audit` / `knip` / `dependency-cruiser` を実行し、PR間のドリフトを検出
-- 違反検出時に GitHub Issue を自動作成
+- 週次スケジュール（毎週月曜 9:00 UTC）+ 手動トリガー + PR時
+- `npm audit` / `knip` / `dependency-cruiser` / パターン鮮度チェック を実行し、PR間のドリフトを検出
+- パターン鮮度チェック: `harness/patterns/*.md` の `last-reviewed` 日付と KDR の git 更新日を90日閾値で検証
+- 違反検出時に GitHub Issue を自動作成（スケジュール実行時）、PR時はCIブロック
 
 ### GitHub Actions Lint（github-actions-lint.yaml）
 
@@ -160,7 +182,7 @@
 - **Biome** — フォーマット（タブ・ダブルクォート）+ リンティング（12カスタムルール、`useImportType` / `useNodejsImportProtocol` 含む）
   - L3 エスカレーションレベルとして CI で強制
 - **TypeScript strict mode** — `npm run typecheck` で型チェック
-- **architecture.test.ts** — L4 構造テスト（22ルール）
+- **architecture.test.ts** — L4 構造テスト（23ルール）
   - A: ファイル名kebab-case、featureディレクトリ配置、テストファイル同一ディレクトリ
   - C: `z.object()` に `.strict()`、`.describe()` 付与、スキーマ命名パターン、`z.enum()` に `message`
   - D: カスタムレスポンスフォーマッターに interface / JSON.stringify / try-catch / satisfies
@@ -168,9 +190,10 @@
   - F: `@packageDocumentation` 必須、`@param`/`@returns` JSDoc
   - G: ソースインポートに `.js` 拡張子
   - H: エクスポート関数名 camelCase、型名 PascalCase
+  - L: CLAUDE.md・パターンファイル・ESCALATION.md 間のルールID整合性
 - **NOTICE Generator** — `npm run generate:notice` でライセンスコンプライアンスファイル生成
 - **TypeDoc** — `npm run docs:build` で API ドキュメント生成（`reports/docs/`）
-- **dependency-cruiser** — 循環依存・クロスフィーチャーインポート検出（3ルール）
+- **dependency-cruiser** — 循環依存・クロスフィーチャーインポート・逆依存検出（5ルール）
   - `.dependency-cruiser.cjs` で設定、`npm run depcruise` で実行
 - **knip** — 未使用ファイル・エクスポート・依存関係検出
   - `knip.json` で設定、`npm run knip` で実行
@@ -195,7 +218,7 @@
   │   ├─ blocking: Biome（+useImportType, +useNodejsImportProtocol） / knip / dependency-cruiser / npm audit / actionlint
   │   └─ advisory: jscpd / Stryker（PRコメントで報告）
   │
-  ├─ L4: npm test（architecture.test.ts 22ルール + ユニットテスト）
+  ├─ L4: npm test（architecture.test.ts 23ルール + ユニットテスト）
   │
   ├─ CI: GitHub Actions（ビルド・テスト・カバレッジ・Docker）
   │

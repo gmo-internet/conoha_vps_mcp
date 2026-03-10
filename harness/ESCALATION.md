@@ -44,7 +44,7 @@ L4 (構造テスト)
 | B-1 | `@packageDocumentation` JSDocブロック | L4（F-1と統合） |
 | B-2 | `import type` 使用 | L3（Biome `useImportType`） |
 | B-3 | 相対インポートに `.js` 拡張子 | L4（G-1と統合） |
-| B-4 | 関数命名パターン | L2（CLAUDE.md + Claude Code Review CI） |
+| B-4 | 関数命名パターン | L4（architecture.test.ts） |
 | B-5 | `executeOpenstackApi()` → `formatResponse()` チェーン | L2（CLAUDE.md + Claude Code Review CI） |
 | B-6 | Storage例外パターン | L2（CLAUDE.md + Claude Code Review CI） |
 
@@ -65,7 +65,7 @@ L4 (構造テスト)
 | D-2 | `JSON.stringify` 返却 | L4 |
 | D-3 | try/catchエラー処理 | L4 |
 | D-4 | `satisfies` 型安全性 | L4 |
-| D-5 | エラー時返却形式 | L2（CLAUDE.md + Claude Code Review CI） |
+| D-5 | エラー時返却形式 | L4（architecture.test.ts） |
 
 ### カテゴリ E: テストファイル
 
@@ -102,7 +102,7 @@ L4 (構造テスト)
 | H-1 | ファイル名kebab-case | L4 |
 | H-2 | 関数名camelCase | L4 |
 | H-3 | 型/インターフェース名PascalCase | L4 |
-| H-4 | 定数UPPER_SNAKE_CASE | L2（CLAUDE.md + Claude Code Review CI） |
+| H-4 | 定数UPPER_SNAKE_CASE | L4（architecture.test.ts） |
 
 ### カテゴリ Biome
 

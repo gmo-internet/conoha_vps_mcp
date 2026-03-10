@@ -348,6 +348,87 @@ describe("アーキテクチャ制約", () => {
 		});
 	});
 
+	// 参照: harness/patterns/client-module.md
+	describe("B-4: クライアント関数名が{verb}{Resource}パターンに従う", () => {
+		const featureClientFiles = sourceFiles.filter(
+			(f) => basename(f).endsWith("-client.ts") && !f.includes("common/"),
+		);
+		const exportFunctionPattern =
+			/export\s+(?:async\s+)?function\s+([a-zA-Z0-9_]+)/g;
+		const clientFuncPattern =
+			/^(get|create|delete|update|operate|set|upload)[A-Z][a-zA-Z]*(ByParam)?$/;
+
+		it.each(
+			featureClientFiles,
+		)("%s のエクスポート関数名が{verb}{Resource}パターンに従うこと", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			const matches = [...content.matchAll(exportFunctionPattern)];
+			expect(
+				matches.length,
+				`${file} にエクスポート関数が見つかりません。`,
+			).toBeGreaterThan(0);
+			for (const m of matches) {
+				expect(
+					m[1],
+					`関数名 "${m[1]}" が命名パターンに従っていません。修正: {get|create|delete|update|operate}{Resource}(ByParam)? 形式にリネームしてください（例: fetchServer → getCompute）。参照: harness/patterns/client-module.md`,
+				).toMatch(clientFuncPattern);
+			}
+		});
+	});
+
+	// 参照: harness/patterns/response-formatter.md
+	describe("D-5: カスタムフォーマッターのcatchブロックがstatus/statusTextを含むJSON.stringifyを返す", () => {
+		it.each(
+			customFormatterFiles,
+		)("%s のcatchブロックにstatus/statusTextを含むJSON.stringifyがあること", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			const catchIndex = content.indexOf("catch");
+			expect(
+				catchIndex,
+				`${file} にcatchブロックが見つかりません。修正: try/catchを追加し、catchでJSON.stringify({ status, statusText, body: "<error>" })を返却してください。参照: harness/patterns/response-formatter.md`,
+			).toBeGreaterThan(-1);
+			const catchBlock = content.slice(catchIndex, catchIndex + 300);
+			expect(
+				catchBlock,
+				`${file} のcatchブロックにJSON.stringifyがありません。修正: catch内でJSON.stringify({ status, statusText, body: "<error>" })を返却してください。参照: harness/patterns/response-formatter.md`,
+			).toContain("JSON.stringify");
+			expect(
+				catchBlock,
+				`${file} のcatchブロックにstatusがありません。修正: JSON.stringifyの引数にstatusを含めてください。参照: harness/patterns/response-formatter.md`,
+			).toMatch(/status/);
+			expect(
+				catchBlock,
+				`${file} のcatchブロックにstatusTextがありません。修正: JSON.stringifyの引数にstatusTextを含めてください。参照: harness/patterns/response-formatter.md`,
+			).toMatch(/statusText/);
+		});
+	});
+
+	// 参照: harness/patterns/naming-conventions.md
+	describe("H-4: constants.tsの定数はUPPER_SNAKE_CASEである", () => {
+		const constantsFiles = sourceFiles.filter(
+			(f) => basename(f) === "constants.ts",
+		);
+		const upperSnakePattern = /^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$/;
+		const exportConstPattern = /export\s+const\s+([A-Za-z_][A-Za-z0-9_]*)/g;
+
+		it.each(
+			constantsFiles,
+		)("%s のexport constがUPPER_SNAKE_CASEであること", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			const matches = [...content.matchAll(exportConstPattern)];
+			expect(
+				matches.length,
+				`${file} にexport constが見つかりません。`,
+			).toBeGreaterThan(0);
+			for (const m of matches) {
+				expect(
+					m[1],
+					`定数名 "${m[1]}" がUPPER_SNAKE_CASEではありません。修正: 大文字・アンダースコア区切りにリネームしてください（例: baseUrl → BASE_URL）。参照: harness/patterns/naming-conventions.md`,
+				).toMatch(upperSnakePattern);
+			}
+		});
+	});
+
 	// 参照: harness/ESCALATION.md
 	describe("ドキュメント整合性バリデーション", () => {
 		const ESCALATION_FILE = "harness/ESCALATION.md";

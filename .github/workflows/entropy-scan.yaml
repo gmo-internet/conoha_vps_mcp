@@ -42,6 +42,11 @@ jobs:
         run: npm run depcruise 2>&1 | tee depcruise-output.txt
         continue-on-error: true
 
+      - name: Run architecture tests
+        id: archtest
+        run: npx vitest run src/architecture.test.ts 2>&1 | tee archtest-output.txt
+        continue-on-error: true
+
       - name: Check pattern freshness
         id: freshness
         run: |
@@ -82,7 +87,7 @@ jobs:
         continue-on-error: true
 
       - name: Create issue on failure
-        if: github.event_name == 'schedule' && (steps.audit.outcome == 'failure' || steps.knip.outcome == 'failure' || steps.depcruise.outcome == 'failure' || steps.freshness.outcome == 'failure')
+        if: github.event_name == 'schedule' && (steps.audit.outcome == 'failure' || steps.knip.outcome == 'failure' || steps.depcruise.outcome == 'failure' || steps.freshness.outcome == 'failure' || steps.archtest.outcome == 'failure')
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
@@ -101,6 +106,10 @@ jobs:
               const output = fs.readFileSync('depcruise-output.txt', 'utf8');
               failures.push(`### dependency-cruiser\n\`\`\`\n${output.slice(0, 2000)}\n\`\`\``);
             }
+            if ('${{ steps.archtest.outcome }}' === 'failure') {
+              const output = fs.readFileSync('archtest-output.txt', 'utf8');
+              failures.push(`### Architecture Tests\n\`\`\`\n${output.slice(0, 2000)}\n\`\`\``);
+            }
             if ('${{ steps.freshness.outcome }}' === 'failure') {
               const output = fs.readFileSync('freshness-output.txt', 'utf8');
               failures.push(`### Pattern Freshness\n\`\`\`\n${output.slice(0, 2000)}\n\`\`\``);
@@ -116,7 +125,7 @@ jobs:
             });
 
       - name: Fail on violations (PR only)
-        if: github.event_name != 'schedule' && (steps.audit.outcome == 'failure' || steps.knip.outcome == 'failure' || steps.depcruise.outcome == 'failure' || steps.freshness.outcome == 'failure')
+        if: github.event_name != 'schedule' && (steps.audit.outcome == 'failure' || steps.knip.outcome == 'failure' || steps.depcruise.outcome == 'failure' || steps.freshness.outcome == 'failure' || steps.archtest.outcome == 'failure')
         run: |
           echo "::error::Entropy scan detected violations"
           echo "audit: ${{ steps.audit.outcome }}"

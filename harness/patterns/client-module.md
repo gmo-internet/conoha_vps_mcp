@@ -4,7 +4,7 @@ title: クライアントモジュールパターン
 last-reviewed: 2026-03-10
 enforcement-level: L2/L3/L4
 related-rules: [B-1, B-2, B-3, B-4, B-5, B-6]
-checked-by: [coding-pattern-check]
+checked-by: [architecture.test.ts, coding-pattern-check]
 ---
 
 ## 2. クライアントモジュールパターン
