@@ -101,16 +101,19 @@ ConoHa VPS OpenStack APIへのアクセスをAIアシスタントに提供する
 - **エラーハンドリング**: エラーは `error-handler.ts` でステータスコードとメッセージ付きでフォーマット
 
 ### コーディングパターン（必須）
-以下は `harness/patterns/` に基づくセマンティックルール。コード生成時に必ず従うこと：
+以下のL2セマンティックルールはCLAUDE.mdとClaude Code Review CIで執行。コード生成時に必ず従うこと。
+詳細は各パターンファイルを参照:
 
-- **クライアント関数命名** (B-4): `get{Service}`, `create{Service}ByParam`, `delete{Service}ByParam`, `update{Service}ByParam` パターンに従う
-- **APIチェーン** (B-5): 非storageクライアントは `executeOpenstackApi()` → カスタム or 共通 `formatResponse()` のチェーンで実装
-- **Storage例外** (B-6): storageクライアントは `executeOpenstackApi()` を使わず `generateApiToken()` を直接使用
-- **エラー返却形式** (D-5): response-formatterのcatchブロックは `JSON.stringify({ status, statusText, body: "<error>" })` を返す
-- **vi.mock()** (E-1): 外部依存のあるテストファイルは `vi.mock()` でモジュールモック
-- **vi.mocked()** (E-2): モック関数の戻り値設定は `vi.mocked(await import(...))` パターンを使用
-- **JSDoc日本語** (F-3): JSDocコメントは日本語で記述
-- **定数命名** (H-4): 真の定数（URL、設定値等）は `UPPER_SNAKE_CASE`（routing tableやschemaの`export const` は除外）
+| ID | ルール概要 | 参照 |
+|----|-----------|------|
+| B-4 | クライアント関数命名 (`get{Service}`, `create{Service}ByParam` 等) | `harness/patterns/client-module.md` |
+| B-5 | 非storageクライアントは `executeOpenstackApi()` → `formatResponse()` チェーン | `harness/patterns/client-module.md` |
+| B-6 | storageクライアントは `generateApiToken()` を直接使用 | `harness/patterns/client-module.md` |
+| D-5 | catchブロックは `JSON.stringify({ status, statusText, body })` を返却 | `harness/patterns/response-formatter.md` |
+| E-1 | 外部依存テストは `vi.mock()` でモジュールモック | `harness/patterns/test-patterns.md` |
+| E-2 | モック戻り値設定は `vi.mocked(await import(...))` パターン | `harness/patterns/test-patterns.md` |
+| F-3 | JSDocコメントは日本語で記述 | `harness/patterns/jsdoc.md` |
+| H-4 | 真の定数は `UPPER_SNAKE_CASE`（routing table/schemaの`export const`は除外） | `harness/patterns/naming-conventions.md` |
 
 ### 環境変数
 API認証に必要（すべて必須）:

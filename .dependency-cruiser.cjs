@@ -21,8 +21,30 @@ module.exports = {
 			},
 		},
 		{
+			name: "no-common-to-feature",
+			severity: "error",
+			comment: "common/ must not depend on specific feature modules",
+			from: {
+				path: "^src/features/openstack/common/",
+			},
+			to: {
+				path: "^src/features/openstack/(compute|network|image|volume|storage)/",
+			},
+		},
+		{
+			name: "no-root-types-to-feature",
+			severity: "error",
+			comment: "src/types.ts must not depend on feature modules",
+			from: {
+				path: "^src/types\\.ts$",
+			},
+			to: {
+				path: "^src/features/",
+			},
+		},
+		{
 			name: "no-feature-to-root",
-			severity: "warn",
+			severity: "error",
 			comment:
 				"Feature modules should not import from src/ root files (except types.ts)",
 			from: { path: "^src/features/" },

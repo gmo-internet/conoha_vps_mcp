@@ -116,7 +116,9 @@ L4 (構造テスト)
 |----|--------|--------|--------|
 | I-1 | 循環依存禁止 | L3 | dependency-cruiser |
 | I-2 | feature間直接インポート禁止 | L3 | dependency-cruiser |
-| I-3 | featureからrootファイルへのインポート警告 | L3 | dependency-cruiser |
+| I-3 | featureからrootファイルへのインポート禁止 | L3 | dependency-cruiser |
+| I-4 | common→feature逆依存禁止 | L3 | dependency-cruiser |
+| I-5 | types.ts→feature依存禁止 | L3 | dependency-cruiser |
 
 ### カテゴリ J: コード衛生
 

@@ -48,8 +48,9 @@ jobs:
             - H-4: 真の定数が UPPER_SNAKE_CASE か
 
             違反があれば ERROR（必須修正）として指摘してください。
+            違反を検出した場合、各違反のルールIDをPRラベルとして付与してください（例: `gh pr edit --add-label "pattern-violation:B-4"`）。
             `gh pr comment` で結果をPRコメントとして投稿してください。
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/sdk#command-line for available options
-          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr edit:*)"'
