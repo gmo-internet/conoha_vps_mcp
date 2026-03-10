@@ -1,3 +1,12 @@
+/**
+ * Block Storage API リクエストスキーマ定義
+ *
+ * @remarks
+ * ボリューム作成・更新のリクエストボディをZodスキーマで定義します。
+ *
+ * @packageDocumentation
+ */
+
 import { z } from "zod";
 
 export const CreateVolumeRequestSchema = z

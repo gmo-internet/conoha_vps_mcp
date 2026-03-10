@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -11,7 +11,8 @@
 			"**",
 			"!**/node_modules",
 			"!**/reports",
-			"!**/dist"
+			"!**/dist",
+			"!**/.stryker-tmp"
 		]
 	},
 	"formatter": {
@@ -43,7 +44,9 @@
 				"noUnusedTemplateLiteral": "error",
 				"useNumberNamespace": "error",
 				"noInferrableTypes": "error",
-				"noUselessElse": "error"
+				"noUselessElse": "error",
+				"useImportType": "error",
+				"useNodejsImportProtocol": "error"
 			}
 		},
 		"includes": [

@@ -54,7 +54,12 @@
 		"inspector": "npx @modelcontextprotocol/inspector",
 		"docs:build": "typedoc",
 		"docs:watch": "typedoc --watch",
-		"docs:serve": "npx serve reports/docs"
+		"docs:serve": "npx serve reports/docs",
+		"audit:ci": "npm audit --audit-level=high",
+		"knip": "knip",
+		"depcruise": "depcruise src --config .dependency-cruiser.cjs",
+		"jscpd": "jscpd src/",
+		"mutation": "stryker run"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.27.1",
@@ -63,9 +68,14 @@
 	"devDependencies": {
 		"@anthropic-ai/mcpb": "2.1.2",
 		"@biomejs/biome": "2.4.5",
+		"@stryker-mutator/core": "9.6.0",
+		"@stryker-mutator/vitest-runner": "9.6.0",
 		"@types/node": "^22.0.0",
 		"@vitest/coverage-v8": "4.0.18",
+		"dependency-cruiser": "17.3.8",
 		"esbuild": "0.27.3",
+		"jscpd": "4.0.8",
+		"knip": "5.86.0",
 		"tsx": "4.21.0",
 		"typedoc": "0.28.17",
 		"typescript": "5.9.3",

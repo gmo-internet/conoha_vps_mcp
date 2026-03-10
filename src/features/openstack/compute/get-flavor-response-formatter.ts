@@ -1,3 +1,12 @@
+/**
+ * フレーバーレスポンスフォーマッター
+ *
+ * @remarks
+ * フレーバー一覧APIレスポンスをslim化してフォーマットします。
+ *
+ * @packageDocumentation
+ */
+
 interface FlavorData {
 	id?: string;
 	name?: string;
@@ -10,6 +19,12 @@ interface ApiResponse {
 	flavors: FlavorData[];
 }
 
+/**
+ * フレーバー一覧APIレスポンスをslim化してフォーマットする
+ *
+ * @param response - APIレスポンス
+ * @returns JSON文字列にフォーマットされたレスポンス
+ */
 export async function formatGetFlavorResponse(response: Response) {
 	const status = response.status;
 	const statusText = response.statusText;

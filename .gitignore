@@ -15,3 +15,9 @@ settings.local.json
 
 # mcp
 .mcp.json
+
+# stryker
+.stryker-tmp/**
+
+# cursor
+.cursor/

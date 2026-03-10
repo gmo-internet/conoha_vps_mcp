@@ -1,0 +1,20 @@
+{
+	"threshold": 10,
+	"reporters": [
+		"consoleFull",
+		"json"
+	],
+	"ignore": [
+		"**/node_modules/**",
+		"**/dist/**",
+		"**/reports/**",
+		"**/*.test.ts"
+	],
+	"absolute": true,
+	"gitignore": true,
+	"format": [
+		"typescript",
+		"javascript"
+	],
+	"output": "reports/jscpd"
+}

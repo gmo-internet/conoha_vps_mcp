@@ -1,3 +1,12 @@
+/**
+ * Compute API リクエストスキーマ定義
+ *
+ * @remarks
+ * サーバー作成・操作・キーペア作成のリクエストボディをZodスキーマで定義します。
+ *
+ * @packageDocumentation
+ */
+
 import { z } from "zod";
 
 export const CreateServerRequestSchema = z
@@ -86,7 +95,9 @@ export const OperateServerRequestSchema = z.union([
 			reboot: z
 				.object({
 					type: z
-						.enum(["SOFT", "HARD"])
+						.enum(["SOFT", "HARD"], {
+							message: "type は 'SOFT' または 'HARD' を指定してください",
+						})
 						.describe("再起動のタイプ (ソフトまたはハード)"),
 				})
 				.strict(),
