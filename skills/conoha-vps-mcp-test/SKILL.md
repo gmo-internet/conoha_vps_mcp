@@ -66,16 +66,17 @@ Group A → B → C → D → E → F → G → H → I → J → K → L → M 
 
 異常系テスト（No.24〜No.30）では、MCPツール呼び出し**前**にバリデーションで拒否されることを確認する。実際にAPIが呼ばれてエラーになるのではなく、ツール側でバリデーションエラーとなることが期待される。
 
-### Prompt実行テスト（No.21, No.30）
+### Prompt実行テスト（No.21, No.30）— スキップ禁止
 
-`create_server` はMCPプロンプトである。テスト実行時の対応:
+`create_server` はMCPプロンプトであり、MCPツールとして直接呼び出すことはできない。
+しかし、プロンプトの実質的な動作はMCPツールで代替検証できるため、**これらのテストをスキップしてはならない**。
 
-- **No.21（正常系）**: `create_server` プロンプトを `rootPassword=vG7#kLp9zX!q` で実行。対話的な質問には以下で回答:
-  - OS: Ubuntu 24.04
-  - メモリ: 1GB
-  - サーバー名: test
-  - その他: デフォルト値または適切な値
-- **No.30（異常系）**: `create_server` プロンプトを `rootPassword=aaa` で実行。バリデーションエラーで拒否されることを確認（対話不要）
+- **No.21（正常系）**: `create_server` プロンプトはサーバー作成をMCPツールで行うよう指示するものである。
+  そのため、No.1と同じ手順（`conoha_get` でフレーバー・イメージ・ボリュームタイプ取得 → `conoha_post` でボリューム作成 → `conoha_post` path=`/servers` でサーバー作成）を
+  `adminPass=vG7#kLp9zX!q`、Ubuntu 24.04、メモリ1GB、サーバー名 `test` で実行し、サーバーがACTIVEになることを確認する。
+- **No.30（異常系）**: `create_server` プロンプトの `rootPassword` バリデーションは `conoha_post` path=`/servers` の `adminPass` バリデーションと同一の正規表現を使用している。
+  そのため、`conoha_post` path=`/servers` でサーバー作成を試み、`adminPass=aaa` を指定してバリデーションエラーになることを確認する。
+  No.24と同様にMCPツール呼び出し前のバリデーション拒否を確認すればよい。
 
 ## 結果記録
 

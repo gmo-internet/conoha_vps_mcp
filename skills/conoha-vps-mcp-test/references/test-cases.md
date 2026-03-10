@@ -352,15 +352,24 @@
 
 ### No.21 Prompt実行：サーバー作成（正常系）
 
-**確認ポイント**: 正常にPromptを使ってサーバーが作成されたか
+**確認ポイント**: `create_server` プロンプトが指示するサーバー作成フローがMCPツールで正常に動作するか
 
 **操作手順**:
-1. `create_server` Promptを rootPassword=`vG7#kLp9zX!q` として実行
-2. 適宜必要な情報（OS種別、メモリサイズ等）を返答
+1. `conoha_get` path=`/flavors/detail` → メモリ1GBのフレーバーID取得
+2. `conoha_get` path=`/v2/images?limit=200` → Ubuntu 24.04のimageRef取得
+3. `conoha_get` path=`/types` → ボリュームタイプ取得
+4. `conoha_post` path=`/volumes`
+   ```json
+   {"volume": {"size": 30, "name": "test", "volume_type": "<type>", "imageRef": "<imageId>", "description": null}}
+   ```
+5. `conoha_post` path=`/servers`
+   ```json
+   {"server": {"flavorRef": "<flavorId>", "adminPass": "vG7#kLp9zX!q", "block_device_mapping_v2": [{"uuid": "<volumeId>"}], "metadata": {"instance_name_tag": "test"}, "security_groups": [{"name": "default"}]}}
+   ```
 
-**期待結果**: Promptの指示に従ってサーバーが作成されること
+**期待結果**: サーバーステータスがACTIVEになること
 
-**注意**: Prompt実行のため対話的な操作が必要になる場合がある
+**注意**: `create_server` はMCPプロンプトであり直接呼び出せないため、プロンプトが指示する操作と同等のMCPツール呼び出しで代替検証する。**このテストをスキップしてはならない。**
 
 ---
 
@@ -485,12 +494,17 @@
 
 ### No.30 Prompt実行：パスワード条件違反（異常系）
 
-**確認ポイント**: Promptがパスワードバリデーションで実行拒否されるか
+**確認ポイント**: `create_server` プロンプトと同一のパスワードバリデーションでサーバー作成が拒否されるか
 
 **操作手順**:
-1. `create_server` Promptを rootPassword=`aaa` として実行
+1. `conoha_get` path=`/flavors/detail` → フレーバー一覧表示
+2. `conoha_get` path=`/v2/images?limit=200` → イメージ一覧表示
+3. `conoha_get` path=`/types` → ボリュームタイプ一覧表示
+4. `conoha_post` path=`/servers` でサーバー作成を試みる（パスワード: `aaa`）
 
-**期待結果**: パスワード `aaa` がバリデーション不合格となり、Prompt実行が拒否されること
+**期待結果**: パスワード `aaa` がバリデーション不合格となり、サーバー作成APIが呼ばれないこと（No.24と同じバリデーション機構）
+
+**注意**: `create_server` プロンプトの `rootPassword` バリデーションと `conoha_post` path=`/servers` の `adminPass` バリデーションは同一の正規表現を使用しているため、ツール経由で同等の検証が可能。**このテストをスキップしてはならない。**
 
 ---
 
