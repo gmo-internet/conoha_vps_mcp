@@ -159,6 +159,7 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 
 - ✅ [Cursor](https://cursor.com/ja/download)
 - ✅ [Claude Desktop](https://claude.ai/download)
+- ✅ [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - ✅ [Cline (VS Code)](https://github.com/cline/cline)
 - ✅ [GitHub Copilot (VS Code)](https://docs.github.com/ja/copilot)
 - ✅ [Codex CLI](https://github.com/openai/codex)
