@@ -25,14 +25,15 @@ jobs:
       # 2) ブランチ名からバージョン抽出
       - name: Extract version from branch name
         id: extract
+        env:
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
         run: |
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           if [[ "$BRANCH_NAME" =~ ^release\/(v[0-9]+\.[0-9]+\.[0-9]?)$ ]]; then
             VERSION="${BASH_REMATCH[1]}"
-            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
           else
             echo "Not a release branch. Skipping."
-            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
       # 3) RC番号の自動決定
@@ -50,13 +51,13 @@ jobs:
             RC_NUM=1
           else
             # 既存の最大RC番号を取得して+1
-            LAST_NUM=$(echo "$EXISTING_RC" | sed "s/${BASE_VERSION}-rc-//")
+            LAST_NUM="${EXISTING_RC//${BASE_VERSION}-rc-/}"
             RC_NUM=$((LAST_NUM + 1))
           fi
 
           FULL_VERSION="${BASE_VERSION}-rc-${RC_NUM}"
-          echo "RC_VERSION=$FULL_VERSION" >> $GITHUB_OUTPUT
-          echo "Releasing version: $FULL_VERSION"
+          echo "RC_VERSION=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Releasing version: ${FULL_VERSION}"
 
       # 4) タグ付け
       - name: Tag and push
@@ -64,8 +65,8 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git tag ${{ steps.rc_version.outputs.RC_VERSION }}
-          git push origin ${{ steps.rc_version.outputs.RC_VERSION }}
+          git tag "${{ steps.rc_version.outputs.RC_VERSION }}"
+          git push origin "${{ steps.rc_version.outputs.RC_VERSION }}"
 
       # 5) Node セットアップ
       - name: Setup Node.js
@@ -102,7 +103,7 @@ jobs:
       # 10) package.jsonのバージョン設定
       - name: Set package version
         if: success() && steps.extract.outputs.skip != 'true'
-        run: npm version ${{ steps.rc_version.outputs.RC_VERSION }} --no-git-tag-version --allow-same-version
+        run: npm version "${{ steps.rc_version.outputs.RC_VERSION }}" --no-git-tag-version --allow-same-version
 
       # 11) Private用のパッケージ名調整
       - name: Set package name for private packages
@@ -112,12 +113,12 @@ jobs:
       # 12) Release note作成
       - name: Generate release note
         if: success() && steps.extract.outputs.skip != 'true'
-        run: gh release create ${{ steps.rc_version.outputs.RC_VERSION }} --title ${{ steps.rc_version.outputs.RC_VERSION }}
+        run: gh release create "${{ steps.rc_version.outputs.RC_VERSION }}" --title "${{ steps.rc_version.outputs.RC_VERSION }}"
 
       # 13) mcpbファイルのアップロード
       - name: Add mcpb file to release note
         if: success() && steps.extract.outputs.skip != 'true'
-        run: gh release upload ${{ steps.rc_version.outputs.RC_VERSION }} priv_conoha_vps_mcp.mcpb --clobber
+        run: gh release upload "${{ steps.rc_version.outputs.RC_VERSION }}" priv_conoha_vps_mcp.mcpb --clobber
 
       # 14) 公開
       - name: Publish to GitHub Packages

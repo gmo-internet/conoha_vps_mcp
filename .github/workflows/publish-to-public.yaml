@@ -28,7 +28,7 @@ jobs:
         id: extract
         run: |
           VERSION="v$(jq -r '.version' package.json)"
-          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Extracted version: ${VERSION}"
 
       # 3) Node セットアップ
@@ -61,12 +61,12 @@ jobs:
       # 8) Release note作成
       - name: Generate release note
         if: success()
-        run: gh release create ${{ steps.extract.outputs.VERSION }} --title ${{ steps.extract.outputs.VERSION }}
+        run: gh release create "${{ steps.extract.outputs.VERSION }}" --title "${{ steps.extract.outputs.VERSION }}"
 
       # 9) mcpbファイルのアップロード
       - name: Add mcpb file to release note
         if: success()
-        run: gh release upload ${{ steps.extract.outputs.VERSION }} conoha_vps_mcp.mcpb --clobber
+        run: gh release upload "${{ steps.extract.outputs.VERSION }}" conoha_vps_mcp.mcpb --clobber
 
       # 10) 公開
       - name: Publish to NPM Registry

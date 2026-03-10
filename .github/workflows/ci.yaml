@@ -110,18 +110,20 @@ jobs:
         id: coverage
         run: |
           if [ -f coverage/coverage-summary.json ]; then
-            COVERAGE=$(cat coverage/coverage-summary.json | jq -r '.total.lines.pct')
-            echo "coverage=${COVERAGE}" >> $GITHUB_OUTPUT
-            echo "## Test Coverage Report" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Lines | $(cat coverage/coverage-summary.json | jq -r '.total.lines.pct')% |" >> $GITHUB_STEP_SUMMARY
-            echo "| Functions | $(cat coverage/coverage-summary.json | jq -r '.total.functions.pct')% |" >> $GITHUB_STEP_SUMMARY
-            echo "| Branches | $(cat coverage/coverage-summary.json | jq -r '.total.branches.pct')% |" >> $GITHUB_STEP_SUMMARY
-            echo "| Statements | $(cat coverage/coverage-summary.json | jq -r '.total.statements.pct')% |" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "📊 [View detailed coverage report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+            COVERAGE=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)
+            echo "coverage=${COVERAGE}" >> "$GITHUB_OUTPUT"
+            {
+              echo "## Test Coverage Report"
+              echo ""
+              echo "| Metric | Coverage |"
+              echo "|--------|----------|"
+              echo "| Lines | $(jq -r '.total.lines.pct' coverage/coverage-summary.json)% |"
+              echo "| Functions | $(jq -r '.total.functions.pct' coverage/coverage-summary.json)% |"
+              echo "| Branches | $(jq -r '.total.branches.pct' coverage/coverage-summary.json)% |"
+              echo "| Statements | $(jq -r '.total.statements.pct' coverage/coverage-summary.json)% |"
+              echo ""
+              echo "📊 [View detailed coverage report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Comment test results and coverage on PR
