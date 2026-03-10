@@ -12,3 +12,6 @@ settings.local.json
 
 # mcpb
 *.mcpb
+
+# mcp
+.mcp.json
