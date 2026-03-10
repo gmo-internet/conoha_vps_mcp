@@ -1,6 +1,8 @@
 name: E2E Test
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       test_groups:
@@ -19,7 +21,7 @@ jobs:
       actions: read
     timeout-minutes: 120
     concurrency:
-      group: e2e-test
+      group: e2e-test-${{ github.event.pull_request.number || github.run_id }}
       cancel-in-progress: false # 途中キャンセルはリソース孤立を招くため
 
     steps:

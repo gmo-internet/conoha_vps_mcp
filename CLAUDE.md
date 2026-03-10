@@ -70,6 +70,12 @@ ConoHa VPS OpenStack APIへのアクセスをAIアシスタントに提供する
 | `network/` | セキュリティグループ、セキュリティグループルール、ポート |
 | `storage/` | オブジェクトストレージ（コンテナ・オブジェクトのCRUD、メタデータ） |
 
+### ハーネスフレームワーク
+- `harness/ESCALATION.md` — パターン執行の4段階モデル（L1〜L4）
+- `harness/patterns/` — CODING_PATTERN.md から分割された14のパターンファイル
+- `harness/decisions/` — 知見決定記録（KDR）
+- `src/architecture.test.ts` — L4構造テスト（`npm test` で実行）
+
 ## 規約
 
 ### コミット・PR
@@ -93,6 +99,21 @@ ConoHa VPS OpenStack APIへのアクセスをAIアシスタントに提供する
 - **パスワード要件**: 9-70文字、大小英字+数字+記号を含むこと
 - **レスポンスフォーマット**: すべてのAPIレスポンスは `response-formatter.ts` で統一的にフォーマット
 - **エラーハンドリング**: エラーは `error-handler.ts` でステータスコードとメッセージ付きでフォーマット
+
+### コーディングパターン（必須）
+以下のL2セマンティックルールはCLAUDE.mdとClaude Code Review CIで執行。コード生成時に必ず従うこと。
+詳細は各パターンファイルを参照:
+
+| ID | ルール概要 | 参照 |
+|----|-----------|------|
+| B-4 | クライアント関数命名 (`get{Service}`, `create{Service}ByParam` 等) | `harness/patterns/client-module.md` |
+| B-5 | 非storageクライアントは `executeOpenstackApi()` → `formatResponse()` チェーン | `harness/patterns/client-module.md` |
+| B-6 | storageクライアントは `generateApiToken()` を直接使用 | `harness/patterns/client-module.md` |
+| D-5 | catchブロックは `JSON.stringify({ status, statusText, body })` を返却 | `harness/patterns/response-formatter.md` |
+| E-1 | 外部依存テストは `vi.mock()` でモジュールモック | `harness/patterns/test-patterns.md` |
+| E-2 | モック戻り値設定は `vi.mocked(await import(...))` パターン | `harness/patterns/test-patterns.md` |
+| F-3 | JSDocコメントは日本語で記述 | `harness/patterns/jsdoc.md` |
+| H-4 | 真の定数は `UPPER_SNAKE_CASE`（routing table/schemaの`export const`は除外） | `harness/patterns/naming-conventions.md` |
 
 ### 環境変数
 API認証に必要（すべて必須）:
