@@ -11,12 +11,14 @@
 
 - **L1 — ドキュメント**: パターン定義のみ。すべてのルールの出発点
   - `harness/patterns/*.md`（14ファイル）に記述
-- **L2 — AIスキルチェック**: PRレビューで1回以上違反が検出されたルールを昇格
-  - `coding-pattern-check` スキルが Sub-Agent 並列実行でセマンティックに検証
+- **L2 — AIセマンティックチェック**: 機械的チェック不可のセマンティックルール（8ルール）
+  - `CLAUDE.md` に明記 → 開発時にClaude Codeが自動的に遵守（予防）
+  - `claude-code-review.yml` → PR時にClaudeが自動検知（検知）
+  - `coding-pattern-check` スキル → 手動でも実行可能
 - **L3 — CIルール**: 3回以上検出され自動検出可能なルールを昇格
-  - Biome / dependency-cruiser / knip / jscpd / npm audit / actionlint / Stryker
+  - Biome（`useImportType`, `useNodejsImportProtocol` 含む） / dependency-cruiser / knip / jscpd / npm audit / actionlint / Stryker
 - **L4 — 構造テスト**: アーキテクチャ不変条件を自動テストで保証
-  - `src/architecture.test.ts`（Vitest）で10ルールを検証
+  - `src/architecture.test.ts`（Vitest）で22ルールを検証
 
 **ルール体系**: 12カテゴリ・44ルール
 
@@ -112,7 +114,9 @@
 ### コードレビュー（claude.yml / claude-code-review.yml）
 
 - Claude Code による自動コードレビュー（品質・バグ・パフォーマンス・セキュリティ・カバレッジ）
-- 現在は手動トリガーで運用
+- **claude-code-review.yml**: `src/**/*.ts` 変更時にPRで自動実行（advisory: CIブロックなし）
+  - L2セマンティックルール8件（B-4, B-5, B-6, D-5, E-1, E-2, F-3, H-4）を重点チェック
+- **claude.yml**: `@claude` メンションで手動トリガー
 
 ### リリース
 
@@ -153,14 +157,17 @@
 - **Vitest** — ユニットテスト + カバレッジ（v8プロバイダー、text/json/html/lcov レポート）
   - カバレッジ出力: `reports/coverage/`
   - カスタム CSV Reporter でテスト結果をカテゴリ・優先度付きで出力（`reports/test-result.csv`）
-- **Biome** — フォーマット（タブ・ダブルクォート）+ リンティング（10カスタムルール）
+- **Biome** — フォーマット（タブ・ダブルクォート）+ リンティング（12カスタムルール、`useImportType` / `useNodejsImportProtocol` 含む）
   - L3 エスカレーションレベルとして CI で強制
 - **TypeScript strict mode** — `npm run typecheck` で型チェック
-- **architecture.test.ts** — L4 構造テスト（10ルール）
-  - kebab-case ファイル名、テストファイル同一ディレクトリ配置
-  - `z.object()` に `.strict()` 必須
-  - ソースファイルのインポート `.js` 拡張子、テストファイルは `.js` なし
-  - `@packageDocumentation` 必須、エクスポート関数名 camelCase
+- **architecture.test.ts** — L4 構造テスト（22ルール）
+  - A: ファイル名kebab-case、featureディレクトリ配置、テストファイル同一ディレクトリ
+  - C: `z.object()` に `.strict()`、`.describe()` 付与、スキーマ命名パターン、`z.enum()` に `message`
+  - D: カスタムレスポンスフォーマッターに interface / JSON.stringify / try-catch / satisfies
+  - E: テストインポートに `.js` なし、`vi.mock()` 使用時に `clearAllMocks`、`it()` 日本語記述
+  - F: `@packageDocumentation` 必須、`@param`/`@returns` JSDoc
+  - G: ソースインポートに `.js` 拡張子
+  - H: エクスポート関数名 camelCase、型名 PascalCase
 - **NOTICE Generator** — `npm run generate:notice` でライセンスコンプライアンスファイル生成
 - **TypeDoc** — `npm run docs:build` で API ドキュメント生成（`reports/docs/`）
 - **dependency-cruiser** — 循環依存・クロスフィーチャーインポート検出（3ルール）
@@ -181,13 +188,14 @@
   │
   ├─ L1: harness/patterns/*.md（ドキュメント参照）
   │
-  ├─ L2: coding-pattern-check スキル（AIセマンティックチェック）
+  ├─ L2: CLAUDE.md（開発時予防）+ Claude Code Review CI（PR時検知）
+  │   └─ セマンティック8ルール: B-4, B-5, B-6, D-5, E-1, E-2, F-3, H-4
   │
   ├─ L3: CI ツールスイート
-  │   ├─ blocking: Biome / knip / dependency-cruiser / npm audit / actionlint
+  │   ├─ blocking: Biome（+useImportType, +useNodejsImportProtocol） / knip / dependency-cruiser / npm audit / actionlint
   │   └─ advisory: jscpd / Stryker（PRコメントで報告）
   │
-  ├─ L4: npm test（architecture.test.ts 構造テスト + ユニットテスト）
+  ├─ L4: npm test（architecture.test.ts 22ルール + ユニットテスト）
   │
   ├─ CI: GitHub Actions（ビルド・テスト・カバレッジ・Docker）
   │

@@ -2,7 +2,7 @@
 id: 4
 title: レスポンスフォーマッターパターン
 last-reviewed: 2026-03-10
-enforcement-level: L2
+enforcement-level: L2/L4
 related-rules: [D-1, D-2, D-3, D-4, D-5]
 checked-by: [coding-pattern-check]
 ---

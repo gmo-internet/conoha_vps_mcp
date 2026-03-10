@@ -2,7 +2,7 @@
 id: 9
 title: JSDocパターン
 last-reviewed: 2026-03-10
-enforcement-level: L4
+enforcement-level: L2/L4
 related-rules: [F-1, F-2, F-3]
 checked-by: [architecture.test.ts, coding-pattern-check]
 ---

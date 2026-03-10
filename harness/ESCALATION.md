@@ -9,7 +9,7 @@
 | レベル | メカニズム | 昇格基準 |
 |--------|-----------|---------|
 | **L1: ドキュメント** | `CODING_PATTERN.md` / `harness/patterns/` | 初期状態 |
-| **L2: AIスキルチェック** | `coding-pattern-check` スキル | PRレビューで1回以上違反検出 |
+| **L2: AIスキルチェック** | `CLAUDE.md`（開発時予防）+ Claude Code Review CI（PR時検知） | PRレビューで1回以上違反検出 + セマンティック |
 | **L3: CIルール** | Biome / dependency-cruiser / knip / jscpd / npm audit / actionlint / Stryker | スキルチェックで3回以上検出 + 自動検出手段あり |
 | **L4: 構造テスト** | `src/architecture.test.ts` | アーキテクチャ不変条件 |
 
@@ -33,7 +33,7 @@ L4 (構造テスト)
 
 | ID | ルール | レベル |
 |----|--------|--------|
-| A-1 | featureディレクトリ配置 | L2 |
+| A-1 | featureディレクトリ配置 | L4 |
 | A-2 | テストファイル同一ディレクトリ配置 | L4 |
 | A-3 | ファイル名kebab-case | L4 |
 
@@ -41,40 +41,40 @@ L4 (構造テスト)
 
 | ID | ルール | レベル |
 |----|--------|--------|
-| B-1 | `@packageDocumentation` JSDocブロック | L2 |
-| B-2 | `import type` 使用 | L2 |
-| B-3 | 相対インポートに `.js` 拡張子 | L2 |
-| B-4 | 関数命名パターン | L2 |
-| B-5 | `executeOpenstackApi()` → `formatResponse()` チェーン | L2 |
-| B-6 | Storage例外パターン | L2 |
+| B-1 | `@packageDocumentation` JSDocブロック | L4（F-1と統合） |
+| B-2 | `import type` 使用 | L3（Biome `useImportType`） |
+| B-3 | 相対インポートに `.js` 拡張子 | L4（G-1と統合） |
+| B-4 | 関数命名パターン | L2（CLAUDE.md + Claude Code Review CI） |
+| B-5 | `executeOpenstackApi()` → `formatResponse()` チェーン | L2（CLAUDE.md + Claude Code Review CI） |
+| B-6 | Storage例外パターン | L2（CLAUDE.md + Claude Code Review CI） |
 
 ### カテゴリ C: スキーマ
 
 | ID | ルール | レベル |
 |----|--------|--------|
 | C-1 | `.strict()` 付与 | L4 |
-| C-2 | `.describe()` 日本語説明 | L2 |
-| C-3 | スキーマ命名パターン | L2 |
-| C-4 | enum `message` オプション | L2 |
+| C-2 | `.describe()` 日本語説明 | L4 |
+| C-3 | スキーマ命名パターン | L4 |
+| C-4 | enum `message` オプション | L4 |
 
 ### カテゴリ D: レスポンスフォーマッター
 
 | ID | ルール | レベル |
 |----|--------|--------|
-| D-1 | interface定義 | L2 |
-| D-2 | `JSON.stringify` 返却 | L2 |
-| D-3 | try/catchエラー処理 | L2 |
-| D-4 | `satisfies` 型安全性 | L2 |
-| D-5 | エラー時返却形式 | L2 |
+| D-1 | interface定義 | L4 |
+| D-2 | `JSON.stringify` 返却 | L4 |
+| D-3 | try/catchエラー処理 | L4 |
+| D-4 | `satisfies` 型安全性 | L4 |
+| D-5 | エラー時返却形式 | L2（CLAUDE.md + Claude Code Review CI） |
 
 ### カテゴリ E: テストファイル
 
 | ID | ルール | レベル |
 |----|--------|--------|
-| E-1 | `vi.mock()` 使用 | L2 |
-| E-2 | `vi.mocked()` + `await import()` | L2 |
-| E-3 | `beforeEach` で `clearAllMocks` | L2 |
-| E-4 | `it` 日本語記述 | L2 |
+| E-1 | `vi.mock()` 使用 | L2（CLAUDE.md + Claude Code Review CI） |
+| E-2 | `vi.mocked()` + `await import()` | L2（CLAUDE.md + Claude Code Review CI） |
+| E-3 | `beforeEach` で `clearAllMocks` | L4 |
+| E-4 | `it` 日本語記述 | L4 |
 | E-5 | テストインポートに `.js` なし | L4 |
 | E-6 | `vi.mock()` パスに `.js` なし | L4 |
 
@@ -83,16 +83,16 @@ L4 (構造テスト)
 | ID | ルール | レベル |
 |----|--------|--------|
 | F-1 | `@packageDocumentation` 必須 | L4 |
-| F-2 | `@param` / `@returns` | L2 |
-| F-3 | JSDoc日本語 | L2 |
+| F-2 | `@param` / `@returns` | L4 |
+| F-3 | JSDoc日本語 | L2（CLAUDE.md + Claude Code Review CI） |
 
 ### カテゴリ G: インポート
 
 | ID | ルール | レベル |
 |----|--------|--------|
 | G-1 | 相対インポートに `.js` 拡張子 | L4 |
-| G-2 | `import type` 使用 | L2 |
-| G-3 | `node:` プレフィックス | L2 |
+| G-2 | `import type` 使用 | L3（Biome `useImportType`、B-2と統合） |
+| G-3 | `node:` プレフィックス | L3（Biome `useNodejsImportProtocol`） |
 | G-4 | テストインポートに `.js` なし | L4 |
 
 ### カテゴリ H: 命名規則
@@ -101,8 +101,8 @@ L4 (構造テスト)
 |----|--------|--------|
 | H-1 | ファイル名kebab-case | L4 |
 | H-2 | 関数名camelCase | L4 |
-| H-3 | 型/インターフェース名PascalCase | L2 |
-| H-4 | 定数UPPER_SNAKE_CASE | L2 |
+| H-3 | 型/インターフェース名PascalCase | L4 |
+| H-4 | 定数UPPER_SNAKE_CASE | L2（CLAUDE.md + Claude Code Review CI） |
 
 ### カテゴリ Biome
 

@@ -100,6 +100,18 @@ ConoHa VPS OpenStack APIへのアクセスをAIアシスタントに提供する
 - **レスポンスフォーマット**: すべてのAPIレスポンスは `response-formatter.ts` で統一的にフォーマット
 - **エラーハンドリング**: エラーは `error-handler.ts` でステータスコードとメッセージ付きでフォーマット
 
+### コーディングパターン（必須）
+以下は `harness/patterns/` に基づくセマンティックルール。コード生成時に必ず従うこと：
+
+- **クライアント関数命名** (B-4): `get{Service}`, `create{Service}ByParam`, `delete{Service}ByParam`, `update{Service}ByParam` パターンに従う
+- **APIチェーン** (B-5): 非storageクライアントは `executeOpenstackApi()` → カスタム or 共通 `formatResponse()` のチェーンで実装
+- **Storage例外** (B-6): storageクライアントは `executeOpenstackApi()` を使わず `generateApiToken()` を直接使用
+- **エラー返却形式** (D-5): response-formatterのcatchブロックは `JSON.stringify({ status, statusText, body: "<error>" })` を返す
+- **vi.mock()** (E-1): 外部依存のあるテストファイルは `vi.mock()` でモジュールモック
+- **vi.mocked()** (E-2): モック関数の戻り値設定は `vi.mocked(await import(...))` パターンを使用
+- **JSDoc日本語** (F-3): JSDocコメントは日本語で記述
+- **定数命名** (H-4): 真の定数（URL、設定値等）は `UPPER_SNAKE_CASE`（routing tableやschemaの`export const` は除外）
+
 ### 環境変数
 API認証に必要（すべて必須）:
 - `OPENSTACK_TENANT_ID` - ConoHaテナントID

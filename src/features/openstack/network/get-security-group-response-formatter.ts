@@ -28,6 +28,12 @@ interface ApiResponse {
 	security_groups?: SecurityGroupData[];
 }
 
+/**
+ * セキュリティグループ一覧APIレスポンスをslim化してフォーマットする
+ *
+ * @param response - APIレスポンス
+ * @returns JSON文字列にフォーマットされたレスポンス
+ */
 export async function formatGetSecurityGroupResponse(response: Response) {
 	const status = response.status;
 	const statusText = response.statusText;

@@ -2,7 +2,7 @@
 id: 8
 title: 命名規則
 last-reviewed: 2026-03-10
-enforcement-level: L4
+enforcement-level: L2/L4
 related-rules: [H-1, H-2, H-3, H-4]
 checked-by: [architecture.test.ts, coding-pattern-check]
 ---

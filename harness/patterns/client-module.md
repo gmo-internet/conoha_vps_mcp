@@ -2,7 +2,7 @@
 id: 2
 title: クライアントモジュールパターン
 last-reviewed: 2026-03-10
-enforcement-level: L2
+enforcement-level: L2/L3/L4
 related-rules: [B-1, B-2, B-3, B-4, B-5, B-6]
 checked-by: [coding-pattern-check]
 ---

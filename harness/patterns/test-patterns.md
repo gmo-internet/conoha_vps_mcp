@@ -2,7 +2,7 @@
 id: 7
 title: テストパターン
 last-reviewed: 2026-03-10
-enforcement-level: L4
+enforcement-level: L2/L4
 related-rules: [E-1, E-2, E-3, E-4, E-5, E-6, G-4]
 checked-by: [architecture.test.ts, coding-pattern-check]
 ---

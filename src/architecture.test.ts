@@ -13,6 +13,10 @@ const sourceFiles = allTsFiles.filter((f) => !f.endsWith(".test.ts"));
 const schemaFiles = sourceFiles.filter((f) =>
 	basename(f).endsWith("-schema.ts"),
 );
+const customFormatterFiles = sourceFiles.filter(
+	(f) =>
+		basename(f).endsWith("-response-formatter.ts") && !f.includes("common/"),
+);
 
 describe("アーキテクチャ制約", () => {
 	describe("A-3/H-1: ファイル名はkebab-caseのみ", () => {
@@ -110,6 +114,183 @@ describe("アーキテクチャ制約", () => {
 				expect(m[1], `関数名 "${m[1]}" がcamelCaseではありません`).toMatch(
 					camelCasePattern,
 				);
+			}
+		});
+	});
+
+	describe("A-1: ソースファイルはfeatureディレクトリまたはsrcルートに配置", () => {
+		const allowedRootFiles = [
+			"index.ts",
+			"types.ts",
+			"tool-routing-tables.ts",
+			"tool-descriptions.ts",
+		];
+		const featurePattern = /^features\/openstack\//;
+
+		it.each(sourceFiles)("%s が許可されたパスに配置されていること", (file) => {
+			const isRootFile = !file.includes("/") && allowedRootFiles.includes(file);
+			const isFeatureFile = featurePattern.test(file);
+			expect(
+				isRootFile || isFeatureFile,
+				`${file} はfeatureディレクトリまたは許可されたルートファイルではありません`,
+			).toBe(true);
+		});
+	});
+
+	describe("C-2: スキーマフィールドに.describe()が付与されている", () => {
+		it.each(
+			schemaFiles,
+		)("%s のスキーマフィールドに.describe()があること", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			const describeCount = (content.match(/\.describe\(/g) || []).length;
+			expect(
+				describeCount,
+				"スキーマファイルに.describe()が1つもありません",
+			).toBeGreaterThan(0);
+		});
+	});
+
+	describe("C-3: スキーマ名が命名パターンに従う", () => {
+		const schemaExportPattern = /export\s+const\s+([A-Za-z]+Schema)\b/g;
+		const validNamePattern =
+			/^(Create|Update|Operate|Attach|RemoteConsole)([A-Z][a-zA-Z]+)?RequestSchema$/;
+
+		it.each(
+			schemaFiles,
+		)("%s のスキーマ名が{Action}{Resource}RequestSchema形式であること", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			const matches = [...content.matchAll(schemaExportPattern)];
+			expect(matches.length).toBeGreaterThan(0);
+			for (const m of matches) {
+				expect(
+					m[1],
+					`スキーマ名 "${m[1]}" が命名パターンに従っていません`,
+				).toMatch(validNamePattern);
+			}
+		});
+	});
+
+	describe("C-4: z.enum()にmessageオプションが付与されている", () => {
+		it.each(
+			schemaFiles,
+		)("%s のz.enum()にmessageオプションがあること", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			const lines = content.split("\n");
+			const enumLineIndices: number[] = [];
+			for (let i = 0; i < lines.length; i++) {
+				if (lines[i].includes(".enum(")) {
+					enumLineIndices.push(i);
+				}
+			}
+			for (const lineIdx of enumLineIndices) {
+				const nearby = lines.slice(lineIdx, lineIdx + 5).join("\n");
+				expect(
+					nearby,
+					`z.enum() (行${lineIdx + 1}) にmessageオプションがありません`,
+				).toContain("message");
+			}
+		});
+	});
+
+	describe("D-1/D-2/D-3/D-4: カスタムレスポンスフォーマッターのパターン", () => {
+		it.each(
+			customFormatterFiles,
+		)("%s にinterface定義があること (D-1)", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			expect(content).toContain("interface ");
+		});
+
+		it.each(
+			customFormatterFiles,
+		)("%s にJSON.stringifyがあること (D-2)", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			expect(content).toContain("JSON.stringify");
+		});
+
+		it.each(customFormatterFiles)("%s にtry/catchがあること (D-3)", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			expect(content).toMatch(/try\s*\{/);
+			expect(content).toMatch(/catch\s*\(/);
+		});
+
+		it.each(customFormatterFiles)("%s にsatisfiesがあること (D-4)", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			expect(content).toContain("satisfies");
+		});
+	});
+
+	describe("E-3: vi.mock()使用テストにbeforeEachでclearAllMocksがある", () => {
+		const testFilesWithMock = testFiles.filter((f) => {
+			const content = readFileSync(join(SRC_DIR, f), "utf-8");
+			return content.includes("vi.mock(");
+		});
+
+		it.each(testFilesWithMock)("%s にclearAllMocksがあること", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			expect(content).toContain("clearAllMocks");
+		});
+	});
+
+	describe("E-4: テストのit()記述が日本語で書かれている", () => {
+		const japanesePattern = /[\u3000-\u9FFF\uF900-\uFAFF]/;
+		const itPattern = /\bit\(\s*["'`]([^"'`]+)["'`]/g;
+		const nonArchTestFiles = testFiles.filter(
+			(f) => !f.endsWith("architecture.test.ts"),
+		);
+
+		it.each(nonArchTestFiles)("%s のit()記述に日本語が含まれること", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			const matches = [...content.matchAll(itPattern)];
+			for (const m of matches) {
+				expect(
+					m[1],
+					`it("${m[1].substring(0, 50)}...") に日本語が含まれていません`,
+				).toMatch(japanesePattern);
+			}
+		});
+	});
+
+	describe("H-3: エクスポートされた型名・インターフェース名はPascalCaseである", () => {
+		const typePattern = /export\s+(?:type|interface)\s+([A-Za-z0-9_]+)/g;
+		const pascalCasePattern = /^[A-Z][a-zA-Z0-9]*$/;
+
+		it.each(
+			sourceFiles,
+		)("%s のエクスポート型名がPascalCaseであること", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			const matches = [...content.matchAll(typePattern)];
+			for (const m of matches) {
+				expect(m[1], `型名 "${m[1]}" がPascalCaseではありません`).toMatch(
+					pascalCasePattern,
+				);
+			}
+		});
+	});
+
+	describe("F-2: エクスポート関数にJSDocの@paramまたは@returnsがある", () => {
+		const funcWithJsDocPattern =
+			/\/\*\*[\s\S]*?\*\/\s*\nexport\s+(?:async\s+)?function/g;
+		const exportFuncPattern = /export\s+(?:async\s+)?function\s+[a-zA-Z0-9_]+/g;
+
+		it.each(
+			sourceFiles,
+		)("%s のエクスポート関数にJSDocの@param/@returnsがあること", (file) => {
+			const content = readFileSync(join(SRC_DIR, file), "utf-8");
+			const exportFuncs = [...content.matchAll(exportFuncPattern)];
+			if (exportFuncs.length === 0) return;
+
+			const jsDocBlocks = [...content.matchAll(funcWithJsDocPattern)];
+			expect(
+				jsDocBlocks.length,
+				`JSDocブロック数 (${jsDocBlocks.length}) がエクスポート関数数 (${exportFuncs.length}) と一致しません`,
+			).toBe(exportFuncs.length);
+
+			for (const block of jsDocBlocks) {
+				const jsdoc = block[0];
+				expect(
+					jsdoc.includes("@param") || jsdoc.includes("@returns"),
+					"JSDocに@paramまたは@returnsがありません",
+				).toBe(true);
 			}
 		});
 	});
