@@ -347,4 +347,110 @@ describe("アーキテクチャ制約", () => {
 			}
 		});
 	});
+
+	// 参照: harness/ESCALATION.md
+	describe("ドキュメント整合性バリデーション", () => {
+		const ESCALATION_FILE = "harness/ESCALATION.md";
+		const PATTERNS_DIR = "harness/patterns";
+
+		const escalationContent = readFileSync(ESCALATION_FILE, "utf-8");
+		const claudeMdContent = readFileSync("CLAUDE.md", "utf-8");
+
+		describe("CLAUDE.mdのルールIDがESCALATION.mdに存在すること", () => {
+			const claudeRuleIdPattern = /\|\s*([A-Z]-\d+)\s*\|/g;
+			const claudeRuleIds = [
+				...new Set(
+					[...claudeMdContent.matchAll(claudeRuleIdPattern)].map((m) => m[1]),
+				),
+			];
+
+			it.each(
+				claudeRuleIds,
+			)("ルールID %s がESCALATION.mdに存在すること", (ruleId) => {
+				expect(
+					escalationContent,
+					`ルールID "${ruleId}" がCLAUDE.mdに記載されていますがESCALATION.mdに見つかりません。修正: ESCALATION.mdのルール→レベル対応表に "${ruleId}" を追加してください。参照: harness/ESCALATION.md`,
+				).toContain(`| ${ruleId} |`);
+			});
+		});
+
+		describe("パターンファイルのrelated-rulesがESCALATION.mdに存在すること", () => {
+			const patternFiles = readdirSync(PATTERNS_DIR).filter((f) =>
+				f.endsWith(".md"),
+			);
+
+			const patternRuleEntries: { file: string; ruleId: string }[] = [];
+			for (const file of patternFiles) {
+				const content = readFileSync(join(PATTERNS_DIR, file), "utf-8");
+				const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+				if (!frontmatterMatch) continue;
+				const relatedMatch = frontmatterMatch[1].match(
+					/related-rules:\s*\[([^\]]*)\]/,
+				);
+				if (!relatedMatch || !relatedMatch[1].trim()) continue;
+				const ruleIds = relatedMatch[1].split(",").map((r) => r.trim());
+				for (const ruleId of ruleIds) {
+					if (ruleId) {
+						patternRuleEntries.push({ file, ruleId });
+					}
+				}
+			}
+
+			it.each(
+				patternRuleEntries,
+			)("$file のrelated-rule $ruleId がESCALATION.mdに存在すること", ({
+				file,
+				ruleId,
+			}) => {
+				expect(
+					escalationContent,
+					`パターンファイル "${file}" のrelated-rulesに含まれる "${ruleId}" がESCALATION.mdに見つかりません。修正: ESCALATION.mdのルール→レベル対応表に "${ruleId}" を追加するか、パターンファイルのrelated-rulesを修正してください。参照: harness/ESCALATION.md`,
+				).toContain(`| ${ruleId} |`);
+			});
+		});
+
+		describe("ESCALATION.mdで参照されるルールIDに対応するパターンファイルが存在すること", () => {
+			const patternFiles = readdirSync(PATTERNS_DIR).filter((f) =>
+				f.endsWith(".md"),
+			);
+
+			const allPatternRuleIds = new Set<string>();
+			for (const file of patternFiles) {
+				const content = readFileSync(join(PATTERNS_DIR, file), "utf-8");
+				const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+				if (!frontmatterMatch) continue;
+				const relatedMatch = frontmatterMatch[1].match(
+					/related-rules:\s*\[([^\]]*)\]/,
+				);
+				if (!relatedMatch || !relatedMatch[1].trim()) continue;
+				const ruleIds = relatedMatch[1].split(",").map((r) => r.trim());
+				for (const ruleId of ruleIds) {
+					if (ruleId) allPatternRuleIds.add(ruleId);
+				}
+			}
+
+			// カテゴリ I/J/K はCIツール専用（dependency-cruiser, knip, jscpd等）のため
+			// パターンファイルのrelated-rulesには含まれない
+			// カテゴリ L はメタ検証ルール（このテスト自身が執行）のため除外
+			const CI_ONLY_CATEGORIES = new Set(["I", "J", "K", "L"]);
+
+			const escalationRuleIdPattern = /\|\s*([A-Z]-\d+)\s*\|/g;
+			const escalationRuleIds = [
+				...new Set(
+					[...escalationContent.matchAll(escalationRuleIdPattern)].map(
+						(m) => m[1],
+					),
+				),
+			].filter((id) => !CI_ONLY_CATEGORIES.has(id.split("-")[0]));
+
+			it.each(
+				escalationRuleIds,
+			)("ESCALATION.mdのルールID %s に対応するパターンファイルが存在すること", (ruleId) => {
+				expect(
+					allPatternRuleIds.has(ruleId),
+					`ESCALATION.mdのルールID "${ruleId}" を related-rules に含むパターンファイルが harness/patterns/ に見つかりません。修正: 対応するパターンファイルの related-rules に "${ruleId}" を追加してください。参照: harness/ESCALATION.md`,
+				).toBe(true);
+			});
+		});
+	});
 });

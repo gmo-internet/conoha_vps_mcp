@@ -47,14 +47,34 @@ jobs:
         run: |
           stale_files=""
           threshold=$(date -d "90 days ago" +%Y-%m-%d)
+
+          # Check harness/patterns/*.md via YAML frontmatter last-reviewed date
           for file in harness/patterns/*.md; do
             reviewed=$(grep -oP 'last-reviewed:\s*\K[\d-]+' "$file" 2>/dev/null || echo "")
             if [ -n "$reviewed" ] && [ "$reviewed" \< "$threshold" ]; then
               stale_files="${stale_files}${file} (last-reviewed: ${reviewed})\n"
             fi
           done
+
+          # Check harness/ESCALATION.md via git last-modified date
+          if [ -f "harness/ESCALATION.md" ]; then
+            last_modified=$(git log -1 --format=%cd --date=short -- "harness/ESCALATION.md" 2>/dev/null || echo "")
+            if [ -n "$last_modified" ] && [ "$last_modified" \< "$threshold" ]; then
+              stale_files="${stale_files}harness/ESCALATION.md (git-modified: ${last_modified})\n"
+            fi
+          fi
+
+          # Check harness/decisions/KDR-*.md via git last-modified date
+          for file in harness/decisions/KDR-*.md; do
+            [ -f "$file" ] || continue
+            last_modified=$(git log -1 --format=%cd --date=short -- "$file" 2>/dev/null || echo "")
+            if [ -n "$last_modified" ] && [ "$last_modified" \< "$threshold" ]; then
+              stale_files="${stale_files}${file} (git-modified: ${last_modified})\n"
+            fi
+          done
+
           if [ -n "$stale_files" ]; then
-            echo "stale=true" >> $GITHUB_OUTPUT
+            echo "stale=true" >> "$GITHUB_OUTPUT"
             printf "%b" "$stale_files" > freshness-output.txt
             echo "::warning::Stale pattern files detected"
             exit 1

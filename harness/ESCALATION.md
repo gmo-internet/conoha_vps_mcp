@@ -120,6 +120,8 @@ L4 (構造テスト)
 | I-4 | common→feature逆依存禁止 | L3 | dependency-cruiser |
 | I-5 | types.ts→feature依存禁止 | L3 | dependency-cruiser |
 
+参照: `harness/patterns/architecture-layers.md`
+
 ### カテゴリ J: コード衛生
 
 | ID | ルール | レベル | ツール |
@@ -134,6 +136,14 @@ L4 (構造テスト)
 | K-1 | 高リスク脆弱性なし | L3 | npm audit |
 | K-2 | GitHub Actionsワークフロー構文検証 | L3 | actionlint |
 | K-3 | ミューテーションスコア ≥ 50% | L3 (advisory) | Stryker |
+
+### カテゴリ L: ドキュメント整合性
+
+| ID | ルール | レベル | ツール |
+|----|--------|--------|--------|
+| L-1 | CLAUDE.mdのルールIDがESCALATION.mdに存在 | L4 | architecture.test.ts |
+| L-2 | パターンファイルのrelated-rulesがESCALATION.mdに存在 | L4 | architecture.test.ts |
+| L-3 | ESCALATION.mdのルールIDに対応するパターンファイルが存在 | L4 | architecture.test.ts |
 
 ---
 
