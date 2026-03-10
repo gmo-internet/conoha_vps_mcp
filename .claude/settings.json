@@ -6,5 +6,57 @@
 	"enabledPlugins": {
 		"example-skills@anthropic-agent-skills": true,
 		"document-skills@anthropic-agent-skills": true
+	},
+	"hooks": {
+		"PreToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/harness-guard.sh",
+						"timeout": 5
+					},
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lockfile-guard.sh",
+						"timeout": 5
+					}
+				]
+			},
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/dangerous-cmd-guard.sh",
+						"timeout": 5
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/biome-autofix.sh",
+						"timeout": 30
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "prompt",
+						"prompt": "回答はJSONのみ。説明や装飾は一切不要。.tsファイルをEdit/Writeで変更した場合、typecheck（npm run typecheck）とテスト（npm test）が両方実行されたか確認せよ。変更なし or 両方実行済み→{\"ok\":true}　未実行あり→{\"ok\":false,\"reason\":\"コード変更後にtypecheckまたはtestが未実行です\"}",
+						"model": "haiku"
+					}
+				]
+			}
+		]
 	}
 }
