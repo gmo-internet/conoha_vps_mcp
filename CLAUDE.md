@@ -70,6 +70,12 @@ ConoHa VPS OpenStack APIへのアクセスをAIアシスタントに提供する
 | `network/` | セキュリティグループ、セキュリティグループルール、ポート |
 | `storage/` | オブジェクトストレージ（コンテナ・オブジェクトのCRUD、メタデータ） |
 
+### ハーネスフレームワーク
+- `harness/ESCALATION.md` — パターン執行の4段階モデル（L1〜L4）
+- `harness/patterns/` — CODING_PATTERN.md から分割された14のパターンファイル
+- `harness/decisions/` — 知見決定記録（KDR）
+- `src/architecture.test.ts` — L4構造テスト（`npm test` で実行）
+
 ## 規約
 
 ### コミット・PR

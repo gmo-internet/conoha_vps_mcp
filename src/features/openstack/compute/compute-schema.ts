@@ -1,3 +1,12 @@
+/**
+ * Compute API リクエストスキーマ定義
+ *
+ * @remarks
+ * サーバー作成・操作・キーペア作成のリクエストボディをZodスキーマで定義します。
+ *
+ * @packageDocumentation
+ */
+
 import { z } from "zod";
 
 export const CreateServerRequestSchema = z

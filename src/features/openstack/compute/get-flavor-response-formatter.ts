@@ -1,3 +1,12 @@
+/**
+ * フレーバーレスポンスフォーマッター
+ *
+ * @remarks
+ * フレーバー一覧APIレスポンスをslim化してフォーマットします。
+ *
+ * @packageDocumentation
+ */
+
 interface FlavorData {
 	id?: string;
 	name?: string;

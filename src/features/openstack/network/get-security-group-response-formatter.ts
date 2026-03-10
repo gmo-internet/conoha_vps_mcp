@@ -1,3 +1,12 @@
+/**
+ * セキュリティグループレスポンスフォーマッター
+ *
+ * @remarks
+ * セキュリティグループ一覧APIレスポンスをslim化してフォーマットします。
+ *
+ * @packageDocumentation
+ */
+
 interface SecurityGroupRuleData {
 	ethertype?: "IPv4" | "IPv6";
 	direction?: "ingress" | "egress";

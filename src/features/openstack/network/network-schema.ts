@@ -1,3 +1,12 @@
+/**
+ * Networking API リクエストスキーマ定義
+ *
+ * @remarks
+ * セキュリティグループルール作成・ポート更新のリクエストボディをZodスキーマで定義します。
+ *
+ * @packageDocumentation
+ */
+
 import { z } from "zod";
 
 export const CreateSecurityGroupRuleRequestSchema = z

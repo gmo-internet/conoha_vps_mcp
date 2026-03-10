@@ -1,3 +1,12 @@
+/**
+ * イメージレスポンスフォーマッター
+ *
+ * @remarks
+ * イメージ一覧APIレスポンスをslim化してフォーマットします。
+ *
+ * @packageDocumentation
+ */
+
 interface ImageData {
 	id?: string;
 	name?: string;
