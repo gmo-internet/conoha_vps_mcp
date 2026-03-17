@@ -1,0 +1,23 @@
+name: github-actions-lint
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 5
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Run actionlint
+        run: |
+          echo "::add-matcher::.github/actionlint-matcher.json"
+          bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+        shell: bash

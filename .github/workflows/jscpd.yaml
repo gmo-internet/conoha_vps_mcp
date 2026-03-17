@@ -1,0 +1,98 @@
+name: jscpd
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  jscpd:
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+      contents: read
+    timeout-minutes: 10
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: "24.13.0"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run jscpd
+        run: npm run jscpd
+        continue-on-error: true
+
+      - name: Comment duplication report on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'reports/jscpd/jscpd-report.json';
+
+            if (!fs.existsSync(reportPath)) {
+              console.log('No jscpd report found');
+              return;
+            }
+
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            const stats = report.statistics;
+            const total = stats.total;
+            const percentage = total.percentage || '0.00';
+            const duplicates = report.duplicates || [];
+
+            let comment = `## Code Duplication Report\n\n`;
+            comment += `| Metric | Value |\n`;
+            comment += `|--------|-------|\n`;
+            comment += `| Duplication | ${percentage}% |\n`;
+            comment += `| Clones | ${duplicates.length} |\n`;
+            comment += `| Duplicated Lines | ${total.duplicatedLines || 0} |\n`;
+            comment += `| Total Lines | ${total.lines || 0} |\n\n`;
+
+            if (duplicates.length > 0) {
+              comment += `<details>\n<summary>Duplicated Blocks</summary>\n\n`;
+              for (const dup of duplicates.slice(0, 20)) {
+                const first = dup.firstFile;
+                const second = dup.secondFile;
+                comment += `- **${first.name}** (L${first.start}-L${first.end}) ↔ **${second.name}** (L${second.start}-L${second.end})\n`;
+              }
+              if (duplicates.length > 20) {
+                comment += `\n... and ${duplicates.length - 20} more\n`;
+              }
+              comment += `</details>\n`;
+            }
+
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.data.find(c =>
+              c.body.includes('Code Duplication Report')
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }

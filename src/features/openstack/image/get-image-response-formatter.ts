@@ -1,3 +1,12 @@
+/**
+ * イメージレスポンスフォーマッター
+ *
+ * @remarks
+ * イメージ一覧APIレスポンスをslim化してフォーマットします。
+ *
+ * @packageDocumentation
+ */
+
 interface ImageData {
 	id?: string;
 	name?: string;
@@ -12,6 +21,12 @@ interface ApiResponse {
 	images?: ImageData[];
 }
 
+/**
+ * イメージ一覧APIレスポンスをslim化してフォーマットする
+ *
+ * @param response - APIレスポンス
+ * @returns JSON文字列にフォーマットされたレスポンス
+ */
 export async function formatGetImageResponse(response: Response) {
 	const status = response.status;
 	const statusText = response.statusText;

@@ -1,127 +1,60 @@
 # CLAUDE.md
 
-このファイルは、このリポジトリでコードを扱う際のClaude Code (claude.ai/code)への指針を提供します。
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 必須コマンド
+## コマンド
 
-### 開発
-- `npm run dev` - tsxを使用して開発サーバーを起動
-- `npm run build` - esbuildを使用してプロダクションバンドルをビルド
-- `npm run build:types` - TypeScript宣言ファイルを生成
-- `npm start` - ビルドされたアプリケーションを実行
+- `npm run build` - プロダクションビルド
+- `npm run typecheck` - 型チェック
+- `npm run biome:ci` - フォーマット/リンティング
+- `npm run biome:fix` - Biome自動修正
+- `npm test` - テスト実行（カバレッジ付き）
+- `npm test -- <filename>` - 特定テスト実行
 
-### 品質保証
-- `npm run typecheck` - ファイルを出力せずに型チェックを実行
-- `npm run biome:ci` - BiomeのCIチェック（フォーマット/リンティング）を実行
-- `npm run biome:fix` - Biomeの問題を自動修正
-- `npm test` - Vitestを使用してカバレッジ付きでテストを実行
+その他: `npm run dev`（開発サーバー）, `npm run inspector`（MCPインスペクター）, `npm run generate:notice`（NOTICE生成）, `npm run docs:build`（APIドキュメント生成）
 
-### MCP開発
-- `npm run dev:inspector` - デバッグ用のMCPインスペクターを起動（エイリアス: `npm run inspector`）
-- `npm run start:inspector` - ビルドされたコードでMCPインスペクターを起動
+## アーキテクチャ
 
-### その他のコマンド
-- `npm run commit` - commitizenを使用してconventional commitsを作成
-- `npm test -- <filename>` - 特定のテストファイルを実行（例: `npm test -- compute-client.test.ts`）
+ConoHa VPS OpenStack APIへのアクセスをAIアシスタントに提供するMCPサーバー。
 
-## アーキテクチャ概要
+```
+ツール呼び出し → src/index.ts → src/tool-routing-tables.ts → feature client → openstack-client.ts → API
+※ storageのみ openstack-client.ts を経由せず generateApiToken() を直接使用
+```
 
-これは、AIアシスタントにConoHa VPS OpenStack APIへのアクセスを提供する**Model Context Protocol (MCP)サーバー**です。サーバーは機能ベースの組織化によるクリーンアーキテクチャに従っています。
+詳細（ツール一覧・モジュール構成・環境変数・実装注意事項）は `docs/architecture.md` を参照。
 
-### コア構造
-- **MCPサーバー**: `@modelcontextprotocol/sdk`を使用して構築、`src/index.ts`でツールとプロンプトを登録
-- **OpenStack統合**: 異なるOpenStackサービス用のモジュラークライアント
-- **機能別組織化**: 各OpenStackサービスは`src/features/openstack/`下に独自のディレクトリを持つ
+### ハーネスフレームワーク
+- `harness/ESCALATION.md` — パターン執行の4段階モデル（L1〜L4）
+- `harness/patterns/` — 16のパターンファイル（taste-invariants.md 含む）
+- `harness/decisions/` — 知見決定記録（KDR）
+- `src/architecture.test.ts` — L4構造テスト（`npm test` で実行）
 
-### 主要コンポーネント
+## 規約
 
-#### MCPツール (src/index.ts)
-- `conoha_get` - OpenStack APIへのGETリクエスト
-- `conoha_get_by_param` - パスパラメータ付きGETリクエスト
-- `conoha_post` - リソース作成用のPOSTリクエスト
-- `conoha_post_put_by_param` - パラメータ付きPOST/PUTリクエスト
-- `conoha_delete_by_param` - パラメータ付きDELETEリクエスト
-
-#### ツールルーティングパターン
-- ツールは`tool-routing-tables.ts`を介してハンドラーにマッピングされる
-- 各ツールパスは特定のハンドラー関数に対応
-- すべてのツール説明は日本語（`tool-descriptions.ts`を参照）
-
-#### OpenStackサービス (src/features/openstack/)
-- **compute/** - サーバー管理（作成、削除、起動、停止、リサイズ）
-- **volume/** - ボリューム管理（作成、削除、更新）
-- **image/** - イメージ一覧
-- **network/** - セキュリティグループ、ポート、ネットワーキング
-- **common/** - 共有ユーティリティ（APIクライアント、トークン生成、レスポンスフォーマット）
-
-#### 認証
-- OpenStackトークンベース認証を使用
-- トークンは`common/generate-api-token.ts`の`generateApiToken()`で生成
-- 必要な環境変数: ConoHa API認証情報
-
-### 設定
-- **TypeScript**: 厳密な型チェックが有効
-- **Biome**: タブ、ダブルクォートでのコードフォーマット
-- **Vitest**: カバレッジレポート付きテストフレームワーク
-- **esbuild**: プロダクション用の高速バンドリング
-
-### 環境変数
-API認証に必要:
-- `OPENSTACK_TENANT_ID` - ConoHaテナントID
-- `OPENSTACK_USER_ID` - ConoHaユーザーID  
-- `OPENSTACK_PASSWORD` - ConoHa APIパスワード
-
-### APIスキーマ検証
-- 各サービスでのリクエスト/レスポンス検証用Zodスキーマ
-- 異なるリクエストタイプ用の判別共用体
-- コードベース全体での強い型付け
-
-## 開発ノート
-
-### 環境セットアップ
-環境変数として設定されたConoHa VPS API認証情報が必要です。詳細は`docs/`のセットアップドキュメントを参照してください。
-
-### テスト
-- ソースファイルと同じ場所にあるユニットテスト (*.test.ts)
-- `reports/coverage/`に生成されるカバレッジレポート
-- カスタムレポーターで生成されるCSVテストレポート
-- テストには日本語と英語の両方の説明を含めるべき
-- メインインデックスファイルにはモックテストを使用
+### コミット・PR
+- Conventional Commits 必須（例: `feat:`, `fix:`, `docs:`, `test:`, `chore:`）
+- PRチェックリスト: CI通過、NOTICE更新（`npm run generate:notice`）、リリース時はバージョン更新（`package.json` + `manifest.json`）
 
 ### コードスタイル
-- 一貫したフォーマットとリンティングのためにBiomeを使用
-- タブインデント、文字列にはダブルクォート
-- インポート整理が有効
-- テストファイルに対するいくつかの例外を除く厳格なリンティングルール
+- Biome: タブインデント、ダブルクォート、インポート整理有効（詳細: `harness/patterns/biome-rules.md`）
+- ESM only、Node.js >= 22.0.0
 
-### 実装ノート
-- **パスワード要件**: サーバーパスワードは9-70文字で、大文字、小文字、数字、記号を含む必要がある
-- **APIリージョン**: すべてのエンドポイントは`constants.ts`でConoHaのc3j1リージョンにハードコードされている
-- **レスポンスフォーマット**: すべてのAPIレスポンスは`format-response.ts`を通じて一貫してフォーマットされる
-- **エラーハンドリング**: エラーは適切なステータスコードとメッセージでキャッチされフォーマットされる
+### テスト
+- ソースファイルと同じディレクトリに配置（`*.test.ts`）
+- テスト記述（`describe` / `it`）は日本語の詳細な1文で記述
+- 詳細: `harness/patterns/test-patterns.md`
 
-## ツール使用例
+### パス型の更新手順
+詳細: `harness/patterns/path-addition.md`
 
-### GET操作
-```
-conoha_get with path "/servers" - すべてのサーバーを一覧表示
-conoha_get_by_param with path "/servers/{id}" - 特定のサーバーの詳細を取得
-```
+### コーディングパターン（必須）
+以下のL2セマンティックルールはCLAUDE.mdとClaude Code Review CIで執行。コード生成時に必ず従うこと。
+詳細は各パターンファイルを参照:
 
-### CREATE操作
-```
-conoha_post with path "/servers" - 新しいサーバーを作成
-conoha_post with path "/volumes" - 新しいボリュームを作成
-```
-
-### UPDATE/ACTION操作
-```
-conoha_post_put_by_param with path "/servers/{id}/action" - サーバーの起動/停止/リサイズ
-conoha_post_put_by_param with path "/volumes/{id}" - ボリュームプロパティの更新
-```
-
-### DELETE操作
-```
-conoha_delete_by_param with path "/servers/{id}" - サーバーを削除
-conoha_delete_by_param with path "/volumes/{id}" - ボリュームを削除
-```
+| ID | ルール概要 | 参照 |
+|----|-----------|------|
+| B-5 | 非storageクライアントは `executeOpenstackApi()` → `formatResponse()` チェーン | `harness/patterns/client-module.md` |
+| B-6 | storageクライアントは `generateApiToken()` を直接使用 | `harness/patterns/client-module.md` |
+| E-2 | モック戻り値設定は `vi.mocked(await import(...))` パターン | `harness/patterns/test-patterns.md` |
+| F-3 | JSDocコメントは日本語で記述 | `harness/patterns/jsdoc.md` |

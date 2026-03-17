@@ -12,3 +12,18 @@ settings.local.json
 
 # mcpb
 *.mcpb
+
+# mcp
+.mcp.json
+
+# stryker
+.stryker-tmp/**
+
+# cursor
+.cursor/
+
+# npm
+.npmrc
+
+# outputs
+test-results

@@ -54,6 +54,29 @@ jobs:
       - name: Run checks
         run: npm run biome:ci
 
+  typecheck:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    concurrency:
+      group: ${{ github.workflow }}-typecheck-${{ github.ref }}
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: "24.13.0"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run typecheck
+        run: npm run typecheck
+
   test:
     runs-on: ubuntu-24.04
     permissions:
@@ -87,18 +110,20 @@ jobs:
         id: coverage
         run: |
           if [ -f coverage/coverage-summary.json ]; then
-            COVERAGE=$(cat coverage/coverage-summary.json | jq -r '.total.lines.pct')
-            echo "coverage=${COVERAGE}" >> $GITHUB_OUTPUT
-            echo "## Test Coverage Report" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Metric | Coverage |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Lines | $(cat coverage/coverage-summary.json | jq -r '.total.lines.pct')% |" >> $GITHUB_STEP_SUMMARY
-            echo "| Functions | $(cat coverage/coverage-summary.json | jq -r '.total.functions.pct')% |" >> $GITHUB_STEP_SUMMARY
-            echo "| Branches | $(cat coverage/coverage-summary.json | jq -r '.total.branches.pct')% |" >> $GITHUB_STEP_SUMMARY
-            echo "| Statements | $(cat coverage/coverage-summary.json | jq -r '.total.statements.pct')% |" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "📊 [View detailed coverage report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+            COVERAGE=$(jq -r '.total.lines.pct' coverage/coverage-summary.json)
+            echo "coverage=${COVERAGE}" >> "$GITHUB_OUTPUT"
+            {
+              echo "## Test Coverage Report"
+              echo ""
+              echo "| Metric | Coverage |"
+              echo "|--------|----------|"
+              echo "| Lines | $(jq -r '.total.lines.pct' coverage/coverage-summary.json)% |"
+              echo "| Functions | $(jq -r '.total.functions.pct' coverage/coverage-summary.json)% |"
+              echo "| Branches | $(jq -r '.total.branches.pct' coverage/coverage-summary.json)% |"
+              echo "| Statements | $(jq -r '.total.statements.pct' coverage/coverage-summary.json)% |"
+              echo ""
+              echo "📊 [View detailed coverage report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Comment test results and coverage on PR
@@ -168,13 +193,79 @@ jobs:
             }
 
       - name: Upload test and coverage artifacts
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: test-and-coverage-report
           path: |
             reports/coverage/test-result.csv
             test-report.md
           retention-days: 30
+
+  knip:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    concurrency:
+      group: ${{ github.workflow }}-knip-${{ github.ref }}
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: "24.13.0"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run knip
+        run: npm run knip
+
+  depcruise:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    concurrency:
+      group: ${{ github.workflow }}-depcruise-${{ github.ref }}
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: "24.13.0"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run dependency-cruiser
+        run: npm run depcruise
+
+  audit:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 5
+    concurrency:
+      group: ${{ github.workflow }}-audit-${{ github.ref }}
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: "24.13.0"
+          cache: "npm"
+
+      - name: Run security audit
+        run: npm audit --audit-level=high
 
   docker-build:
     runs-on: ubuntu-24.04
@@ -188,10 +279,10 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Build Docker image
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
           context: .
           push: false

@@ -1,0 +1,61 @@
+{
+	"$schema": "https://json.schemastore.org/claude-code-settings.json",
+	"env": {
+		"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+	},
+	"enabledPlugins": {
+		"example-skills@anthropic-agent-skills": true,
+		"document-skills@anthropic-agent-skills": true
+	},
+	"hooks": {
+		"PreToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/harness-guard.sh",
+						"timeout": 5
+					},
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lockfile-guard.sh",
+						"timeout": 5
+					}
+				]
+			},
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/dangerous-cmd-guard.sh",
+						"timeout": 5
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/biome-autofix.sh",
+						"timeout": 30
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "prompt",
+						"prompt": "トランスクリプトを確認してください。ソースコード（.tsファイル）をEdit/Writeで変更した場合、以下を確認: 1) typecheck（npm run typecheck）が実行されたか 2) テスト（npm test）が実行されたか 3) architecture.test.tsが失敗した場合、対応するharness/patterns/のパターンファイルを参照して修正したか。harness/配下のファイルをEdit/Writeで変更した場合、追加確認: 4) harness/decisions/にKDRの作成が検討されたか。変更があったのに検証が実行されていない場合、{\"ok\": false, \"reason\": \"具体的な未実行項目\"}を返してください。変更がない場合やすべて実行済みの場合は{\"ok\": true}を返してください。"
+					}
+				]
+			}
+		]
+	}
+}

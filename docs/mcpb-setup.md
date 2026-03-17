@@ -96,4 +96,4 @@
 - **Claude Desktop のバージョンエラー**: Claude Desktop が最新バージョンになっているか確認してください
 - その他FAQは[こちら](FAQ.md)
 
-**💡 ヒント:** 問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)でお気軽にお問い合わせください。
+問題が解決しない場合は、[GitHub Issues](https://github.com/gmo-internet/conoha_vps_mcp/issues)で気軽に質問してください。

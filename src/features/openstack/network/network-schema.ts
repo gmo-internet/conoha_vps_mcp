@@ -1,3 +1,12 @@
+/**
+ * Networking API リクエストスキーマ定義
+ *
+ * @remarks
+ * セキュリティグループルール作成・ポート更新のリクエストボディをZodスキーマで定義します。
+ *
+ * @packageDocumentation
+ */
+
 import { z } from "zod";
 
 export const CreateSecurityGroupRuleRequestSchema = z
@@ -47,7 +56,13 @@ export const CreateSecurityGroupRuleRequestSchema = z
 						"最大ポート範囲 (任意): ユーザーが必ず指定する必要があります。自動設定しないでください。",
 					),
 				protocol: z
-					.union([z.enum(["tcp", "udp", "icmp"]), z.null()])
+					.union([
+						z.enum(["tcp", "udp", "icmp"], {
+							message:
+								"protocol は 'tcp', 'udp', 'icmp' のいずれかを指定してください",
+						}),
+						z.null(),
+					])
 					.optional()
 					.describe("プロトコル (任意)"),
 				remote_ip_prefix: z

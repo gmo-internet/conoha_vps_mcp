@@ -1,3 +1,12 @@
+/**
+ * MCPツール説明テキスト定義
+ *
+ * @remarks
+ * 各MCPツールのdescriptionフィールドに設定する説明文を定義します。
+ *
+ * @packageDocumentation
+ */
+
 export const conohaGetDescription = `
    JA: ConoHa の 公開 API を利用してサーバー操作を行います。
 

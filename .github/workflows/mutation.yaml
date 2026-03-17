@@ -1,0 +1,106 @@
+name: mutation
+
+on:
+  pull_request:
+    paths:
+      - "src/**/*.ts"
+      - "!src/**/*.test.ts"
+
+jobs:
+  stryker:
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+      contents: read
+    timeout-minutes: 30
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: "24.13.0"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run mutation testing
+        run: npm run mutation
+        continue-on-error: true
+
+      - name: Comment mutation report on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'reports/mutation/mutation-report.json';
+
+            if (!fs.existsSync(reportPath)) {
+              console.log('No mutation report found');
+              return;
+            }
+
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            const files = report.files || {};
+
+            let killed = 0, survived = 0, timeout = 0, noCoverage = 0, total = 0;
+            for (const file of Object.values(files)) {
+              for (const mutant of (file.mutants || [])) {
+                total++;
+                if (mutant.status === 'Killed') killed++;
+                else if (mutant.status === 'Survived') survived++;
+                else if (mutant.status === 'Timeout') timeout++;
+                else if (mutant.status === 'NoCoverage') noCoverage++;
+              }
+            }
+
+            const score = total > 0 ? ((killed + timeout) / total * 100).toFixed(2) : '0.00';
+
+            let comment = `## Mutation Testing Report\n\n`;
+            comment += `| Metric | Value |\n`;
+            comment += `|--------|-------|\n`;
+            comment += `| Mutation Score | ${score}% |\n`;
+            comment += `| Killed | ${killed} |\n`;
+            comment += `| Survived | ${survived} |\n`;
+            comment += `| Timeout | ${timeout} |\n`;
+            comment += `| No Coverage | ${noCoverage} |\n`;
+            comment += `| Total | ${total} |\n`;
+
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.data.find(c =>
+              c.body.includes('Mutation Testing Report')
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Upload mutation report
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: mutation-report
+          path: reports/mutation/
+          retention-days: 30
