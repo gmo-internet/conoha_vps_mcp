@@ -156,6 +156,18 @@ L4 (構造テスト)
 
 違反時はGitHub Issueを自動作成する。
 
+### L2→L3 エスカレーショントラッカー
+
+週次スケジュールで `.github/workflows/escalation-tracker.yaml` がマージ済みPRの
+`pattern-violation:*` ラベルを集計し、3回以上検出されたルールについてGitHub Issueを
+自動作成する。Issueにはルール情報・違反PR一覧・推奨アクション（KDR作成、L3ツール導入）
+が記載される。対応済みIssueがcloseされている場合は再作成しない。
+
+※ `pattern-violation:*` ラベルはレビュー再実行時にクリーンアップされるため、
+マージ済みPRに残るラベルは「修正されなかった違反」のみを反映する。
+
+参照: `harness/decisions/KDR-0008-escalation-tracker.md`
+
 ---
 
 ## 運用ルール
