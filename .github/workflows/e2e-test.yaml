@@ -2,6 +2,7 @@ name: E2E Test
 
 on:
   pull_request:
+    branches: [main]
     types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:

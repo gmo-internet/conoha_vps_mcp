@@ -1,6 +1,6 @@
 {
 	"name": "conoha-vps-mcp",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"description": "ConoHa VPS MCPサーバーの操作をガイドするClaude Codeプラグイン。サーバー管理、ボリューム、セキュリティグループ、オブジェクトストレージの操作ワークフロー・制約・スキーマを提供する。",
 	"author": {
 		"name": "GMO Internet",

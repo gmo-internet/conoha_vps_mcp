@@ -7,6 +7,9 @@
   - [前提条件](#前提条件)
   - [プロジェクトの準備](#プロジェクトの準備)
   - [AIエージェント別設定方法](#aiエージェント別設定方法)
+    - [Claude Code](#claude-code)
+      - [1. .mcp.jsonに設定を記述](#1-mcpjsonに設定を記述-1)
+      - [2. サーバーの利用](#2-サーバーの利用-2)
     - [Cursor](#cursor)
       - [1. mcp.jsonに設定を記述](#1-mcpjsonに設定を記述)
       - [2. 必要な環境変数](#2-必要な環境変数)
@@ -23,9 +26,6 @@
     - [Codex CLI](#codex-cli)
       - [1. config.tomlに設定を記述](#1-configtomlに設定を記述)
       - [2. サーバーの利用](#2-サーバーの利用-1)
-    - [Claude Code](#claude-code)
-      - [1. .mcp.jsonに設定を記述](#1-mcpjsonに設定を記述-1)
-      - [2. サーバーの利用](#2-サーバーの利用-2)
     - [Cline (VSCode)](#cline-vscode)
       - [1. cline\_mcp\_settings.jsonに設定を記述](#1-cline_mcp_settingsjsonに設定を記述)
       - [2. 必要な環境変数](#2-必要な環境変数-2)
@@ -62,6 +62,96 @@ ls dist/index.js
 ```
 
 ## AIエージェント別設定方法
+
+### Claude Code
+
+<details>
+<summary>セットアップ手順</summary>
+
+Claude Codeのインストール方法や起動方法などは、下記の公式ドキュメントを参照してください。
+[インストール/起動方法](https://docs.anthropic.com/en/docs/claude-code/overview)
+
+#### 1. .mcp.jsonに設定を記述
+
+設定方法は2つあります。
+
+**方法1: .mcp.jsonファイルに直接記述する**
+
+`.mcp.json`に以下の設定を追加します：
+
+```json
+{
+  "mcpServers": {
+    "ConoHa VPS MCP": {
+      "command": "npm",
+      "args": [
+        "--prefix",
+        "PATH_TO_DIRECTORY",
+        "start"
+      ],
+      "env": {
+        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
+        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
+        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
+      }
+    }
+  }
+}
+```
+
+**方法2: `claude mcp add` コマンドで追加する**
+
+```bash
+claude mcp add conoha-vps-mcp \
+  -e OPENSTACK_TENANT_ID=YOUR_OPENSTACK_TENANT_ID \
+  -e OPENSTACK_USER_ID=YOUR_OPENSTACK_USER_ID \
+  -e OPENSTACK_PASSWORD=YOUR_OPENSTACK_PASSWORD \
+  -- npm --prefix PATH_TO_DIRECTORY start
+```
+
+ユーザースコープ（すべてのプロジェクトで利用可能）で追加する場合は `--scope user` オプションを付けます：
+
+```bash
+claude mcp add conoha-vps-mcp --scope user \
+  -e OPENSTACK_TENANT_ID=YOUR_OPENSTACK_TENANT_ID \
+  -e OPENSTACK_USER_ID=YOUR_OPENSTACK_USER_ID \
+  -e OPENSTACK_PASSWORD=YOUR_OPENSTACK_PASSWORD \
+  -- npm --prefix PATH_TO_DIRECTORY start
+```
+
+##### .mcp.jsonの設置場所
+
+特定のプロジェクト専用のツールとして設定する場合（デフォルト）
+```txt
+プロジェクトルートに作成
+.mcp.json
+```
+
+どこからでも使えるツールとして設定する場合
+```txt
+~/.claude/.mcp.json
+```
+
+##### 環境変数の設定値
+
+- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパスに置き換えてください
+
+```txt
+OPENSTACK_TENANT_ID: テナントID
+OPENSTACK_USER_ID: APIユーザーのユーザーID
+OPENSTACK_PASSWORD: APIユーザーのパスワード
+```
+
+各値はConoHaコントロールパネルのAPI設定で確認できます。
+
+![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
+*https://manage.conoha.jp/V3/API/*
+
+#### 2. サーバーの利用
+プロンプトを入力して操作を実行します。
+[サンプルプロンプト](../README.md#-使用例)
+
+</details>
 
 ### Cursor
 
@@ -285,96 +375,6 @@ config.tomlでの詳しい設定方法は、下記の公式ドキュメントを
 その際はご自身でconfig.tomlを作成してください。
 
 それぞれの環境変数の設定値：
-
-```txt
-OPENSTACK_TENANT_ID: テナントID
-OPENSTACK_USER_ID: APIユーザーのユーザーID
-OPENSTACK_PASSWORD: APIユーザーのパスワード
-```
-
-各値はConoHaコントロールパネルのAPI設定で確認できます。
-
-![ConoHa APIユーザー情報](../assets/conoha_api_info.png)
-*https://manage.conoha.jp/V3/API/*
-
-#### 2. サーバーの利用
-プロンプトを入力して操作を実行します。
-[サンプルプロンプト](../README.md#-使用例)
-
-</details>
-
-### Claude Code
-
-<details>
-<summary>セットアップ手順</summary>
-
-Claude Codeのインストール方法や起動方法などは、下記の公式ドキュメントを参照してください。
-[インストール/起動方法](https://docs.anthropic.com/en/docs/claude-code/overview)
-
-#### 1. .mcp.jsonに設定を記述
-
-設定方法は2つあります。
-
-**方法1: .mcp.jsonファイルに直接記述する**
-
-`.mcp.json`に以下の設定を追加します：
-
-```json
-{
-  "mcpServers": {
-    "ConoHa VPS MCP": {
-      "command": "npm",
-      "args": [
-        "--prefix",
-        "PATH_TO_DIRECTORY",
-        "start"
-      ],
-      "env": {
-        "OPENSTACK_TENANT_ID": "YOUR_OPENSTACK_TENANT_ID",
-        "OPENSTACK_USER_ID": "YOUR_OPENSTACK_USER_ID",
-        "OPENSTACK_PASSWORD": "YOUR_OPENSTACK_PASSWORD"
-      }
-    }
-  }
-}
-```
-
-**方法2: `claude mcp add` コマンドで追加する**
-
-```bash
-claude mcp add conoha-vps-mcp \
-  -e OPENSTACK_TENANT_ID=YOUR_OPENSTACK_TENANT_ID \
-  -e OPENSTACK_USER_ID=YOUR_OPENSTACK_USER_ID \
-  -e OPENSTACK_PASSWORD=YOUR_OPENSTACK_PASSWORD \
-  -- npm --prefix PATH_TO_DIRECTORY start
-```
-
-ユーザースコープ（すべてのプロジェクトで利用可能）で追加する場合は `--scope user` オプションを付けます：
-
-```bash
-claude mcp add conoha-vps-mcp --scope user \
-  -e OPENSTACK_TENANT_ID=YOUR_OPENSTACK_TENANT_ID \
-  -e OPENSTACK_USER_ID=YOUR_OPENSTACK_USER_ID \
-  -e OPENSTACK_PASSWORD=YOUR_OPENSTACK_PASSWORD \
-  -- npm --prefix PATH_TO_DIRECTORY start
-```
-
-##### .mcp.jsonの設置場所
-
-特定のプロジェクト専用のツールとして設定する場合（デフォルト）
-```txt
-プロジェクトルートに作成
-.mcp.json
-```
-
-どこからでも使えるツールとして設定する場合
-```txt
-~/.claude/.mcp.json
-```
-
-##### 環境変数の設定値
-
-- `PATH_TO_DIRECTORY`: プロジェクトのディレクトリパスに置き換えてください
 
 ```txt
 OPENSTACK_TENANT_ID: テナントID

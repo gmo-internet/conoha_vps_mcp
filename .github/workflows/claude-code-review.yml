@@ -7,6 +7,10 @@ on:
     paths:
       - "src/**/*.ts"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   claude-review:
     if: github.repository == 'gmo-internet/priv_conoha_vps_mcp'
@@ -23,6 +27,27 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 1
+
+      - name: Clean up review labels
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            for (const label of labels) {
+              if (label.name.startsWith('pattern-violation:') || label.name === 'review:clean' || label.name === 'review:auto-fixed') {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  name: label.name,
+                });
+              }
+            }
 
       - name: Run Claude Code Review
         id: claude-review
@@ -50,10 +75,244 @@ jobs:
             - エラーメッセージは「何が起きたか」+「何をすべきか」の2要素で構成されているか
             - 1関数 = 1 API操作の単一責任が守られているか
 
-            違反があれば ERROR（必須修正）として指摘してください。
-            違反を検出した場合、各違反のルールIDをPRラベルとして付与してください（例: `gh pr edit --add-label "pattern-violation:B-4"`）。
-            `gh pr comment` で結果をPRコメントとして投稿してください。
+            ## 出力フォーマット
+
+            レビュー結果を以下の構造化フォーマットで `gh pr comment` に投稿してください。
+            既存の「## L2 Claude Code Review」コメントがある場合でも新しいコメントとして投稿してください。
+
+            フォーマット:
+            ```
+            ## L2 Claude Code Review
+
+            | ルール | 結果 | 詳細 |
+            |--------|------|------|
+            | B-5 | :white_check_mark: PASS | — |
+            | B-6 | :white_check_mark: PASS | — |
+            | E-1 | :white_check_mark: PASS | — |
+            | E-2 | :white_check_mark: PASS | — |
+            | F-3 | :white_check_mark: PASS | — |
+            | Taste | :white_check_mark: PASS | — |
+
+            ### 違反詳細
+            （各違反の詳細・該当ファイル・修正方針をここに記述。違反がなければ「なし」）
+
+            **Result: PASS** または **Result: FAIL (N violations)**
+            ```
+
+            違反を検出した場合、各違反のルールIDをPRラベルとして付与してください（例: `gh pr edit --add-label "pattern-violation:B-5"`）。
+            違反がない場合は `gh pr edit --add-label "review:clean"` を実行してください。
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/sdk#command-line for available options
           claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh pr edit:*)"'
+
+      - name: Post review status summary
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const violations = labels.filter(l => l.name.startsWith('pattern-violation:'));
+            const isClean = violations.length === 0;
+            const now = new Date().toISOString();
+
+            let body;
+            if (isClean) {
+              body = [
+                '<!-- l2-review-status -->',
+                '## L2 Review Status',
+                '',
+                ':white_check_mark: **すべてのL2セマンティックルールに準拠しています。**',
+                '',
+                `最終レビュー: ${now}`,
+              ].join('\n');
+            } else {
+              const labelList = violations.map(l => '`' + l.name + '`').join(', ');
+              body = [
+                '<!-- l2-review-status -->',
+                '## L2 Review Status',
+                '',
+                `:x: **L2違反が検出されました:** ${labelList}`,
+                '',
+                '違反を修正して新しいコミットをpushしてください。レビューは自動的に再実行されます。',
+                '',
+                `最終レビュー: ${now}`,
+              ].join('\n');
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body.includes('<!-- l2-review-status -->'));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  auto-fix:
+    needs: claude-review
+    if: github.repository == 'gmo-internet/priv_conoha_vps_mcp' && github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Check for violations to fix
+        id: check
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const violations = labels.filter(l => l.name.startsWith('pattern-violation:'));
+            const rules = violations.map(l => l.name.replace('pattern-violation:', ''));
+            core.setOutput('has-violations', String(violations.length > 0));
+            core.setOutput('violation-rules', rules.join(', '));
+
+      - name: Skip if no violations
+        if: steps.check.outputs.has-violations != 'true'
+        run: echo "No violations to fix, skipping auto-fix"
+
+      - name: Checkout PR branch
+        if: steps.check.outputs.has-violations == 'true'
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ github.token }}
+
+      - name: Check if last commit is auto-fix
+        if: steps.check.outputs.has-violations == 'true'
+        id: guard
+        run: |
+          if git log -1 --format='%s' | grep -q '\[l2-auto-fix\]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node.js
+        if: steps.check.outputs.has-violations == 'true' && steps.guard.outputs.skip != 'true'
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: "24.13.0"
+          cache: "npm"
+
+      - name: Install dependencies
+        if: steps.check.outputs.has-violations == 'true' && steps.guard.outputs.skip != 'true'
+        run: npm ci
+
+      - name: Configure git
+        if: steps.check.outputs.has-violations == 'true' && steps.guard.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Run Claude Code Auto-fix
+        if: steps.check.outputs.has-violations == 'true' && steps.guard.outputs.skip != 'true'
+        id: autofix
+        uses: anthropics/claude-code-action@a017b830c03e23789b11fb69ed571ea61c12e45c # v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            このPRで検出されたL2セマンティックルール違反を修正してください。
+
+            違反ルール: ${{ steps.check.outputs.violation-rules }}
+
+            各ルールの定義は `harness/patterns/` および `CLAUDE.md` を参照:
+            - B-5: 非storageクライアントは executeOpenstackApi() → formatResponse() チェーン（harness/patterns/client-module.md）
+            - B-6: storageクライアントは generateApiToken() を直接使用（harness/patterns/client-module.md）
+            - E-1: 外部依存テストは vi.mock() でモジュールモック（harness/patterns/test-patterns.md）
+            - E-2: モック戻り値設定は vi.mocked(await import(...)) パターン（harness/patterns/test-patterns.md）
+            - F-3: JSDocは日本語で記述（harness/patterns/jsdoc.md）
+
+            ## 修正手順
+
+            1. PR の変更ファイル（`gh pr diff` で確認）から違反箇所を特定
+            2. `harness/patterns/` の該当パターンに従って修正
+            3. `npx biome check --fix --unsafe src/` でフォーマット修正
+            4. `npm run typecheck` で型チェック通過を確認
+            5. `npm test` でテスト通過を確認
+            6. 修正ファイルを `git add` → `git commit` → `git push`
+               コミットメッセージ: "fix: L2セマンティックルール違反を自動修正 [l2-auto-fix]"
+            7. 修正結果を `gh pr comment` で報告（修正内容の要約）
+
+            修正できない違反がある場合は、その理由を `gh pr comment` で報告してください。
+
+          claude_args: '--allowed-tools "Read,Write,Edit,Glob,Grep,Bash(npx biome:*),Bash(npm run typecheck),Bash(npm run typecheck:*),Bash(npm test),Bash(npm test:*),Bash(git add:*),Bash(git commit:*),Bash(git diff:*),Bash(git status),Bash(git push),Bash(git log:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr view:*)"'
+
+      - name: Clean up violation labels on success
+        if: steps.check.outputs.has-violations == 'true' && steps.guard.outputs.skip != 'true' && steps.autofix.outcome == 'success'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            for (const label of labels) {
+              if (label.name.startsWith('pattern-violation:')) {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  name: label.name,
+                });
+              }
+            }
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['review:auto-fixed'],
+            });
+
+  review-gate:
+    needs: [claude-review, auto-fix]
+    if: always() && github.repository == 'gmo-internet/priv_conoha_vps_mcp' && github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Check for pattern violations
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const violations = labels.filter(l => l.name.startsWith('pattern-violation:'));
+            if (violations.length > 0) {
+              const names = violations.map(l => l.name).join(', ');
+              core.warning(`L2 pattern violations detected: ${names}`);
+              core.setFailed(`L2 review found violations: ${names}. Fix and push again.`);
+            } else {
+              core.info('No L2 pattern violations detected');
+            }

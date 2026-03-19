@@ -43,6 +43,11 @@
 						"type": "command",
 						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/biome-autofix.sh",
 						"timeout": 30
+					},
+					{
+						"type": "command",
+						"command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/l2-semantic-check.sh",
+						"timeout": 5
 					}
 				]
 			}
