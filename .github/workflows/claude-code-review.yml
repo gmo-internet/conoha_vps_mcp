@@ -30,7 +30,7 @@ jobs:
 
       - name: Clean up review labels
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({
@@ -108,7 +108,7 @@ jobs:
 
       - name: Post review status summary
         if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({
@@ -181,7 +181,7 @@ jobs:
     steps:
       - name: Check for violations to fix
         id: check
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({
@@ -267,7 +267,7 @@ jobs:
 
       - name: Clean up violation labels on success
         if: steps.check.outputs.has-violations == 'true' && steps.guard.outputs.skip != 'true' && steps.autofix.outcome == 'success'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({
@@ -300,7 +300,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Check for pattern violations
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({
