@@ -10,6 +10,10 @@
 
 import { App } from "@modelcontextprotocol/ext-apps";
 
+// ──────────────────────────────────────────────
+// 型定義
+// ──────────────────────────────────────────────
+
 interface ServerData {
 	id: string;
 	name: string;
@@ -25,8 +29,60 @@ interface ServerData {
 	created_at: string;
 }
 
+interface VolumeData {
+	id: string;
+	name: string;
+	status: "in-use" | "available" | "creating" | "deleting";
+	size_gb: number;
+	volume_type: string;
+	attached_to: string | null;
+	attached_server_name: string | null;
+	created_at: string;
+}
+
+interface ImageData {
+	id: string;
+	name: string;
+	status: "active" | "queued" | "saving";
+	os_type: "linux" | "windows";
+	min_disk_gb: number;
+	size_mb: number;
+	created_at: string;
+}
+
+interface SecurityGroupData {
+	id: string;
+	name: string;
+	description: string;
+	rules_count: number;
+	rules: Array<{
+		direction: "ingress" | "egress";
+		protocol: string | null;
+		port_range: string | null;
+		remote_ip: string;
+	}>;
+	created_at: string;
+}
+
+type TabId = "servers" | "volumes" | "security" | "images";
+
+// ──────────────────────────────────────────────
+// 状態
+// ──────────────────────────────────────────────
+
 let allServers: ServerData[] = [];
 let currentFilter = "all";
+let currentTab: TabId = "servers";
+const tabLoaded: Record<TabId, boolean> = {
+	servers: false,
+	volumes: false,
+	security: false,
+	images: false,
+};
+
+// ──────────────────────────────────────────────
+// MCP App 接続
+// ──────────────────────────────────────────────
 
 /** ツール結果からテキストを抽出 */
 function extractText(result: {
@@ -35,10 +91,6 @@ function extractText(result: {
 	const item = result.content?.find((c) => c.type === "text");
 	return item && "text" in item ? (item.text as string) : null;
 }
-
-// ──────────────────────────────────────────────
-// MCP App 接続
-// ──────────────────────────────────────────────
 
 const app = new App({ name: "ConoHa VPS", version: "0.1.0" });
 app.connect();
@@ -54,15 +106,37 @@ app.ontoolresult = (result) => {
 				return;
 			}
 			if (data.servers) {
-				injectData(data.servers);
+				tabLoaded.servers = true;
+				injectServerData(data.servers);
 			}
 		} catch {
-			showError("データの解析に失敗しました");
+			showTabError("server-tbody", 6, "データの解析に失敗しました");
 		}
 	}
 };
 
-/** サーバー詳細をMCPツール経由で取得 */
+// ──────────────────────────────────────────────
+// データ取得
+// ──────────────────────────────────────────────
+
+/** サーバー一覧を取得 */
+async function fetchServers(): Promise<ServerData[] | null> {
+	try {
+		const args: Record<string, string> = {};
+		if (currentFilter !== "all") args.status = currentFilter;
+		const result = await app.callServerTool({
+			name: "list_servers",
+			arguments: args,
+		});
+		const text = extractText(result);
+		if (text) return JSON.parse(text).servers ?? null;
+	} catch {
+		showTabError("server-tbody", 6, "サーバー一覧の取得に失敗しました");
+	}
+	return null;
+}
+
+/** サーバー詳細を取得 */
 async function fetchServerDetail(serverId: string): Promise<ServerData | null> {
 	try {
 		const result = await app.callServerTool({
@@ -70,55 +144,143 @@ async function fetchServerDetail(serverId: string): Promise<ServerData | null> {
 			arguments: { server_id: serverId },
 		});
 		const text = extractText(result);
-		if (text) {
-			const data = JSON.parse(text);
-			return data.server ?? null;
-		}
+		if (text) return JSON.parse(text).server ?? null;
 	} catch {
-		showError("サーバー詳細の取得に失敗しました");
+		showTabError("server-tbody", 6, "サーバー詳細の取得に失敗しました");
 	}
 	return null;
 }
 
-/** サーバー一覧を再取得 */
-async function refreshServers(
-	statusFilter?: string,
-): Promise<ServerData[] | null> {
+/** ボリューム一覧を取得 */
+async function fetchVolumes(): Promise<VolumeData[] | null> {
 	try {
-		const args: Record<string, string> = {};
-		if (statusFilter && statusFilter !== "all") {
-			args.status = statusFilter;
-		}
 		const result = await app.callServerTool({
-			name: "list_servers",
-			arguments: args,
+			name: "list_volumes",
+			arguments: {},
 		});
 		const text = extractText(result);
-		if (text) {
-			const data = JSON.parse(text);
-			return data.servers ?? null;
-		}
+		if (text) return JSON.parse(text).volumes ?? null;
 	} catch {
-		showError("サーバー一覧の取得に失敗しました");
+		showTabError("volume-tbody", 6, "ボリューム一覧の取得に失敗しました");
+	}
+	return null;
+}
+
+/** イメージ一覧を取得 */
+async function fetchImages(): Promise<ImageData[] | null> {
+	try {
+		const result = await app.callServerTool({
+			name: "list_images",
+			arguments: {},
+		});
+		const text = extractText(result);
+		if (text) return JSON.parse(text).images ?? null;
+	} catch {
+		showTabError("image-tbody", 6, "イメージ一覧の取得に失敗しました");
+	}
+	return null;
+}
+
+/** セキュリティグループ一覧を取得 */
+async function fetchSecurityGroups(): Promise<SecurityGroupData[] | null> {
+	try {
+		const result = await app.callServerTool({
+			name: "list_security_groups",
+			arguments: {},
+		});
+		const text = extractText(result);
+		if (text) return JSON.parse(text).security_groups ?? null;
+	} catch {
+		showTabError("sg-tbody", 5, "セキュリティグループの取得に失敗しました");
 	}
 	return null;
 }
 
 // ──────────────────────────────────────────────
-// レンダリング
+// タブ切り替え
 // ──────────────────────────────────────────────
 
-function injectData(servers: ServerData[]): void {
-	allServers = servers;
-	renderStats(servers);
-	renderChips(servers);
-	renderTable(servers);
-	const el = document.getElementById("last-updated");
-	if (el)
-		el.textContent = `最終更新: ${new Date().toLocaleTimeString("ja-JP")}`;
+const pageLabels: Record<TabId, string> = {
+	servers: "server list",
+	volumes: "volume list",
+	security: "security groups",
+	images: "image list",
+};
+
+async function switchTab(tab: TabId): Promise<void> {
+	if (tab === currentTab) return;
+	currentTab = tab;
+
+	// パネル表示切替
+	for (const panel of document.querySelectorAll<HTMLElement>(".tab-panel")) {
+		panel.style.display = "none";
+	}
+	const target = document.getElementById(`tab-${tab}`);
+	if (target) target.style.display = "flex";
+
+	// ナビボタン
+	for (const btn of document.querySelectorAll<HTMLElement>(".nb[data-tab]")) {
+		btn.classList.toggle("on", btn.dataset.tab === tab);
+	}
+
+	// ページラベル
+	setTxt("page-label", pageLabels[tab]);
+
+	// 初回のみデータ取得
+	if (!tabLoaded[tab]) {
+		await loadTabData(tab);
+	}
+
+	updateTimestamp();
 }
 
-function renderStats(servers: ServerData[]): void {
+async function loadTabData(tab: TabId): Promise<void> {
+	if (tab === "servers") {
+		const servers = await fetchServers();
+		if (servers) {
+			tabLoaded.servers = true;
+			injectServerData(servers);
+		}
+	} else if (tab === "volumes") {
+		showTabLoading("volume-tbody", 6);
+		const volumes = await fetchVolumes();
+		if (volumes) {
+			tabLoaded.volumes = true;
+			renderVolumeStats(volumes);
+			renderVolumeTable(volumes);
+		}
+	} else if (tab === "images") {
+		showTabLoading("image-tbody", 6);
+		const images = await fetchImages();
+		if (images) {
+			tabLoaded.images = true;
+			renderImageStats(images);
+			renderImageTable(images);
+		}
+	} else if (tab === "security") {
+		showTabLoading("sg-tbody", 5);
+		const groups = await fetchSecurityGroups();
+		if (groups) {
+			tabLoaded.security = true;
+			renderSgStats(groups);
+			renderSgTable(groups);
+		}
+	}
+}
+
+// ──────────────────────────────────────────────
+// サーバーレンダリング
+// ──────────────────────────────────────────────
+
+function injectServerData(servers: ServerData[]): void {
+	allServers = servers;
+	renderServerStats(servers);
+	renderServerChips(servers);
+	renderServerTable(servers);
+	updateTimestamp();
+}
+
+function renderServerStats(servers: ServerData[]): void {
 	const counts = { running: 0, stopped: 0, building: 0 };
 	for (const s of servers) {
 		if (s.status in counts) counts[s.status as keyof typeof counts]++;
@@ -129,7 +291,7 @@ function renderStats(servers: ServerData[]): void {
 	setTxt("st-building", String(counts.building));
 }
 
-function renderChips(servers: ServerData[]): void {
+function renderServerChips(servers: ServerData[]): void {
 	const counts = { running: 0, stopped: 0, building: 0 };
 	for (const s of servers) {
 		if (s.status in counts) counts[s.status as keyof typeof counts]++;
@@ -140,7 +302,7 @@ function renderChips(servers: ServerData[]): void {
 	setTxt("chip-building", `構築中 (${counts.building})`);
 }
 
-function renderTable(servers: ServerData[]): void {
+function renderServerTable(servers: ServerData[]): void {
 	const filtered =
 		currentFilter === "all"
 			? servers
@@ -163,30 +325,203 @@ function renderTable(servers: ServerData[]): void {
         <div class="sname">${esc(s.name)}</div>
         <div class="sid">${s.id.slice(0, 8)}-...</div>
       </td>
-      <td>${badgeHTML(s.status)}</td>
+      <td>${statusBadge(s.status)}</td>
       <td><span class="spec"><b>${s.vcpu}</b> vCPU / <b>${s.memory_gb}</b> GB</span></td>
       <td><span class="ip-cell">${s.ipv4 ?? "—"}</span></td>
       <td><span class="rg">${esc(s.region)}</span></td>
-      <td><div class="acts">${actionButtons(s)}</div></td>
+      <td><div class="acts">${serverActions(s)}</div></td>
     </tr>
   `,
 		)
 		.join("");
 
-	// 行クリックで詳細表示
 	for (const row of tbody.querySelectorAll("tr[data-server-id]")) {
 		row.addEventListener("click", () => {
 			const id = (row as HTMLElement).dataset.serverId;
-			if (id) openDetail(id);
+			if (id) void openDetail(id);
 		});
 	}
 }
 
 // ──────────────────────────────────────────────
-// ヘルパー
+// ボリュームレンダリング
 // ──────────────────────────────────────────────
 
-function badgeHTML(status: string): string {
+function renderVolumeStats(volumes: VolumeData[]): void {
+	const inUse = volumes.filter((v) => v.status === "in-use").length;
+	const available = volumes.filter((v) => v.status === "available").length;
+	const totalSize = volumes.reduce((sum, v) => sum + v.size_gb, 0);
+	setTxt("vol-total", String(volumes.length));
+	setTxt("vol-inuse", String(inUse));
+	setTxt("vol-available", String(available));
+	setTxt("vol-size", `${totalSize} GB`);
+}
+
+function renderVolumeTable(volumes: VolumeData[]): void {
+	const tbody = document.getElementById("volume-tbody");
+	if (!tbody) return;
+
+	if (volumes.length === 0) {
+		tbody.innerHTML =
+			'<tr><td colspan="6" class="loading">ボリュームがありません</td></tr>';
+		return;
+	}
+
+	tbody.innerHTML = volumes
+		.map(
+			(v) => `
+    <tr>
+      <td>
+        <div class="sname">${esc(v.name || "(名前なし)")}</div>
+        <div class="sid">${v.id.slice(0, 8)}-...</div>
+      </td>
+      <td>${volumeBadge(v.status)}</td>
+      <td><span class="spec"><b>${v.size_gb}</b> GB</span></td>
+      <td><span class="ip-cell">${esc(v.volume_type || "—")}</span></td>
+      <td><span class="ip-cell">${v.attached_server_name ? esc(v.attached_server_name) : v.attached_to ? `${v.attached_to.slice(0, 8)}-...` : "—"}</span></td>
+      <td><span class="rg">${formatDate(v.created_at)}</span></td>
+    </tr>
+  `,
+		)
+		.join("");
+}
+
+function volumeBadge(status: string): string {
+	const map: Record<string, [string, string]> = {
+		"in-use": ["iu", "In-Use"],
+		available: ["av", "Available"],
+		creating: ["bld", "Creating"],
+		deleting: ["stp", "Deleting"],
+	};
+	const [cls, label] = map[status] ?? ["av", status];
+	return `<span class="badge ${cls}"><span class="bd"></span>${label}</span>`;
+}
+
+// ──────────────────────────────────────────────
+// イメージレンダリング
+// ──────────────────────────────────────────────
+
+function renderImageStats(images: ImageData[]): void {
+	const linux = images.filter((i) => i.os_type === "linux").length;
+	const windows = images.filter((i) => i.os_type === "windows").length;
+	const active = images.filter((i) => i.status === "active").length;
+	setTxt("img-total", String(images.length));
+	setTxt("img-linux", String(linux));
+	setTxt("img-windows", String(windows));
+	setTxt("img-active", String(active));
+}
+
+function renderImageTable(images: ImageData[]): void {
+	const tbody = document.getElementById("image-tbody");
+	if (!tbody) return;
+
+	if (images.length === 0) {
+		tbody.innerHTML =
+			'<tr><td colspan="6" class="loading">イメージがありません</td></tr>';
+		return;
+	}
+
+	tbody.innerHTML = images
+		.map(
+			(i) => `
+    <tr>
+      <td>
+        <div class="sname">${esc(i.name)}</div>
+        <div class="sid">${i.id.slice(0, 8)}-...</div>
+      </td>
+      <td>${imageBadge(i.status)}</td>
+      <td><span class="badge ${i.os_type === "linux" ? "lnx" : "win"}">${i.os_type === "linux" ? "Linux" : "Windows"}</span></td>
+      <td><span class="spec"><b>${i.min_disk_gb}</b> GB</span></td>
+      <td><span class="spec">${i.size_mb > 0 ? `${i.size_mb} MB` : "—"}</span></td>
+      <td><span class="rg">${formatDate(i.created_at)}</span></td>
+    </tr>
+  `,
+		)
+		.join("");
+}
+
+function imageBadge(status: string): string {
+	const map: Record<string, [string, string]> = {
+		active: ["act", "Active"],
+		queued: ["que", "Queued"],
+		saving: ["bld", "Saving"],
+	};
+	const [cls, label] = map[status] ?? ["act", status];
+	return `<span class="badge ${cls}"><span class="bd"></span>${label}</span>`;
+}
+
+// ──────────────────────────────────────────────
+// セキュリティグループレンダリング
+// ──────────────────────────────────────────────
+
+function renderSgStats(groups: SecurityGroupData[]): void {
+	let totalRules = 0;
+	let ingress = 0;
+	let egress = 0;
+	for (const g of groups) {
+		totalRules += g.rules_count;
+		for (const r of g.rules) {
+			if (r.direction === "ingress") ingress++;
+			else egress++;
+		}
+	}
+	setTxt("sg-total", String(groups.length));
+	setTxt("sg-rules", String(totalRules));
+	setTxt("sg-ingress", String(ingress));
+	setTxt("sg-egress", String(egress));
+}
+
+function renderSgTable(groups: SecurityGroupData[]): void {
+	const tbody = document.getElementById("sg-tbody");
+	if (!tbody) return;
+
+	if (groups.length === 0) {
+		tbody.innerHTML =
+			'<tr><td colspan="5" class="loading">セキュリティグループがありません</td></tr>';
+		return;
+	}
+
+	tbody.innerHTML = groups
+		.map(
+			(g) => `
+    <tr>
+      <td>
+        <div class="sname">${esc(g.name)}</div>
+        <div class="sid">${g.id.slice(0, 8)}-...</div>
+      </td>
+      <td><span class="ip-cell">${esc(g.description || "—")}</span></td>
+      <td><span class="spec"><b>${g.rules_count}</b></span></td>
+      <td>${renderRuleTags(g.rules)}</td>
+      <td><span class="rg">${formatDate(g.created_at)}</span></td>
+    </tr>
+  `,
+		)
+		.join("");
+}
+
+function renderRuleTags(rules: SecurityGroupData["rules"]): string {
+	const ingress = rules.filter((r) => r.direction === "ingress");
+	const shown = ingress.slice(0, 3);
+	const tags = shown
+		.map((r) => {
+			const proto = r.protocol ?? "any";
+			const port = r.port_range ?? "*";
+			return `<span class="rule-tag">${esc(proto)}:${esc(port)}</span>`;
+		})
+		.join("");
+	const more =
+		ingress.length > 3
+			? `<span class="rule-tag">+${ingress.length - 3}</span>`
+			: "";
+	const combined = tags + more;
+	return combined || '<span class="rg">—</span>';
+}
+
+// ──────────────────────────────────────────────
+// 共通ヘルパー
+// ──────────────────────────────────────────────
+
+function statusBadge(status: string): string {
 	const map: Record<string, [string, string]> = {
 		running: ["run", "Running"],
 		stopped: ["stp", "Stopped"],
@@ -196,7 +531,7 @@ function badgeHTML(status: string): string {
 	return `<span class="badge ${cls}"><span class="bd"></span>${label}</span>`;
 }
 
-function actionButtons(s: ServerData): string {
+function serverActions(s: ServerData): string {
 	if (s.status === "running")
 		return `
       <button class="ab" data-action="console" data-name="${esc(s.name)}">コンソール</button>
@@ -224,10 +559,34 @@ function setTxt(id: string, text: string): void {
 	if (el) el.textContent = text;
 }
 
-function showError(msg: string): void {
-	const tbody = document.getElementById("server-tbody");
+function formatDate(dateStr: string): string {
+	if (!dateStr) return "—";
+	const d = new Date(dateStr);
+	if (Number.isNaN(d.getTime())) return dateStr;
+	return d.toLocaleDateString("ja-JP", {
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+	});
+}
+
+function updateTimestamp(): void {
+	const el = document.getElementById("last-updated");
+	if (el)
+		el.textContent = `最終更新: ${new Date().toLocaleTimeString("ja-JP")}`;
+}
+
+function showTabError(tbodyId: string, colspan: number, msg: string): void {
+	const tbody = document.getElementById(tbodyId);
 	if (tbody) {
-		tbody.innerHTML = `<tr><td colspan="6" class="loading" style="color:#e53e3e">${esc(msg)}</td></tr>`;
+		tbody.innerHTML = `<tr><td colspan="${colspan}" class="loading" style="color:#e53e3e">${esc(msg)}</td></tr>`;
+	}
+}
+
+function showTabLoading(tbodyId: string, colspan: number): void {
+	const tbody = document.getElementById(tbodyId);
+	if (tbody) {
+		tbody.innerHTML = `<tr><td colspan="${colspan}" class="loading">読み込み中...</td></tr>`;
 	}
 }
 
@@ -241,7 +600,10 @@ function showAuthGuide(data: {
 	if (!tbody) return;
 
 	const envList = (data.required_env ?? [])
-		.map((e) => `<code style="background:#1a1a2e;padding:2px 6px;border-radius:3px;font-size:12px">${esc(e)}</code>`)
+		.map(
+			(e) =>
+				`<code style="background:#1a1a2e;padding:2px 6px;border-radius:3px;font-size:12px">${esc(e)}</code>`,
+		)
 		.join("、");
 
 	tbody.innerHTML = `<tr><td colspan="6" style="padding:32px 24px;text-align:center">
@@ -270,7 +632,7 @@ async function openDetail(id: string): Promise<void> {
 
 	setTxt("dp-name", s.name);
 	const badgeEl = document.getElementById("dp-badge");
-	if (badgeEl) badgeEl.innerHTML = badgeHTML(s.status);
+	if (badgeEl) badgeEl.innerHTML = statusBadge(s.status);
 	setTxt("dp-id", s.id);
 	setTxt("dp-vcpu", `${s.vcpu} Core`);
 	setTxt("dp-mem", `${s.memory_gb} GB`);
@@ -319,14 +681,15 @@ function closeDetail(): void {
 // イベントハンドラ
 // ──────────────────────────────────────────────
 
-document
-	.getElementById("close-detail-btn")
-	?.addEventListener("click", closeDetail);
+// タブ切り替え
+for (const btn of document.querySelectorAll<HTMLElement>(".nb[data-tab]")) {
+	btn.addEventListener("click", () => {
+		const tab = btn.dataset.tab as TabId;
+		if (tab) void switchTab(tab);
+	});
+}
 
-document.getElementById("detail-overlay")?.addEventListener("click", (e) => {
-	if (e.target === e.currentTarget) closeDetail();
-});
-
+// サーバーフィルターチップ
 for (const chip of document.querySelectorAll<HTMLElement>(
 	".chip[data-filter]",
 )) {
@@ -337,15 +700,24 @@ for (const chip of document.querySelectorAll<HTMLElement>(
 		}
 		chip.classList.add("on");
 
-		const servers = await refreshServers();
+		const servers = await fetchServers();
 		if (servers) {
 			allServers = servers;
-			renderTable(allServers);
+			renderServerTable(allServers);
 		} else {
-			renderTable(allServers);
+			renderServerTable(allServers);
 		}
 	});
 }
+
+// 詳細パネル
+document
+	.getElementById("close-detail-btn")
+	?.addEventListener("click", closeDetail);
+
+document.getElementById("detail-overlay")?.addEventListener("click", (e) => {
+	if (e.target === e.currentTarget) closeDetail();
+});
 
 // テーブル内のアクションボタン委譲
 document.getElementById("server-tbody")?.addEventListener("click", (e) => {
@@ -357,7 +729,7 @@ document.getElementById("server-tbody")?.addEventListener("click", (e) => {
 	const id = btn.dataset.id;
 
 	if (action === "detail" && id) {
-		openDetail(id);
+		void openDetail(id);
 	} else if (name) {
 		alert(`[${action}] ${name}`);
 	}

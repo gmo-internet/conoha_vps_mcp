@@ -119,7 +119,7 @@ describe("get_server", () => {
 		delete process.env.CONOHA_MCP_MOCK;
 	});
 
-	it("存在するサーバーIDで詳細を返��", async () => {
+	it("存在するサーバーIDで詳細を返す", async () => {
 		const result = await callTool(server, "get_server", {
 			server_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
 		});
@@ -128,14 +128,14 @@ describe("get_server", () => {
 		expect(result.structuredContent.server.vcpu).toBe(4);
 	});
 
-	it("存在しないサーバーIDでエラー��返す", async () => {
+	it("存在しないサーバーIDでエラーを返す", async () => {
 		const result = await callTool(server, "get_server", {
 			server_id: "nonexistent-id",
 		});
 		expect(result.isError).toBe(true);
 	});
 
-	it("��等性: 同じIDで複数回呼んでも同じ結果を返す", async () => {
+	it("冪等性: 同じIDで複数回呼んでも同じ結果を返す", async () => {
 		const id = "c3d4e5f6-a7b8-9012-cdef-123456789012";
 		const result1 = await callTool(server, "get_server", { server_id: id });
 		const result2 = await callTool(server, "get_server", { server_id: id });
@@ -156,7 +156,7 @@ describe("list_volumes", () => {
 		delete process.env.CONOHA_MCP_MOCK;
 	});
 
-	it("引数なしで全ボリューム���返す", async () => {
+	it("引数なしで全ボリュームを返す", async () => {
 		const result = await callTool(server, "list_volumes", {});
 		expect(result.structuredContent.total).toBe(3);
 	});
@@ -176,6 +176,26 @@ describe("list_volumes", () => {
 			status: "available",
 		});
 		expect(result.structuredContent.total).toBe(1);
+	});
+
+	it("各ボリュームに必須フィールドが含まれる", async () => {
+		const result = await callTool(server, "list_volumes", {});
+		for (const v of result.structuredContent.volumes) {
+			expect(v.id).toBeTypeOf("string");
+			expect(v.name).toBeTypeOf("string");
+			expect(v.size_gb).toBeTypeOf("number");
+			expect(v.volume_type).toBeTypeOf("string");
+			expect(v.created_at).toBeTypeOf("string");
+		}
+	});
+
+	it("in-useボリュームにはattached_toが設定される", async () => {
+		const result = await callTool(server, "list_volumes", {
+			status: "in-use",
+		});
+		for (const v of result.structuredContent.volumes) {
+			expect(v.attached_to).not.toBeNull();
+		}
 	});
 });
 
@@ -207,11 +227,20 @@ describe("list_images", () => {
 		}
 	});
 
-	it("os_type=windowsで���ィルタリングできる", async () => {
+	it("os_type=windowsでフィルタリングできる", async () => {
 		const result = await callTool(server, "list_images", {
 			os_type: "windows",
 		});
 		expect(result.structuredContent.total).toBe(1);
+	});
+
+	it("各イメージにサイズと最小ディスク情報が含まれる", async () => {
+		const result = await callTool(server, "list_images", {});
+		for (const i of result.structuredContent.images) {
+			expect(i.size_mb).toBeTypeOf("number");
+			expect(i.min_disk_gb).toBeTypeOf("number");
+			expect(i.size_mb).toBeGreaterThanOrEqual(0);
+		}
 	});
 });
 
@@ -241,6 +270,25 @@ describe("list_security_groups", () => {
 			expect(sg.rules.length).toBeGreaterThan(0);
 		}
 	});
+
+	it("ルールにdirection・protocol・port_range・remote_ipが含まれる", async () => {
+		const result = await callTool(server, "list_security_groups", {});
+		for (const sg of result.structuredContent.security_groups) {
+			for (const rule of sg.rules) {
+				expect(rule.direction).toMatch(/^(ingress|egress)$/);
+				expect(rule).toHaveProperty("protocol");
+				expect(rule).toHaveProperty("port_range");
+				expect(rule.remote_ip).toBeTypeOf("string");
+			}
+		}
+	});
+
+	it("rules_countがルール配列の長さと一致する", async () => {
+		const result = await callTool(server, "list_security_groups", {});
+		for (const sg of result.structuredContent.security_groups) {
+			expect(sg.rules_count).toBe(sg.rules.length);
+		}
+	});
 });
 
 describe("get_server_metrics", () => {
@@ -256,7 +304,7 @@ describe("get_server_metrics", () => {
 		delete process.env.CONOHA_MCP_MOCK;
 	});
 
-	it("存在するサーバーIDでメトリク��を返す", async () => {
+	it("存在するサーバーIDでメトリクスを返す", async () => {
 		const result = await callTool(server, "get_server_metrics", {
 			server_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
 		});
@@ -277,7 +325,7 @@ describe("get_server_metrics", () => {
 		expect(result.isError).toBe(true);
 	});
 
-	it("冪等性: 同じIDで複数回���んでも同じ結果を返す", async () => {
+	it("冪等性: 同じIDで複数回呼んでも同じ結果を返す", async () => {
 		const id = "c3d4e5f6-a7b8-9012-cdef-123456789012";
 		const r1 = await callTool(server, "get_server_metrics", {
 			server_id: id,

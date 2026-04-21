@@ -67,8 +67,10 @@ export function registerAppsTools(server: McpServer): void {
 /**
  * UI HTMLリソースを登録
  *
+ * @param server - McpServerインスタンス
  * @remarks
  * ビルド済みの単一HTMLファイルをMCP Appリソースとして提供します。
+ * @internal
  */
 function registerAppUiResource(server: McpServer): void {
 	registerAppResource(
@@ -94,10 +96,12 @@ function registerAppUiResource(server: McpServer): void {
 /**
  * list_servers: サーバー一覧を取得（MCP App UI 付き）
  *
+ * @param server - McpServerインスタンス
  * @remarks
  * 冪等: はい（参照のみ）
  * ドライラン: 不要（副作用なし）
  * UI: ConoHa VPS ダッシュボード（サーバー一覧 + 詳細パネル）
+ * @internal
  */
 function registerListServers(server: McpServer): void {
 	registerAppTool(
@@ -152,9 +156,7 @@ function registerListServers(server: McpServer): void {
 					hint: "ConoHaコントロールパネル → API → APIユーザー で確認できます。",
 				};
 				return {
-					content: [
-						{ type: "text", text: JSON.stringify(guide, null, 2) },
-					],
+					content: [{ type: "text", text: JSON.stringify(guide, null, 2) }],
 					structuredContent: { servers: [], total: 0 },
 				};
 			}
@@ -176,9 +178,11 @@ function registerListServers(server: McpServer): void {
 /**
  * get_server: 特定サーバーの詳細を取得
  *
+ * @param server - McpServerインスタンス
  * @remarks
  * 冪等: はい（参照のみ）
  * ドライラン: 不要（副作用なし）
+ * @internal
  */
 function registerGetServer(server: McpServer): void {
 	server.registerTool(
@@ -238,9 +242,11 @@ function registerGetServer(server: McpServer): void {
 /**
  * list_volumes: ボリューム一覧を取得
  *
+ * @param server - McpServerインスタンス
  * @remarks
  * 冪等: はい（参照のみ）
  * ドライラン: 不要（副作用なし）
+ * @internal
  */
 function registerListVolumes(server: McpServer): void {
 	server.registerTool(
@@ -288,9 +294,11 @@ function registerListVolumes(server: McpServer): void {
 /**
  * list_images: イメージ一覧を取得
  *
+ * @param server - McpServerインスタンス
  * @remarks
  * 冪等: はい（参照のみ）
  * ドライラン: 不要（副作用なし）
+ * @internal
  */
 function registerListImages(server: McpServer): void {
 	server.registerTool(
@@ -338,9 +346,11 @@ function registerListImages(server: McpServer): void {
 /**
  * list_security_groups: セキュリティグループ一覧を取得
  *
+ * @param server - McpServerインスタンス
  * @remarks
  * 冪等: はい（参照のみ）
  * ドライラン: 不要（副作用なし）
+ * @internal
  */
 function registerListSecurityGroups(server: McpServer): void {
 	server.registerTool(
@@ -389,9 +399,11 @@ function registerListSecurityGroups(server: McpServer): void {
 /**
  * get_server_metrics: サーバー監視メトリクスを取得
  *
+ * @param server - McpServerインスタンス
  * @remarks
  * 冪等: はい（参照のみ）
  * ドライラン: 不要（副作用なし）
+ * @internal
  */
 function registerGetServerMetrics(server: McpServer): void {
 	server.registerTool(
@@ -452,7 +464,12 @@ function registerGetServerMetrics(server: McpServer): void {
 /** テナントID */
 const TENANT_ID = process.env.OPENSTACK_TENANT_ID ?? "";
 
-/** 認証情報が設定済みか判定 */
+/**
+ * 認証情報が設定済みか判定
+ *
+ * @returns 3つの環境変数がすべて設定されている場合true
+ * @internal
+ */
 function hasCredentials(): boolean {
 	return !!(
 		process.env.OPENSTACK_USER_ID &&
@@ -461,6 +478,12 @@ function hasCredentials(): boolean {
 	);
 }
 
+/**
+ * サーバー一覧を解決（モックまたは実API）
+ *
+ * @returns サーバー情報の配列
+ * @internal
+ */
 async function resolveServers(): Promise<AppServer[]> {
 	if (isMockMode()) {
 		return getMockServers();
@@ -476,6 +499,13 @@ async function resolveServers(): Promise<AppServer[]> {
 	return (json.servers ?? []).map(mapNovaServerToAppServer);
 }
 
+/**
+ * 特定サーバーの詳細を解決
+ *
+ * @param serverId - サーバーID
+ * @returns サーバー情報、見つからない場合null
+ * @internal
+ */
 async function resolveServer(serverId: string): Promise<AppServer | null> {
 	if (isMockMode()) {
 		return getMockServer(serverId);
@@ -492,6 +522,12 @@ async function resolveServer(serverId: string): Promise<AppServer | null> {
 	return json.server ? mapNovaServerToAppServer(json.server) : null;
 }
 
+/**
+ * ボリューム一覧を解決（モックまたは実API）
+ *
+ * @returns ボリューム情報の配列
+ * @internal
+ */
 async function resolveVolumes(): Promise<AppVolume[]> {
 	if (isMockMode()) {
 		return getMockVolumes();
@@ -507,6 +543,12 @@ async function resolveVolumes(): Promise<AppVolume[]> {
 	return (json.volumes ?? []).map(mapCinderVolumeToAppVolume);
 }
 
+/**
+ * イメージ一覧を解決（モックまたは実API）
+ *
+ * @returns イメージ情報の配列
+ * @internal
+ */
 async function resolveImages(): Promise<AppImage[]> {
 	if (isMockMode()) {
 		return getMockImages();
@@ -522,6 +564,12 @@ async function resolveImages(): Promise<AppImage[]> {
 	return (json.images ?? []).map(mapGlanceImageToAppImage);
 }
 
+/**
+ * セキュリティグループ一覧を解決（モックまたは実API）
+ *
+ * @returns セキュリティグループ情報の配列
+ * @internal
+ */
 async function resolveSecurityGroups(): Promise<AppSecurityGroup[]> {
 	if (isMockMode()) {
 		return getMockSecurityGroups();
@@ -537,6 +585,13 @@ async function resolveSecurityGroups(): Promise<AppSecurityGroup[]> {
 	return (json.security_groups ?? []).map(mapNeutronSgToAppSecurityGroup);
 }
 
+/**
+ * サーバー監視メトリクスを解決
+ *
+ * @param serverId - サーバーID
+ * @returns メトリクス情報、見つからない場合null
+ * @internal
+ */
 async function resolveServerMetrics(
 	serverId: string,
 ): Promise<AppServerMetrics | null> {
@@ -563,7 +618,13 @@ async function resolveServerMetrics(
 // OpenStack → App 型マッピング
 // ──────────────────────────────────────────────
 
-/** Nova APIのステータスをアプリ用ステータスに変換 */
+/**
+ * Nova APIのステータスをアプリ用ステータスに変換
+ *
+ * @param status - Nova APIのサーバーステータス文字列
+ * @returns アプリ用ステータス
+ * @internal
+ */
 function mapNovaStatus(status: string): "running" | "stopped" | "building" {
 	const s = String(status).toUpperCase();
 	if (s === "ACTIVE") return "running";
@@ -571,7 +632,13 @@ function mapNovaStatus(status: string): "running" | "stopped" | "building" {
 	return "building";
 }
 
-/** Nova server → AppServer */
+/**
+ * Nova serverオブジェクトをAppServer型に変換
+ *
+ * @param s - Nova APIのサーバーレスポンスオブジェクト
+ * @returns アプリ用サーバー情報
+ * @internal
+ */
 function mapNovaServerToAppServer(s: Record<string, unknown>): AppServer {
 	const flavor = (s.flavor ?? {}) as Record<string, unknown>;
 	const addresses = (s.addresses ?? {}) as Record<
@@ -606,7 +673,13 @@ function mapNovaServerToAppServer(s: Record<string, unknown>): AppServer {
 	};
 }
 
-/** Cinder volume → AppVolume */
+/**
+ * Cinder volumeオブジェクトをAppVolume型に変換
+ *
+ * @param v - Cinder APIのボリュームレスポンスオブジェクト
+ * @returns アプリ用ボリューム情報
+ * @internal
+ */
 function mapCinderVolumeToAppVolume(v: Record<string, unknown>): AppVolume {
 	const attachments = (v.attachments ?? []) as Array<Record<string, unknown>>;
 	const firstAttach = attachments[0];
@@ -623,7 +696,13 @@ function mapCinderVolumeToAppVolume(v: Record<string, unknown>): AppVolume {
 	};
 }
 
-/** Glance image → AppImage */
+/**
+ * Glance imageオブジェクトをAppImage型に変換
+ *
+ * @param i - Glance APIのイメージレスポンスオブジェクト
+ * @returns アプリ用イメージ情報
+ * @internal
+ */
 function mapGlanceImageToAppImage(i: Record<string, unknown>): AppImage {
 	const name = String(i.name ?? "");
 	const osType = name.toLowerCase().includes("windows") ? "windows" : "linux";
@@ -639,7 +718,13 @@ function mapGlanceImageToAppImage(i: Record<string, unknown>): AppImage {
 	};
 }
 
-/** Neutron security group → AppSecurityGroup */
+/**
+ * Neutron security groupオブジェクトをAppSecurityGroup型に変換
+ *
+ * @param sg - Neutron APIのセキュリティグループレスポンスオブジェクト
+ * @returns アプリ用セキュリティグループ情報
+ * @internal
+ */
 function mapNeutronSgToAppSecurityGroup(
 	sg: Record<string, unknown>,
 ): AppSecurityGroup {

@@ -20,7 +20,7 @@
   --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
   --sh-md:0 4px 12px rgba(0,0,0,.08);
 }
-body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px;display:flex;flex-direction:column;overflow:hidden}
 .mcp-bar{display:flex;align-items:center;gap:8px;padding:9px 16px;background:var(--cyan);font-family:var(--mono);font-size:11px}
 .mcp-icon{width:18px;height:18px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
 .mcp-name{color:#fff;font-weight:500}
@@ -28,7 +28,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:1
 .mcp-page{color:rgba(255,255,255,.8)}
 .mcp-sp{flex:1}
 .mcp-badge{background:rgba(255,255,255,.2);color:#fff;border-radius:99px;padding:2px 8px;font-size:10px;border:1px solid rgba(255,255,255,.3)}
-.app{flex:1;display:flex;flex-direction:column;background:var(--white)}
+.app{flex:1;display:flex;flex-direction:column;background:var(--white);overflow:hidden;min-height:0}
 .app-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--white)}
 .app-logo{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--cyan)}
 .app-logo span{color:var(--text3)}
@@ -112,6 +112,13 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:1
 .ob.dg:hover{background:var(--red);color:#fff;border-color:var(--red)}
 .dp-warn{margin:0 18px 14px;padding:8px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:11px;color:#92400e;font-family:var(--mono)}
 .loading{padding:48px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text3)}
+.tab-panel{flex:1;display:flex;flex-direction:column;overflow-y:auto;min-height:0}
+.badge.iu{background:var(--green-lt);color:var(--green)}.badge.iu .bd{background:var(--green)}
+.badge.av{background:var(--blue-lt);color:var(--blue)}.badge.av .bd{background:var(--blue)}
+.badge.act{background:var(--green-lt);color:var(--green)}.badge.act .bd{background:var(--green)}
+.badge.que{background:var(--blue-lt);color:var(--blue)}.badge.que .bd{background:var(--blue);animation:blink .8s ease-in-out infinite}
+.badge.lnx{background:#f0fff4;color:#38a169}.badge.win{background:#ebf8ff;color:#3182ce}
+.rule-tag{display:inline-block;padding:1px 6px;border-radius:3px;font-family:var(--mono);font-size:9px;margin:1px 2px;border:1px solid var(--border);color:var(--text2)}
 </style>
 </head>
 <body>
@@ -130,45 +137,120 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:1
     <div style="display:flex;align-items:center">
       <span class="app-logo">conoha<span>://</span>vps</span>
       <div class="nav">
-        <button type="button" class="nb on">サーバー</button>
-        <button type="button" class="nb">ボリューム</button>
-        <button type="button" class="nb">セキュリティ</button>
-        <button type="button" class="nb">イメージ</button>
+        <button type="button" class="nb on" data-tab="servers">サーバー</button>
+        <button type="button" class="nb" data-tab="volumes">ボリューム</button>
+        <button type="button" class="nb" data-tab="security">セキュリティ</button>
+        <button type="button" class="nb" data-tab="images">イメージ</button>
       </div>
     </div>
     <button type="button" class="create-btn">+ サーバー作成</button>
   </div>
 
-  <div class="stats">
-    <div class="sc"><div class="sl">Total</div><div class="sv gr" id="st-total">—</div></div>
-    <div class="sc"><div class="sl">Running</div><div class="sv cy" id="st-running">—</div></div>
-    <div class="sc"><div class="sl">Stopped</div><div class="sv re" id="st-stopped">—</div></div>
-    <div class="sc"><div class="sl">Building</div><div class="sv bl" id="st-building">—</div></div>
+  <!-- サーバータブ -->
+  <div class="tab-panel" id="tab-servers">
+    <div class="stats">
+      <div class="sc"><div class="sl">Total</div><div class="sv gr" id="st-total">—</div></div>
+      <div class="sc"><div class="sl">Running</div><div class="sv cy" id="st-running">—</div></div>
+      <div class="sc"><div class="sl">Stopped</div><div class="sv re" id="st-stopped">—</div></div>
+      <div class="sc"><div class="sl">Building</div><div class="sv bl" id="st-building">—</div></div>
+    </div>
+    <div class="filter">
+      <div class="srch">⌕&nbsp; サーバーを検索...</div>
+      <span class="chip on" data-filter="all" id="chip-all">すべて</span>
+      <span class="chip"     data-filter="running" id="chip-running">起動中</span>
+      <span class="chip re"  data-filter="stopped" id="chip-stopped">停止中</span>
+      <span class="chip"     data-filter="building" id="chip-building">構築中</span>
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>サーバー名</th>
+          <th>ステータス</th>
+          <th>スペック</th>
+          <th>IPアドレス</th>
+          <th>リージョン</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="server-tbody">
+        <tr><td colspan="6" class="loading">読み込み中...</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <div class="filter">
-    <div class="srch">⌕&nbsp; サーバーを検索...</div>
-    <span class="chip on" data-filter="all" id="chip-all">すべて</span>
-    <span class="chip"     data-filter="running" id="chip-running">起動中</span>
-    <span class="chip re"  data-filter="stopped" id="chip-stopped">停止中</span>
-    <span class="chip"     data-filter="building" id="chip-building">構築中</span>
+  <!-- ボリュームタブ -->
+  <div class="tab-panel" id="tab-volumes" style="display:none">
+    <div class="stats">
+      <div class="sc"><div class="sl">Total</div><div class="sv gr" id="vol-total">—</div></div>
+      <div class="sc"><div class="sl">In-Use</div><div class="sv cy" id="vol-inuse">—</div></div>
+      <div class="sc"><div class="sl">Available</div><div class="sv bl" id="vol-available">—</div></div>
+      <div class="sc"><div class="sl">Total Size</div><div class="sv gr" id="vol-size">—</div></div>
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>ボリューム名</th>
+          <th>ステータス</th>
+          <th>サイズ</th>
+          <th>タイプ</th>
+          <th>接続先</th>
+          <th>作成日</th>
+        </tr>
+      </thead>
+      <tbody id="volume-tbody">
+        <tr><td colspan="6" class="loading">タブを選択してください</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <table class="tbl">
-    <thead>
-      <tr>
-        <th>サーバー名</th>
-        <th>ステータス</th>
-        <th>スペック</th>
-        <th>IPアドレス</th>
-        <th>リージョン</th>
-        <th>操作</th>
-      </tr>
-    </thead>
-    <tbody id="server-tbody">
-      <tr><td colspan="6" class="loading">読み込み中...</td></tr>
-    </tbody>
-  </table>
+  <!-- セキュリティタブ -->
+  <div class="tab-panel" id="tab-security" style="display:none">
+    <div class="stats">
+      <div class="sc"><div class="sl">Groups</div><div class="sv gr" id="sg-total">—</div></div>
+      <div class="sc"><div class="sl">Total Rules</div><div class="sv cy" id="sg-rules">—</div></div>
+      <div class="sc"><div class="sl">Ingress</div><div class="sv bl" id="sg-ingress">—</div></div>
+      <div class="sc"><div class="sl">Egress</div><div class="sv gr" id="sg-egress">—</div></div>
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>グループ名</th>
+          <th>説明</th>
+          <th>ルール数</th>
+          <th>主要ルール</th>
+          <th>作成日</th>
+        </tr>
+      </thead>
+      <tbody id="sg-tbody">
+        <tr><td colspan="5" class="loading">タブを選択してください</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- イメージタブ -->
+  <div class="tab-panel" id="tab-images" style="display:none">
+    <div class="stats">
+      <div class="sc"><div class="sl">Total</div><div class="sv gr" id="img-total">—</div></div>
+      <div class="sc"><div class="sl">Linux</div><div class="sv cy" id="img-linux">—</div></div>
+      <div class="sc"><div class="sl">Windows</div><div class="sv bl" id="img-windows">—</div></div>
+      <div class="sc"><div class="sl">Active</div><div class="sv gr" id="img-active">—</div></div>
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>イメージ名</th>
+          <th>ステータス</th>
+          <th>OS</th>
+          <th>最小ディスク</th>
+          <th>サイズ</th>
+          <th>作成日</th>
+        </tr>
+      </thead>
+      <tbody id="image-tbody">
+        <tr><td colspan="6" class="loading">タブを選択してください</td></tr>
+      </tbody>
+    </table>
+  </div>
 
   <div class="foot">
     <span><span class="ldot"></span>MCP App 接続中</span>
