@@ -49,6 +49,10 @@ app.ontoolresult = (result) => {
 	if (text) {
 		try {
 			const data = JSON.parse(text);
+			if (data.error === "auth_required") {
+				showAuthGuide(data);
+				return;
+			}
 			if (data.servers) {
 				injectData(data.servers);
 			}
@@ -225,6 +229,34 @@ function showError(msg: string): void {
 	if (tbody) {
 		tbody.innerHTML = `<tr><td colspan="6" class="loading" style="color:#e53e3e">${esc(msg)}</td></tr>`;
 	}
+}
+
+/** 認証未設定ガイドを表示 */
+function showAuthGuide(data: {
+	message?: string;
+	required_env?: string[];
+	hint?: string;
+}): void {
+	const tbody = document.getElementById("server-tbody");
+	if (!tbody) return;
+
+	const envList = (data.required_env ?? [])
+		.map((e) => `<code style="background:#1a1a2e;padding:2px 6px;border-radius:3px;font-size:12px">${esc(e)}</code>`)
+		.join("、");
+
+	tbody.innerHTML = `<tr><td colspan="6" style="padding:32px 24px;text-align:center">
+		<div style="font-size:18px;font-weight:700;color:#00b4d8;margin-bottom:12px">認証情報の設定が必要です</div>
+		<div style="color:#94a3b8;font-size:13px;line-height:1.8;max-width:480px;margin:0 auto">
+			<p>${esc(data.message ?? "")}</p>
+			<p style="margin-top:8px">必要な環境変数: ${envList}</p>
+			<p style="margin-top:8px;color:#64748b;font-size:12px">${esc(data.hint ?? "")}</p>
+		</div>
+	</td></tr>`;
+
+	setTxt("st-total", "—");
+	setTxt("st-running", "—");
+	setTxt("st-stopped", "—");
+	setTxt("st-building", "—");
 }
 
 // ──────────────────────────────────────────────

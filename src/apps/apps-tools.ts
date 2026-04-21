@@ -139,6 +139,26 @@ function registerListServers(server: McpServer): void {
 			},
 		},
 		async ({ status }) => {
+			if (!isMockMode() && !hasCredentials()) {
+				const guide = {
+					error: "auth_required",
+					message:
+						"ConoHa VPSの認証情報が設定されていません。claude_desktop_config.jsonのenv、または.envファイルに以下を設定してください。",
+					required_env: [
+						"OPENSTACK_TENANT_ID",
+						"OPENSTACK_USER_ID",
+						"OPENSTACK_PASSWORD",
+					],
+					hint: "ConoHaコントロールパネル → API → APIユーザー で確認できます。",
+				};
+				return {
+					content: [
+						{ type: "text", text: JSON.stringify(guide, null, 2) },
+					],
+					structuredContent: { servers: [], total: 0 },
+				};
+			}
+
 			const servers = await resolveServers();
 			const filtered = status
 				? servers.filter((s) => s.status === status)
@@ -431,6 +451,15 @@ function registerGetServerMetrics(server: McpServer): void {
 
 /** テナントID */
 const TENANT_ID = process.env.OPENSTACK_TENANT_ID ?? "";
+
+/** 認証情報が設定済みか判定 */
+function hasCredentials(): boolean {
+	return !!(
+		process.env.OPENSTACK_USER_ID &&
+		process.env.OPENSTACK_PASSWORD &&
+		process.env.OPENSTACK_TENANT_ID
+	);
+}
 
 async function resolveServers(): Promise<AppServer[]> {
 	if (isMockMode()) {
