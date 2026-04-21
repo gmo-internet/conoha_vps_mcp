@@ -21,6 +21,9 @@ settings.local.json
 # stryker
 .stryker-tmp/**
 
+# vscode
+.vscode/
+
 # cursor
 .cursor/
 
