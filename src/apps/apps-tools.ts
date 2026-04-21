@@ -21,12 +21,20 @@ import {
 } from "@modelcontextprotocol/ext-apps/server";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { executeOpenstackApi } from "../features/openstack/common/openstack-client.js";
+import {
+	OPENSTACK_COMPUTE_BASE_URL,
+	OPENSTACK_IMAGE_BASE_URL,
+	OPENSTACK_NETWORK_BASE_URL,
+	OPENSTACK_VOLUME_BASE_URL,
+} from "../features/openstack/constants.js";
 import type {
 	AppImage,
 	AppSecurityGroup,
 	AppServer,
 	AppServerMetrics,
 	AppVolume,
+	SecurityGroupRule,
 } from "./apps-types.js";
 import {
 	getMockImages,
@@ -421,44 +429,83 @@ function registerGetServerMetrics(server: McpServer): void {
 // データ解決層: モック / 実API の切り替え
 // ──────────────────────────────────────────────
 
+/** テナントID */
+const TENANT_ID = process.env.OPENSTACK_TENANT_ID ?? "";
+
 async function resolveServers(): Promise<AppServer[]> {
 	if (isMockMode()) {
 		return getMockServers();
 	}
-	// TODO: 実APIモード — getCompute("/servers/detail") を呼び出してマッピング
-	return getMockServers();
+	const response = await executeOpenstackApi(
+		"GET",
+		OPENSTACK_COMPUTE_BASE_URL,
+		"/servers/detail",
+	);
+	const json = (await response.json()) as {
+		servers: Array<Record<string, unknown>>;
+	};
+	return (json.servers ?? []).map(mapNovaServerToAppServer);
 }
 
 async function resolveServer(serverId: string): Promise<AppServer | null> {
 	if (isMockMode()) {
 		return getMockServer(serverId);
 	}
-	// TODO: 実APIモード — getComputeByParam("", serverId) を呼び出してマッピング
-	return getMockServer(serverId);
+	const response = await executeOpenstackApi(
+		"GET",
+		OPENSTACK_COMPUTE_BASE_URL,
+		`/servers/${serverId}`,
+	);
+	if (!response.ok) return null;
+	const json = (await response.json()) as {
+		server: Record<string, unknown>;
+	};
+	return json.server ? mapNovaServerToAppServer(json.server) : null;
 }
 
 async function resolveVolumes(): Promise<AppVolume[]> {
 	if (isMockMode()) {
 		return getMockVolumes();
 	}
-	// TODO: 実APIモード — getVolume("/volumes/detail") を呼び出してマッピング
-	return getMockVolumes();
+	const response = await executeOpenstackApi(
+		"GET",
+		OPENSTACK_VOLUME_BASE_URL,
+		`/${TENANT_ID}/volumes/detail`,
+	);
+	const json = (await response.json()) as {
+		volumes: Array<Record<string, unknown>>;
+	};
+	return (json.volumes ?? []).map(mapCinderVolumeToAppVolume);
 }
 
 async function resolveImages(): Promise<AppImage[]> {
 	if (isMockMode()) {
 		return getMockImages();
 	}
-	// TODO: 実APIモード — getImage("/v2/images") を呼び出してマッピング
-	return getMockImages();
+	const response = await executeOpenstackApi(
+		"GET",
+		OPENSTACK_IMAGE_BASE_URL,
+		"/v2/images?limit=200",
+	);
+	const json = (await response.json()) as {
+		images: Array<Record<string, unknown>>;
+	};
+	return (json.images ?? []).map(mapGlanceImageToAppImage);
 }
 
 async function resolveSecurityGroups(): Promise<AppSecurityGroup[]> {
 	if (isMockMode()) {
 		return getMockSecurityGroups();
 	}
-	// TODO: 実APIモード — getNetwork("/v2.0/security-groups") を呼び出してマッピング
-	return getMockSecurityGroups();
+	const response = await executeOpenstackApi(
+		"GET",
+		OPENSTACK_NETWORK_BASE_URL,
+		"/v2.0/security-groups",
+	);
+	const json = (await response.json()) as {
+		security_groups: Array<Record<string, unknown>>;
+	};
+	return (json.security_groups ?? []).map(mapNeutronSgToAppSecurityGroup);
 }
 
 async function resolveServerMetrics(
@@ -467,6 +514,131 @@ async function resolveServerMetrics(
 	if (isMockMode()) {
 		return getMockServerMetrics(serverId);
 	}
-	// TODO: 実APIモード — getComputeByParam("/rrd/cpu", serverId) 等を呼び出してマッピング
-	return getMockServerMetrics(serverId);
+	// ConoHa VPS APIにはメトリクス専用エンドポイントがないため、
+	// サーバー情報から基本データを取得して返す
+	const server = await resolveServer(serverId);
+	if (!server) return null;
+	return {
+		server_id: server.id,
+		server_name: server.name,
+		cpu_usage_percent: 0,
+		memory_usage_percent: 0,
+		disk_usage_percent: 0,
+		network_in_mbps: 0,
+		network_out_mbps: 0,
+		timestamp: new Date().toISOString(),
+	};
+}
+
+// ──────────────────────────────────────────────
+// OpenStack → App 型マッピング
+// ──────────────────────────────────────────────
+
+/** Nova APIのステータスをアプリ用ステータスに変換 */
+function mapNovaStatus(status: string): "running" | "stopped" | "building" {
+	const s = String(status).toUpperCase();
+	if (s === "ACTIVE") return "running";
+	if (s === "SHUTOFF") return "stopped";
+	return "building";
+}
+
+/** Nova server → AppServer */
+function mapNovaServerToAppServer(s: Record<string, unknown>): AppServer {
+	const flavor = (s.flavor ?? {}) as Record<string, unknown>;
+	const addresses = (s.addresses ?? {}) as Record<
+		string,
+		Array<{ version: number; addr: string }>
+	>;
+
+	let ipv4: string | null = null;
+	let ipv6: string | null = null;
+	for (const nets of Object.values(addresses)) {
+		for (const addr of nets) {
+			if (addr.version === 4 && !ipv4) ipv4 = addr.addr;
+			if (addr.version === 6 && !ipv6) ipv6 = addr.addr;
+		}
+	}
+
+	return {
+		id: String(s.id ?? ""),
+		name: String(s.name ?? ""),
+		status: mapNovaStatus(String(s.status ?? "")),
+		vcpu: Number(flavor.vcpus ?? 0),
+		memory_gb: Math.round(Number(flavor.ram ?? 0) / 1024),
+		disk_gb: Number(flavor.disk ?? 0),
+		plan: String(flavor.original_name ?? flavor.id ?? ""),
+		os: String(
+			(s.metadata as Record<string, string> | undefined)?.image_name ?? "",
+		),
+		ipv4,
+		ipv6,
+		region: "tyo3",
+		created_at: String(s.created ?? ""),
+	};
+}
+
+/** Cinder volume → AppVolume */
+function mapCinderVolumeToAppVolume(v: Record<string, unknown>): AppVolume {
+	const attachments = (v.attachments ?? []) as Array<Record<string, unknown>>;
+	const firstAttach = attachments[0];
+
+	return {
+		id: String(v.id ?? ""),
+		name: String(v.name ?? ""),
+		status: String(v.status ?? "available") as AppVolume["status"],
+		size_gb: Number(v.size ?? 0),
+		volume_type: String(v.volume_type ?? ""),
+		attached_to: firstAttach ? String(firstAttach.server_id ?? "") : null,
+		attached_server_name: null,
+		created_at: String(v.created_at ?? ""),
+	};
+}
+
+/** Glance image → AppImage */
+function mapGlanceImageToAppImage(i: Record<string, unknown>): AppImage {
+	const name = String(i.name ?? "");
+	const osType = name.toLowerCase().includes("windows") ? "windows" : "linux";
+
+	return {
+		id: String(i.id ?? ""),
+		name,
+		status: String(i.status ?? "active") as AppImage["status"],
+		os_type: osType,
+		min_disk_gb: Number(i.min_disk ?? 0),
+		size_mb: Math.round(Number(i.size ?? 0) / (1024 * 1024)),
+		created_at: String(i.created_at ?? ""),
+	};
+}
+
+/** Neutron security group → AppSecurityGroup */
+function mapNeutronSgToAppSecurityGroup(
+	sg: Record<string, unknown>,
+): AppSecurityGroup {
+	const rawRules = (sg.security_group_rules ?? []) as Array<
+		Record<string, unknown>
+	>;
+	const rules: SecurityGroupRule[] = rawRules.map((r) => {
+		const portMin = r.port_range_min;
+		const portMax = r.port_range_max;
+		let portRange: string | null = null;
+		if (portMin != null && portMax != null) {
+			portRange =
+				portMin === portMax ? String(portMin) : `${portMin}-${portMax}`;
+		}
+		return {
+			direction: String(r.direction ?? "ingress") as "ingress" | "egress",
+			protocol: r.protocol ? String(r.protocol) : null,
+			port_range: portRange,
+			remote_ip: String(r.remote_ip_prefix ?? "0.0.0.0/0"),
+		};
+	});
+
+	return {
+		id: String(sg.id ?? ""),
+		name: String(sg.name ?? ""),
+		description: String(sg.description ?? ""),
+		rules_count: rules.length,
+		rules,
+		created_at: String(sg.created_at ?? ""),
+	};
 }
