@@ -9,6 +9,8 @@ dist/**
 
 # claude
 settings.local.json
+*.jsonl
+.orchestra/
 
 # mcpb
 *.mcpb
@@ -24,6 +26,10 @@ settings.local.json
 
 # npm
 .npmrc
+
+# env
+.env
+.env.local
 
 # outputs
 test-results

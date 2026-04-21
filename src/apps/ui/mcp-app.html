@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConoHa VPS — MCP App</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cyan:#00b4d8;--cyan-lt:#e6f7fb;--cyan-mid:#b3e8f5;--cyan-dk:#0077b6;
+  --white:#ffffff;--bg:#f4f6f8;
+  --text:#1a1d23;--text2:#4a5568;--text3:#9aa5b4;
+  --border:#e2e8f0;--border2:#cbd5e0;
+  --red:#e53e3e;--red-lt:#fff5f5;
+  --green:#38a169;--green-lt:#f0fff4;
+  --blue:#3182ce;--blue-lt:#ebf8ff;
+  --amber:#d97706;
+  --mono:'IBM Plex Mono',monospace;--sans:'Noto Sans JP',sans-serif;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --sh-md:0 4px 12px rgba(0,0,0,.08);
+}
+body{background:var(--bg);font-family:var(--sans);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+.mcp-bar{display:flex;align-items:center;gap:8px;padding:9px 16px;background:var(--cyan);font-family:var(--mono);font-size:11px}
+.mcp-icon{width:18px;height:18px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+.mcp-name{color:#fff;font-weight:500}
+.mcp-sep{color:rgba(255,255,255,.5)}
+.mcp-page{color:rgba(255,255,255,.8)}
+.mcp-sp{flex:1}
+.mcp-badge{background:rgba(255,255,255,.2);color:#fff;border-radius:99px;padding:2px 8px;font-size:10px;border:1px solid rgba(255,255,255,.3)}
+.app{flex:1;display:flex;flex-direction:column;background:var(--white)}
+.app-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--white)}
+.app-logo{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--cyan)}
+.app-logo span{color:var(--text3)}
+.nav{display:flex;gap:2px;margin-left:14px}
+.nb{padding:5px 12px;border-radius:6px;font-size:12px;font-family:var(--mono);color:var(--text3);border:none;background:transparent;cursor:pointer;transition:background .1s,color .1s}
+.nb:hover{background:var(--bg);color:var(--text)}
+.nb.on{background:var(--cyan-lt);color:var(--cyan-dk);font-weight:500}
+.create-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;background:var(--cyan);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;font-family:var(--mono);cursor:pointer;box-shadow:0 2px 8px rgba(0,180,216,.25);transition:background .1s}
+.create-btn:hover{background:var(--cyan-dk)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
+.sc{padding:12px 20px;border-right:1px solid var(--border)}
+.sc:last-child{border-right:none}
+.sl{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.sv{font-family:var(--mono);font-size:22px;font-weight:500}
+.sv.cy{color:var(--cyan-dk)}.sv.re{color:var(--red)}.sv.bl{color:var(--blue)}.sv.gr{color:var(--text2)}
+.filter{display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--border)}
+.srch{flex:1;display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--text3);font-family:var(--mono)}
+.chip{padding:4px 12px;border-radius:99px;font-size:11px;font-family:var(--mono);border:1px solid var(--border);color:var(--text3);cursor:pointer;background:var(--white);white-space:nowrap;transition:all .1s}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.on{background:var(--cyan);color:#fff;border-color:var(--cyan);font-weight:500}
+.chip.re{background:var(--red-lt);color:var(--red);border-color:#fecaca}
+.tbl{width:100%;border-collapse:collapse}
+.tbl thead tr{background:var(--bg)}
+.tbl th{padding:8px 16px;text-align:left;font-family:var(--mono);font-size:10px;font-weight:500;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.tbl tbody tr:hover{background:var(--cyan-lt)}
+.tbl tbody tr:last-child{border-bottom:none}
+.tbl td{padding:11px 16px;font-size:12px;vertical-align:middle;white-space:nowrap}
+.sname{font-family:var(--mono);font-weight:500;color:var(--text)}
+.sid{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-family:var(--mono);font-size:10px;font-weight:500}
+.bd{width:5px;height:5px;border-radius:50%}
+.badge.run{background:var(--green-lt);color:var(--green)}.badge.run .bd{background:var(--green)}
+.badge.stp{background:var(--red-lt);color:var(--red)}.badge.stp .bd{background:var(--red)}
+.badge.bld{background:var(--blue-lt);color:var(--blue)}.badge.bld .bd{background:var(--blue);animation:blink .8s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.spec{font-family:var(--mono);font-size:11px;color:var(--text2)}
+.spec b{color:var(--text);font-weight:500}
+.ip-cell{font-family:var(--mono);font-size:11px;color:var(--text2)}
+.rg{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.acts{display:flex;gap:4px;align-items:center}
+.ab{padding:4px 9px;border-radius:5px;border:1px solid var(--border);background:var(--white);font-family:var(--mono);font-size:10px;color:var(--text2);cursor:pointer;transition:all .1s}
+.ab:hover{border-color:var(--border2);color:var(--text);background:var(--bg)}
+.ab.dg:hover{background:var(--red-lt);color:var(--red);border-color:#fecaca}
+.ab.st{background:var(--cyan-lt);color:var(--cyan-dk);border-color:var(--cyan-mid)}
+.ab.st:hover{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+.am{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:var(--white);color:var(--text3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.am:hover{border-color:var(--border2);color:var(--text)}
+.foot{display:flex;align-items:center;justify-content:space-between;padding:8px 20px;background:var(--bg);border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:auto}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s ease-in-out infinite;display:inline-block;margin-right:6px}
+.detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:100;align-items:center;justify-content:center}
+.detail-overlay.open{display:flex}
+.detail-panel{background:var(--white);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.15);width:560px;max-width:90vw;overflow:hidden}
+.dp-bar{display:flex;align-items:center;gap:8px;padding:9px 16px;background:var(--cyan);font-family:var(--mono);font-size:11px}
+.dp-bar .mcp-icon{width:18px;height:18px;background:rgba(255,255,255,.25);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+.dp-name{color:#fff;font-weight:500}
+.dp-sep{color:rgba(255,255,255,.5)}
+.dp-page{color:rgba(255,255,255,.8)}
+.dp-sp{flex:1}
+.dp-close{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:99px;padding:2px 10px;font-size:11px;cursor:pointer;font-family:var(--mono)}
+.dp-close:hover{background:rgba(255,255,255,.35)}
+.dp-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
+.dp-title{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:14px;font-weight:500}
+.dp-id{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.dp-grid{display:grid;grid-template-columns:1fr 1fr}
+.dp-col{padding:16px 18px}
+.dp-col:first-child{border-right:1px solid var(--border)}
+.dp-sec{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.dp-sec::after{content:'';flex:1;height:1px;background:var(--border)}
+.ir{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.ir:last-child{border-bottom:none}
+.ik{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em}
+.iv{font-family:var(--mono);font-size:11px;color:var(--text)}
+.iv.mu{color:var(--text2)}
+.dp-actions{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--bg)}
+.ob{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--white);font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;transition:all .1s;box-shadow:var(--sh)}
+.ob:hover{border-color:var(--border2);color:var(--text)}
+.ob.pr{background:var(--cyan);color:#fff;border-color:var(--cyan-dk);box-shadow:0 2px 8px rgba(0,180,216,.2)}
+.ob.pr:hover{background:var(--cyan-dk)}
+.ob.dg{color:var(--red);border-color:#fecaca;background:var(--red-lt)}
+.ob.dg:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.dp-warn{margin:0 18px 14px;padding:8px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:11px;color:#92400e;font-family:var(--mono)}
+.loading{padding:48px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<div class="mcp-bar">
+  <div class="mcp-icon">C</div>
+  <span class="mcp-name">ConoHa VPS</span>
+  <span class="mcp-sep">/</span>
+  <span class="mcp-page" id="page-label">server list</span>
+  <span class="mcp-sp"></span>
+  <span class="mcp-badge">MCP App</span>
+</div>
+
+<div class="app">
+  <div class="app-head">
+    <div style="display:flex;align-items:center">
+      <span class="app-logo">conoha<span>://</span>vps</span>
+      <div class="nav">
+        <button type="button" class="nb on">サーバー</button>
+        <button type="button" class="nb">ボリューム</button>
+        <button type="button" class="nb">セキュリティ</button>
+        <button type="button" class="nb">イメージ</button>
+      </div>
+    </div>
+    <button type="button" class="create-btn">+ サーバー作成</button>
+  </div>
+
+  <div class="stats">
+    <div class="sc"><div class="sl">Total</div><div class="sv gr" id="st-total">—</div></div>
+    <div class="sc"><div class="sl">Running</div><div class="sv cy" id="st-running">—</div></div>
+    <div class="sc"><div class="sl">Stopped</div><div class="sv re" id="st-stopped">—</div></div>
+    <div class="sc"><div class="sl">Building</div><div class="sv bl" id="st-building">—</div></div>
+  </div>
+
+  <div class="filter">
+    <div class="srch">⌕&nbsp; サーバーを検索...</div>
+    <span class="chip on" data-filter="all" id="chip-all">すべて</span>
+    <span class="chip"     data-filter="running" id="chip-running">起動中</span>
+    <span class="chip re"  data-filter="stopped" id="chip-stopped">停止中</span>
+    <span class="chip"     data-filter="building" id="chip-building">構築中</span>
+  </div>
+
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>サーバー名</th>
+        <th>ステータス</th>
+        <th>スペック</th>
+        <th>IPアドレス</th>
+        <th>リージョン</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody id="server-tbody">
+      <tr><td colspan="6" class="loading">読み込み中...</td></tr>
+    </tbody>
+  </table>
+
+  <div class="foot">
+    <span><span class="ldot"></span>MCP App 接続中</span>
+    <span id="last-updated">最終更新: —</span>
+  </div>
+</div>
+
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-panel">
+    <div class="dp-bar">
+      <div class="mcp-icon">C</div>
+      <span class="dp-name">ConoHa VPS</span>
+      <span class="dp-sep">/</span>
+      <span class="dp-page">server detail</span>
+      <span class="dp-sp"></span>
+      <button type="button" class="dp-close" id="close-detail-btn">✕ 閉じる</button>
+    </div>
+    <div class="dp-head">
+      <div class="dp-title">
+        <span id="dp-name">—</span>
+        <span id="dp-badge"></span>
+      </div>
+      <span class="dp-id" id="dp-id">—</span>
+    </div>
+    <div class="dp-grid">
+      <div class="dp-col">
+        <div class="dp-sec">スペック</div>
+        <div class="ir"><span class="ik">vCPU</span><span class="iv" id="dp-vcpu">—</span></div>
+        <div class="ir"><span class="ik">Memory</span><span class="iv" id="dp-mem">—</span></div>
+        <div class="ir"><span class="ik">Disk</span><span class="iv" id="dp-disk">—</span></div>
+        <div class="ir"><span class="ik">Plan</span><span class="iv mu" id="dp-plan">—</span></div>
+        <div class="ir"><span class="ik">OS</span><span class="iv mu" id="dp-os">—</span></div>
+      </div>
+      <div class="dp-col">
+        <div class="dp-sec">ネットワーク</div>
+        <div class="ir"><span class="ik">IPv4</span><span class="iv" id="dp-ipv4">—</span></div>
+        <div class="ir"><span class="ik">IPv6</span><span class="iv mu" id="dp-ipv6" style="font-size:10px">—</span></div>
+        <div class="ir"><span class="ik">Region</span><span class="iv mu" id="dp-region">—</span></div>
+        <div class="ir"><span class="ik">作成日</span><span class="iv mu" id="dp-created">—</span></div>
+      </div>
+    </div>
+    <div class="dp-actions" id="dp-actions"></div>
+    <div class="dp-warn" id="dp-warn" style="display:none">⚠ 削除は取り消せません。実行時は確認ダイアログが表示されます。</div>
+  </div>
+</div>
+
+<script type="module" src="./mcp-app.ts"></script>
+</body>
+</html>

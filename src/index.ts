@@ -24,6 +24,7 @@ import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { registerAppsTools } from "./apps/apps-tools.js";
 import { formatErrorMessage } from "./features/openstack/common/error-handler.js";
 import {
 	AttachVolumeRequestSchema,
@@ -79,6 +80,9 @@ const server = new McpServer({
 	name: "ConoHa VPS MCP",
 	version: packageJson.version,
 });
+
+// MCP Apps ツール登録（参照系6ツール）
+registerAppsTools(server);
 
 server.registerTool(
 	"fetch_url",
