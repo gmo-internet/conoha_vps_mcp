@@ -1,13 +1,11 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
-	"entry": [
-		"src/index.ts"
-	],
 	"project": [
 		"src/**/*.ts"
 	],
 	"ignore": [
-		"**/*.test.ts"
+		"**/*.test.ts",
+		"src/apps/ui/**"
 	],
 	"ignoreBinaries": [
 		"renovate-config-validator",
