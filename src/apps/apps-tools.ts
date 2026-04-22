@@ -479,6 +479,66 @@ function hasCredentials(): boolean {
 }
 
 /**
+ * フレーバーIDからスペック情報へのキャッシュ
+ * @internal
+ */
+let flavorCache: Map<
+	string,
+	{ vcpus: number; ram: number; disk: number }
+> | null = null;
+
+/**
+ * フレーバー一覧を取得してキャッシュに格納
+ *
+ * @returns フレーバーID→スペック情報のMap
+ * @internal
+ */
+async function resolveFlavorMap(): Promise<
+	Map<string, { vcpus: number; ram: number; disk: number }>
+> {
+	if (flavorCache) return flavorCache;
+	const response = await executeOpenstackApi(
+		"GET",
+		OPENSTACK_COMPUTE_BASE_URL,
+		"/flavors/detail",
+	);
+	const json = (await response.json()) as {
+		flavors: Array<Record<string, unknown>>;
+	};
+	flavorCache = new Map();
+	for (const f of json.flavors ?? []) {
+		flavorCache.set(String(f.id ?? ""), {
+			vcpus: Number(f.vcpus ?? 0),
+			ram: Number(f.ram ?? 0),
+			disk: Number(f.disk ?? 0),
+		});
+	}
+	return flavorCache;
+}
+
+/**
+ * ボリュームID→サイズ(GB)のMapを取得
+ *
+ * @returns ボリュームID→サイズのMap
+ * @internal
+ */
+async function resolveVolumeSizeMap(): Promise<Map<string, number>> {
+	const response = await executeOpenstackApi(
+		"GET",
+		OPENSTACK_VOLUME_BASE_URL,
+		`/${TENANT_ID}/volumes/detail`,
+	);
+	const json = (await response.json()) as {
+		volumes: Array<Record<string, unknown>>;
+	};
+	const map = new Map<string, number>();
+	for (const v of json.volumes ?? []) {
+		map.set(String(v.id ?? ""), Number(v.size ?? 0));
+	}
+	return map;
+}
+
+/**
  * サーバー一覧を解決（モックまたは実API）
  *
  * @returns サーバー情報の配列
@@ -488,15 +548,17 @@ async function resolveServers(): Promise<AppServer[]> {
 	if (isMockMode()) {
 		return getMockServers();
 	}
-	const response = await executeOpenstackApi(
-		"GET",
-		OPENSTACK_COMPUTE_BASE_URL,
-		"/servers/detail",
-	);
-	const json = (await response.json()) as {
+	const [serversResponse, flavorMap, volumeSizeMap] = await Promise.all([
+		executeOpenstackApi("GET", OPENSTACK_COMPUTE_BASE_URL, "/servers/detail"),
+		resolveFlavorMap(),
+		resolveVolumeSizeMap(),
+	]);
+	const json = (await serversResponse.json()) as {
 		servers: Array<Record<string, unknown>>;
 	};
-	return (json.servers ?? []).map(mapNovaServerToAppServer);
+	return (json.servers ?? []).map((s) =>
+		mapNovaServerToAppServer(s, flavorMap, volumeSizeMap),
+	);
 }
 
 /**
@@ -510,16 +572,22 @@ async function resolveServer(serverId: string): Promise<AppServer | null> {
 	if (isMockMode()) {
 		return getMockServer(serverId);
 	}
-	const response = await executeOpenstackApi(
-		"GET",
-		OPENSTACK_COMPUTE_BASE_URL,
-		`/servers/${serverId}`,
-	);
+	const [response, flavorMap, volumeSizeMap] = await Promise.all([
+		executeOpenstackApi(
+			"GET",
+			OPENSTACK_COMPUTE_BASE_URL,
+			`/servers/${serverId}`,
+		),
+		resolveFlavorMap(),
+		resolveVolumeSizeMap(),
+	]);
 	if (!response.ok) return null;
 	const json = (await response.json()) as {
 		server: Record<string, unknown>;
 	};
-	return json.server ? mapNovaServerToAppServer(json.server) : null;
+	return json.server
+		? mapNovaServerToAppServer(json.server, flavorMap, volumeSizeMap)
+		: null;
 }
 
 /**
@@ -636,11 +704,19 @@ function mapNovaStatus(status: string): "running" | "stopped" | "building" {
  * Nova serverオブジェクトをAppServer型に変換
  *
  * @param s - Nova APIのサーバーレスポンスオブジェクト
+ * @param flavorMap - フレーバーID→スペック情報のMap
+ * @param volumeSizeMap - ボリュームID→サイズ(GB)のMap
  * @returns アプリ用サーバー情報
  * @internal
  */
-function mapNovaServerToAppServer(s: Record<string, unknown>): AppServer {
-	const flavor = (s.flavor ?? {}) as Record<string, unknown>;
+function mapNovaServerToAppServer(
+	s: Record<string, unknown>,
+	flavorMap?: Map<string, { vcpus: number; ram: number; disk: number }>,
+	volumeSizeMap?: Map<string, number>,
+): AppServer {
+	const flavorRef = (s.flavor ?? {}) as Record<string, unknown>;
+	const flavorId = String(flavorRef.id ?? "");
+	const flavorSpec = flavorMap?.get(flavorId);
 	const addresses = (s.addresses ?? {}) as Record<
 		string,
 		Array<{ version: number; addr: string }>
@@ -655,14 +731,26 @@ function mapNovaServerToAppServer(s: Record<string, unknown>): AppServer {
 		}
 	}
 
+	// ディスクサイズ: フレーバーのdiskが0の場合、接続ボリュームの合計サイズを使用
+	let diskGb = flavorSpec?.disk ?? Number(flavorRef.disk ?? 0);
+	if (diskGb === 0 && volumeSizeMap) {
+		const attachedVolumes = (s["os-extended-volumes:volumes_attached"] ??
+			[]) as Array<{ id: string }>;
+		for (const vol of attachedVolumes) {
+			diskGb += volumeSizeMap.get(vol.id) ?? 0;
+		}
+	}
+
 	return {
 		id: String(s.id ?? ""),
 		name: String(s.name ?? ""),
 		status: mapNovaStatus(String(s.status ?? "")),
-		vcpu: Number(flavor.vcpus ?? 0),
-		memory_gb: Math.round(Number(flavor.ram ?? 0) / 1024),
-		disk_gb: Number(flavor.disk ?? 0),
-		plan: String(flavor.original_name ?? flavor.id ?? ""),
+		vcpu: flavorSpec?.vcpus ?? Number(flavorRef.vcpus ?? 0),
+		memory_gb: Math.round(
+			(flavorSpec?.ram ?? Number(flavorRef.ram ?? 0)) / 1024,
+		),
+		disk_gb: diskGb,
+		plan: String(flavorRef.original_name ?? flavorRef.id ?? ""),
 		os: String(
 			(s.metadata as Record<string, string> | undefined)?.image_name ?? "",
 		),
