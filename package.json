@@ -67,19 +67,19 @@
 	},
 	"devDependencies": {
 		"@anthropic-ai/mcpb": "2.1.2",
-		"@biomejs/biome": "2.4.5",
-		"@stryker-mutator/core": "9.6.0",
-		"@stryker-mutator/vitest-runner": "9.6.0",
+		"@biomejs/biome": "2.4.13",
+		"@stryker-mutator/core": "9.6.1",
+		"@stryker-mutator/vitest-runner": "9.6.1",
 		"@types/node": "^22.0.0",
-		"@vitest/coverage-v8": "4.1.4",
-		"dependency-cruiser": "17.3.8",
+		"@vitest/coverage-v8": "4.1.5",
+		"dependency-cruiser": "17.3.10",
 		"esbuild": "0.28.0",
-		"jscpd": "4.0.8",
+		"jscpd": "4.0.9",
 		"knip": "5.88.1",
 		"tsx": "4.21.0",
-		"typedoc": "0.28.17",
+		"typedoc": "0.28.19",
 		"typescript": "5.9.3",
-		"vitest": "4.1.4"
+		"vitest": "4.1.5"
 	},
 	"engines": {
 		"node": ">=22.0.0"
