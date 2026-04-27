@@ -117,4 +117,4 @@ function main() {
 // Always run main when this script is executed
 main();
 
-export { parseCSV, generateMarkdownTable };
+export { generateMarkdownTable, parseCSV };
