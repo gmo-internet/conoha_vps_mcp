@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+	getMockContainers,
 	getMockImages,
 	getMockSecurityGroups,
 	getMockServer,
@@ -135,5 +136,31 @@ describe("getMockServerMetrics", () => {
 	it("存在しないサーバーIDでnullを返す", () => {
 		const metrics = getMockServerMetrics("nonexistent-id");
 		expect(metrics).toBeNull();
+	});
+});
+
+describe("getMockContainers", () => {
+	it("3件のコンテナを返す", () => {
+		const containers = getMockContainers();
+		expect(containers).toHaveLength(3);
+	});
+
+	it("各コンテナに必須フィールドが存在する", () => {
+		const containers = getMockContainers();
+		for (const c of containers) {
+			expect(c).toHaveProperty("name");
+			expect(c).toHaveProperty("count");
+			expect(c).toHaveProperty("bytes");
+		}
+	});
+
+	it("各コンテナの count と bytes は数値型である", () => {
+		const containers = getMockContainers();
+		for (const c of containers) {
+			expect(typeof c.count).toBe("number");
+			expect(typeof c.bytes).toBe("number");
+			expect(c.count).toBeGreaterThanOrEqual(0);
+			expect(c.bytes).toBeGreaterThanOrEqual(0);
+		}
 	});
 });

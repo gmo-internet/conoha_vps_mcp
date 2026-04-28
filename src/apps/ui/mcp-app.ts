@@ -9,6 +9,7 @@
  */
 
 import { App } from "@modelcontextprotocol/ext-apps";
+import { formatBytes } from "./format-bytes.js";
 import {
 	bootVolumeSizeGb,
 	formatImageDisplay,
@@ -342,6 +343,21 @@ function switchView(view: ViewMode): void {
 	if (view === "storage") {
 		void loadContainers();
 	}
+	if (view === "create-container") {
+		resetContainerForm();
+	}
+}
+
+function resetContainerForm(): void {
+	const input = document.getElementById(
+		"f-container-name",
+	) as HTMLInputElement | null;
+	if (input) input.value = "";
+	clearContainerError();
+	const submit = document.getElementById(
+		"btn-create-container-submit",
+	) as HTMLButtonElement | null;
+	if (submit) submit.disabled = true;
 }
 
 function switchCreateMode(mode: CreateMode): void {
@@ -516,20 +532,9 @@ function renderContainerList(): void {
 	}
 }
 
-function formatBytes(bytes: number): string {
-	if (bytes < 1024) return `${bytes} B`;
-	const units = ["KB", "MB", "GB", "TB"];
-	let n = bytes / 1024;
-	let i = 0;
-	while (n >= 1024 && i < units.length - 1) {
-		n /= 1024;
-		i++;
-	}
-	return `${n.toFixed(n >= 100 ? 0 : 1)} ${units[i]}`;
-}
-
 async function confirmDeleteContainer(name: string): Promise<void> {
-	// 既存の confirm-overlay を再利用
+	// 既存の confirm-overlay を再利用。executeCreateServer も同じボタンを聞いているが、
+	// あちらは currentView==="create" でガードしているため誤発火しない
 	setTxt("confirm-title", "コンテナを削除しますか？");
 	const body = document.getElementById("confirm-body");
 	if (body) {
@@ -540,21 +545,35 @@ async function confirmDeleteContainer(name: string): Promise<void> {
 	}
 	const overlay = document.getElementById("confirm-overlay");
 	const okBtn = document.getElementById("confirm-ok");
-	if (!overlay || !okBtn) return;
+	const cancelBtn = document.getElementById("confirm-cancel");
+	if (!overlay || !okBtn || !cancelBtn) return;
 
 	overlay.classList.add("open");
-	const onConfirm = async () => {
-		overlay.classList.remove("open");
-		okBtn.removeEventListener("click", onConfirm);
-		const r = await callDeleteContainer(name);
-		if (!r.ok) {
-			showToast(r.hint ?? r.error ?? "削除に失敗しました", "error");
-			return;
-		}
-		showToast(`コンテナ ${name} を削除しました`, "success");
-		await loadContainers();
-	};
-	okBtn.addEventListener("click", onConfirm, { once: true });
+
+	// AbortController でキャンセル/OKどちらでも全リスナーを確実に解除する
+	const controller = new AbortController();
+	okBtn.addEventListener(
+		"click",
+		async () => {
+			controller.abort();
+			overlay.classList.remove("open");
+			const r = await callDeleteContainer(name);
+			if (!r.ok) {
+				showToast(r.hint ?? r.error ?? "削除に失敗しました", "error");
+				return;
+			}
+			showToast(`コンテナ ${name} を削除しました`, "success");
+			await loadContainers();
+		},
+		{ signal: controller.signal },
+	);
+	cancelBtn.addEventListener(
+		"click",
+		() => {
+			controller.abort();
+		},
+		{ signal: controller.signal },
+	);
 }
 
 async function executeCreateContainer(): Promise<void> {
@@ -998,6 +1017,12 @@ function showConfirmCreate(): void {
 }
 
 async function executeCreateServer(): Promise<void> {
+	// confirm-ok ボタンは複数フローで共有されているため、サーバー作成画面以外で
+	// 押された confirm はサーバー作成として処理しない
+	if (currentView !== "create") {
+		document.getElementById("confirm-overlay")?.classList.remove("open");
+		return;
+	}
 	document.getElementById("confirm-overlay")?.classList.remove("open");
 
 	const name =
