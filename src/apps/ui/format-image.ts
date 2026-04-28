@@ -151,3 +151,48 @@ export function isPublicApiFlavor(name: string): boolean {
 export function bootVolumeSizeGb(ramMb: number): 30 | 100 {
 	return ramMb <= 512 ? 30 : 100;
 }
+
+/**
+ * 互換判定で参照するイメージのフィールド
+ */
+export interface ImageCompat {
+	os_type?: string;
+	min_ram_mb?: number;
+	min_disk_gb?: number;
+}
+
+/**
+ * 互換判定で参照するフレーバーのフィールド
+ */
+export interface FlavorCompat {
+	name: string;
+	ram_mb: number;
+}
+
+/**
+ * フレーバーとイメージの組み合わせがサーバー作成に使えるかを判定する
+ *
+ * @remarks
+ * 判定基準:
+ *   - フレーバーが公開API経由で作成可能（`flavorOsType` が判定可能なもの）
+ *   - イメージのOS種別とフレーバーのOS種別が一致（`os_type` 未設定なら不問）
+ *   - イメージの最小RAM要件 ≤ フレーバーのRAM
+ *   - イメージの最小ディスク要件 ≤ 自動作成ブートボリュームサイズ
+ *
+ * @param image - イメージ情報
+ * @param flavor - フレーバー情報
+ * @returns 互換なら true
+ */
+export function isImageCompatibleWithFlavor(
+	image: ImageCompat,
+	flavor: FlavorCompat,
+): boolean {
+	const planOs = flavorOsType(flavor.name);
+	if (!planOs) return false;
+	const osOk = !image.os_type || image.os_type === planOs;
+	const minRam = image.min_ram_mb ?? 0;
+	const minDisk = image.min_disk_gb ?? 0;
+	const ramOk = minRam <= flavor.ram_mb;
+	const diskOk = minDisk <= bootVolumeSizeGb(flavor.ram_mb);
+	return osOk && ramOk && diskOk;
+}

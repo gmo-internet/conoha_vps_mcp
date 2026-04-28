@@ -7,6 +7,7 @@ import {
 	bootVolumeSizeGb,
 	flavorOsType,
 	formatImageDisplay,
+	isImageCompatibleWithFlavor,
 	isPublicApiFlavor,
 } from "./format-image";
 
@@ -149,5 +150,77 @@ describe("formatImageDisplay", () => {
 		});
 		expect(result.tooltip).not.toContain("最小RAM");
 		expect(result.tooltip).not.toContain("最小ディスク");
+	});
+});
+
+describe("isImageCompatibleWithFlavor", () => {
+	it("OS種別とRAM下限・disk下限が満たされていれば互換と判定する", () => {
+		const ok = isImageCompatibleWithFlavor(
+			{ os_type: "linux", min_ram_mb: 1024, min_disk_gb: 30 },
+			{ name: "g2l-t-c2m1", ram_mb: 1024 },
+		);
+		expect(ok).toBe(true);
+	});
+
+	it("イメージのOS種別がフレーバーのOS種別と一致しない場合は非互換", () => {
+		const ok = isImageCompatibleWithFlavor(
+			{ os_type: "windows", min_ram_mb: 1024 },
+			{ name: "g2l-t-c2m1", ram_mb: 1024 },
+		);
+		expect(ok).toBe(false);
+	});
+
+	it("イメージの最小RAM要件がフレーバーのRAMを超える場合は非互換", () => {
+		const ok = isImageCompatibleWithFlavor(
+			{ os_type: "linux", min_ram_mb: 2048 },
+			{ name: "g2l-t-c1m512", ram_mb: 512 },
+		);
+		expect(ok).toBe(false);
+	});
+
+	it("イメージの最小ディスク要件がブートボリュームサイズを超える場合は非互換", () => {
+		// 512MBプランは30GBブートボリューム固定なので、min_disk_gb=100 のイメージは作成不可
+		const ok = isImageCompatibleWithFlavor(
+			{ os_type: "linux", min_disk_gb: 100 },
+			{ name: "g2l-t-c1m512", ram_mb: 512 },
+		);
+		expect(ok).toBe(false);
+	});
+
+	it("min_disk_gb=100 のイメージは100GBプラン以上で互換になる", () => {
+		const ok = isImageCompatibleWithFlavor(
+			{ os_type: "linux", min_disk_gb: 100 },
+			{ name: "g2l-t-c2m1", ram_mb: 1024 },
+		);
+		expect(ok).toBe(true);
+	});
+
+	it("公開API利用不可フレーバー（kusanagi/長期/DBaaS）は常に非互換", () => {
+		expect(
+			isImageCompatibleWithFlavor(
+				{ os_type: "linux" },
+				{ name: "g2l-t-c2m4-kusanagi", ram_mb: 4096 },
+			),
+		).toBe(false);
+		expect(
+			isImageCompatibleWithFlavor(
+				{ os_type: "linux" },
+				{ name: "g2l-p-c2m1", ram_mb: 1024 },
+			),
+		).toBe(false);
+		expect(
+			isImageCompatibleWithFlavor(
+				{ os_type: "linux" },
+				{ name: "g2d-t-c2m4d60", ram_mb: 4096 },
+			),
+		).toBe(false);
+	});
+
+	it("イメージのos_type未設定時はOS判定をスキップしてRAM/diskのみで判定する", () => {
+		const ok = isImageCompatibleWithFlavor(
+			{ min_ram_mb: 512, min_disk_gb: 30 },
+			{ name: "g2l-t-c1m512", ram_mb: 512 },
+		);
+		expect(ok).toBe(true);
 	});
 });

@@ -11,8 +11,8 @@
 import { App } from "@modelcontextprotocol/ext-apps";
 import {
 	bootVolumeSizeGb,
-	flavorOsType,
 	formatImageDisplay,
+	isImageCompatibleWithFlavor,
 	isPublicApiFlavor,
 } from "./format-image.js";
 
@@ -578,30 +578,23 @@ function applyImageFilter(): void {
 		(document.getElementById("f-flavor") as HTMLInputElement | null)?.value ??
 		"";
 	const flavor = allFlavors.find((f) => f.id === flavorId);
-	const planOs = flavor ? flavorOsType(flavor.name) : null;
-	const volumeSize = flavor ? bootVolumeSizeGb(flavor.ram_mb) : 100;
 	const compat = allImages.filter((i) => {
 		if (!flavor) return true;
-		const minRam = i.min_ram_mb ?? 0;
-		const minDisk = i.min_disk_gb ?? 0;
-		const sizeOk = minRam <= flavor.ram_mb && minDisk <= volumeSize;
-		const osOk = !planOs || !i.os_type || i.os_type === planOs;
-		return sizeOk && osOk;
+		return isImageCompatibleWithFlavor(i, flavor);
 	});
 	ddImage.setItems(compat.map(imageToDdItem));
 }
 
 // 選択中イメージと互換性のあるプランのみをドロップダウンに反映
+// allFlavors は loadCreateFormOptions で公開API互換のみに事前フィルタ済み
 function applyFlavorFilter(): void {
 	const imageId =
 		(document.getElementById("f-image") as HTMLInputElement | null)?.value ??
 		"";
 	const image = allImages.find((i) => i.id === imageId);
 	const compat = allFlavors.filter((f) => {
-		const planOs = flavorOsType(f.name);
-		if (!planOs) return false;
-		if (!image || !image.os_type) return true;
-		return image.os_type === planOs;
+		if (!image) return true;
+		return isImageCompatibleWithFlavor(image, f);
 	});
 	ddFlavor.setItems(
 		compat.map((f) => ({ value: f.id, label: flavorLabel(f) })),
