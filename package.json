@@ -41,8 +41,8 @@
 		"registry": "https://registry.npmjs.org/"
 	},
 	"scripts": {
-		"build": "vite build && node esbuild.config.js",
-		"build:server": "node esbuild.config.js",
+		"build": "vite build --config vite.config.server.ts && vite build",
+		"build:server": "vite build --config vite.config.server.ts",
 		"build:ui": "vite build",
 		"build:types": "tsc --emitDeclarationOnly",
 		"build:mcpb": "mcpb pack",
@@ -76,7 +76,6 @@
 		"@types/node": "^22.0.0",
 		"@vitest/coverage-v8": "4.1.5",
 		"dependency-cruiser": "17.3.10",
-		"esbuild": "0.28.0",
 		"jscpd": "4.0.9",
 		"knip": "5.88.1",
 		"tsx": "4.21.0",
