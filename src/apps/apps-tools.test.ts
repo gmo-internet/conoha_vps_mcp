@@ -234,13 +234,86 @@ describe("list_images", () => {
 		expect(result.structuredContent.total).toBe(1);
 	});
 
-	it("各イメージにサイズと最小ディスク情報が含まれる", async () => {
+	it("各イメージにサイズと最小ディスク・最小メモリ情報が含まれる", async () => {
 		const result = await callTool(server, "list_images", {});
 		for (const i of result.structuredContent.images) {
 			expect(i.size_mb).toBeTypeOf("number");
 			expect(i.min_disk_gb).toBeTypeOf("number");
+			expect(i.min_ram_mb).toBeTypeOf("number");
 			expect(i.size_mb).toBeGreaterThanOrEqual(0);
 		}
+	});
+
+	it("dst_name/dst_version/service_typeなどのメタデータがレスポンスに含まれる", async () => {
+		const result = await callTool(server, "list_images", {});
+		const ubuntu = result.structuredContent.images.find(
+			(i: { id: string }) => i.id === "img-ubuntu-2404",
+		);
+		expect(ubuntu?.dst_name).toBe("Ubuntu");
+		expect(ubuntu?.dst_version).toBe("24.04");
+		expect(ubuntu?.service_type).toBe("vps");
+	});
+});
+
+describe("mapGlanceImageToAppImage", () => {
+	it("ConoHa Glance APIの tags 配列を AppImage のメタデータフィールドに展開する", async () => {
+		const { mapGlanceImageToAppImage } = await import("./apps-tools");
+		const result = mapGlanceImageToAppImage({
+			id: "img-1",
+			name: "vmi-rails-8.1.0-ubuntu-24.04-amd64",
+			osType: "linux",
+			minDisk: 30,
+			minRam: 1024,
+			tags: [
+				"service_type=vps",
+				"app_version=8.1.0",
+				"app_name=Ruby_on_Rails",
+				"display_order=280",
+			],
+		});
+		expect(result.app_name).toBe("Ruby_on_Rails");
+		expect(result.app_version).toBe("8.1.0");
+		expect(result.service_type).toBe("vps");
+		// display_order のような未対応キーは AppImage に展開されない
+		expect(result).not.toHaveProperty("display_order");
+	});
+
+	it("ConoHa の osType フィールドからLinux/Windowsを判定する", async () => {
+		const { mapGlanceImageToAppImage } = await import("./apps-tools");
+		const win = mapGlanceImageToAppImage({
+			id: "img-2",
+			name: "vmi-win-2022dce-amd64",
+			osType: "windows",
+		});
+		expect(win.os_type).toBe("windows");
+
+		const linux = mapGlanceImageToAppImage({
+			id: "img-3",
+			name: "vmi-ubuntu-24.04-amd64",
+			osType: "linux",
+		});
+		expect(linux.os_type).toBe("linux");
+	});
+
+	it("tags が未定義でもクラッシュせず、メタデータ無しのAppImageを返す", async () => {
+		const { mapGlanceImageToAppImage } = await import("./apps-tools");
+		const result = mapGlanceImageToAppImage({
+			id: "img-4",
+			name: "vmi-custom",
+		});
+		expect(result.id).toBe("img-4");
+		expect(result.dst_name).toBeUndefined();
+		expect(result.app_name).toBeUndefined();
+	});
+
+	it("'='を含む tag 値は最初の'='のみ区切りとして扱う", async () => {
+		const { mapGlanceImageToAppImage } = await import("./apps-tools");
+		const result = mapGlanceImageToAppImage({
+			id: "img-5",
+			name: "vmi-test",
+			tags: ["app_version=1.0=beta"],
+		});
+		expect(result.app_version).toBe("1.0=beta");
 	});
 });
 

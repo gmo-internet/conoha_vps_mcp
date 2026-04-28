@@ -48,8 +48,19 @@ export interface AppImage {
 	status: "active" | "queued" | "saving";
 	os_type: "linux" | "windows";
 	min_disk_gb: number;
+	min_ram_mb: number;
 	size_mb: number;
 	created_at: string;
+	/** OSディストリビューション名（例: "Ubuntu", "AlmaLinux", "Windows_Server"） */
+	dst_name?: string;
+	/** OSディストリビューションバージョン（例: "24.04", "9.6", "2022"） */
+	dst_version?: string;
+	/** バンドルアプリ名（例: "Ruby_on_Rails", "WordPress(KUSANAGI)"） */
+	app_name?: string;
+	/** バンドルアプリバージョン（例: "8.1.0", "9.4.2-CentOS-Stream9"） */
+	app_version?: string;
+	/** 用途種別（例: "vps", "gpu"） */
+	service_type?: string;
 }
 
 /**

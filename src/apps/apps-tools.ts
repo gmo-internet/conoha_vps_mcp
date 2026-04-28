@@ -5,7 +5,7 @@
  * ConoHa VPS の参照系操作を提供するMCP Appsツール群です。
  * 各ツールは単一責務・冪等性・ドライラン対応を原則とします。
  *
- * - 全ツールは参照系（GET相当）のみ
+ * - 参照系ツール + サーバー作成（LLM非経由でセキュア）
  * - `CONOHA_MCP_MOCK=1` でフィクスチャ応答
  * - 実APIモードでは既存feature clientを利用
  *
@@ -62,6 +62,9 @@ export function registerAppsTools(server: McpServer): void {
 	registerListImages(server);
 	registerListSecurityGroups(server);
 	registerGetServerMetrics(server);
+	registerListFlavors(server);
+	registerListKeypairs(server);
+	registerCreateServer(server);
 }
 
 /**
@@ -321,8 +324,14 @@ function registerListImages(server: McpServer): void {
 						status: z.string(),
 						os_type: z.string(),
 						min_disk_gb: z.number(),
+						min_ram_mb: z.number(),
 						size_mb: z.number(),
 						created_at: z.string(),
+						dst_name: z.string().optional(),
+						dst_version: z.string().optional(),
+						app_name: z.string().optional(),
+						app_version: z.string().optional(),
+						service_type: z.string().optional(),
 					}),
 				),
 				total: z.number(),
@@ -791,19 +800,54 @@ function mapCinderVolumeToAppVolume(v: Record<string, unknown>): AppVolume {
  * @returns アプリ用イメージ情報
  * @internal
  */
-function mapGlanceImageToAppImage(i: Record<string, unknown>): AppImage {
+export function mapGlanceImageToAppImage(i: Record<string, unknown>): AppImage {
 	const name = String(i.name ?? "");
-	const osType = name.toLowerCase().includes("windows") ? "windows" : "linux";
+	// osType は ConoHa の osType フィールド優先、なければ name から推定
+	const osTypeRaw = String(i.osType ?? i.os_type ?? "").toLowerCase();
+	const osType: "linux" | "windows" =
+		osTypeRaw === "windows" || name.toLowerCase().includes("windows")
+			? "windows"
+			: "linux";
+
+	// tags から `key=value` 形式のメタデータを抽出
+	const tagMap = parseConohaTags(i.tags);
 
 	return {
 		id: String(i.id ?? ""),
 		name,
 		status: String(i.status ?? "active") as AppImage["status"],
 		os_type: osType,
-		min_disk_gb: Number(i.min_disk ?? 0),
+		min_disk_gb: Number(i.min_disk ?? i.minDisk ?? 0),
+		min_ram_mb: Number(i.min_ram ?? i.minRam ?? 0),
 		size_mb: Math.round(Number(i.size ?? 0) / (1024 * 1024)),
 		created_at: String(i.created_at ?? ""),
+		...(tagMap.dst_name && { dst_name: tagMap.dst_name }),
+		...(tagMap.dst_version && { dst_version: tagMap.dst_version }),
+		...(tagMap.app_name && { app_name: tagMap.app_name }),
+		...(tagMap.app_version && { app_version: tagMap.app_version }),
+		...(tagMap.service_type && { service_type: tagMap.service_type }),
 	};
+}
+
+/**
+ * ConoHa Glance APIの tags 配列を key=value で分解してマップに変換
+ *
+ * @param tags - 例: ["dst_name=Ubuntu", "dst_version=24.04", "service_type=vps"]
+ * @returns key→value のマップ
+ * @internal
+ */
+function parseConohaTags(tags: unknown): Record<string, string> {
+	if (!Array.isArray(tags)) return {};
+	const map: Record<string, string> = {};
+	for (const t of tags) {
+		if (typeof t !== "string") continue;
+		const eq = t.indexOf("=");
+		if (eq <= 0) continue;
+		const key = t.slice(0, eq);
+		const value = t.slice(eq + 1);
+		if (key && value) map[key] = value;
+	}
+	return map;
 }
 
 /**
@@ -843,4 +887,525 @@ function mapNeutronSgToAppSecurityGroup(
 		rules,
 		created_at: String(sg.created_at ?? ""),
 	};
+}
+
+// ──────────────────────────────────────────────
+// フレーバー・キーペア一覧 / サーバー作成
+// ──────────────────────────────────────────────
+
+/**
+ * list_flavors: フレーバー（プラン）一覧を取得
+ *
+ * @param server - McpServerインスタンス
+ * @internal
+ */
+function registerListFlavors(server: McpServer): void {
+	server.registerTool(
+		"list_flavors",
+		{
+			title: "フレーバー一覧取得",
+			description: "利用可能なサーバープラン（フレーバー）の一覧を取得します。",
+			inputSchema: {},
+			outputSchema: {
+				flavors: z.array(
+					z.object({
+						id: z.string(),
+						name: z.string(),
+						vcpus: z.number(),
+						ram_mb: z.number(),
+						disk_gb: z.number(),
+					}),
+				),
+				total: z.number(),
+			},
+		},
+		async () => {
+			if (isMockMode()) {
+				const mockFlavors = [
+					{
+						id: "mock-flavor-1",
+						name: "g2l-t-c2m1",
+						vcpus: 2,
+						ram_mb: 1024,
+						disk_gb: 0,
+					},
+					{
+						id: "mock-flavor-2",
+						name: "g2l-t-c3m2",
+						vcpus: 3,
+						ram_mb: 2048,
+						disk_gb: 0,
+					},
+					{
+						id: "mock-flavor-3",
+						name: "g2l-t-c4m4",
+						vcpus: 4,
+						ram_mb: 4096,
+						disk_gb: 0,
+					},
+				];
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								flavors: mockFlavors,
+								total: mockFlavors.length,
+							}),
+						},
+					],
+					structuredContent: {
+						flavors: mockFlavors,
+						total: mockFlavors.length,
+					},
+				};
+			}
+			const response = await executeOpenstackApi(
+				"GET",
+				OPENSTACK_COMPUTE_BASE_URL,
+				"/flavors/detail",
+			);
+			const json = (await response.json()) as {
+				flavors: Array<Record<string, unknown>>;
+			};
+			const flavors = (json.flavors ?? []).map((f) => ({
+				id: String(f.id ?? ""),
+				name: String(f.name ?? ""),
+				vcpus: Number(f.vcpus ?? 0),
+				ram_mb: Number(f.ram ?? 0),
+				disk_gb: Number(f.disk ?? 0),
+			}));
+			const output = { flavors, total: flavors.length };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+				structuredContent: output,
+			};
+		},
+	);
+}
+
+/**
+ * list_keypairs: SSHキーペア一覧を取得
+ *
+ * @param server - McpServerインスタンス
+ * @internal
+ */
+function registerListKeypairs(server: McpServer): void {
+	server.registerTool(
+		"list_keypairs",
+		{
+			title: "SSHキーペア一覧取得",
+			description: "登録済みのSSHキーペア一覧を取得します。",
+			inputSchema: {},
+			outputSchema: {
+				keypairs: z.array(
+					z.object({
+						name: z.string(),
+					}),
+				),
+				total: z.number(),
+			},
+		},
+		async () => {
+			if (isMockMode()) {
+				const mockKeypairs = [{ name: "my-key" }];
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({ keypairs: mockKeypairs, total: 1 }),
+						},
+					],
+					structuredContent: { keypairs: mockKeypairs, total: 1 },
+				};
+			}
+			const response = await executeOpenstackApi(
+				"GET",
+				OPENSTACK_COMPUTE_BASE_URL,
+				"/os-keypairs",
+			);
+			const json = (await response.json()) as {
+				keypairs: Array<{ keypair: Record<string, unknown> }>;
+			};
+			const keypairs = (json.keypairs ?? []).map((k) => ({
+				name: String(k.keypair?.name ?? ""),
+			}));
+			const output = { keypairs, total: keypairs.length };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+				structuredContent: output,
+			};
+		},
+	);
+}
+
+/** パスワード強度バリデーション（ConoHa要件: 9-70文字、大文字・小文字・数字・記号すべて必須） */
+function validateServerPassword(pw: string): string | null {
+	if (pw.length < 9 || pw.length > 70)
+		return "パスワードは9〜70文字で指定してください";
+	if (!/[A-Z]/.test(pw)) return "大文字を含めてください";
+	if (!/[a-z]/.test(pw)) return "小文字を含めてください";
+	if (!/[0-9]/.test(pw)) return "数字を含めてください";
+	if (!/[\\^$+\-*/|()[\]{}.,?!_=&@~%#:;'"]/.test(pw))
+		return "記号を含めてください（^$+-*/|()[]{}.,?!_=&@~%#:;'\"）";
+	return null;
+}
+
+/**
+ * create_server: サーバーを作成（LLM非経由）
+ *
+ * @param server - McpServerインスタンス
+ * @remarks
+ * MCP Apps UIからの直接呼び出し専用。パスワードがLLMコンテキストに入らない。
+ * @internal
+ */
+function registerCreateServer(server: McpServer): void {
+	server.registerTool(
+		"create_server",
+		{
+			title: "サーバー作成",
+			description:
+				"ConoHa VPSサーバーを新規作成します。UIから直接呼び出され、パスワードはLLMを経由しません。",
+			inputSchema: {
+				name: z
+					.string()
+					.min(1)
+					.describe("サーバー名（英数字・ハイフン・アンダースコア）"),
+				password: z.string().min(9).describe("rootパスワード"),
+				flavor_id: z.string().describe("フレーバーID"),
+				image_id: z
+					.string()
+					.optional()
+					.describe("OSイメージID（自動モード: ボリュームを内部で作成）"),
+				boot_volume_id: z
+					.string()
+					.optional()
+					.describe("既存ブートボリュームID（手動モード: 事前作成済みを使用）"),
+				boot_volume_size_gb: z
+					.number()
+					.int()
+					.min(30)
+					.optional()
+					.describe(
+						"自動作成するブートボリュームのサイズ（GB）。指定なしは100GB。512MBプランは30GB必須。",
+					),
+				ssh_key_name: z.string().optional().describe("SSHキーペア名"),
+				security_group_name: z
+					.string()
+					.optional()
+					.describe("セキュリティグループ名"),
+			},
+		},
+		async ({
+			name,
+			password,
+			flavor_id,
+			image_id,
+			boot_volume_id,
+			boot_volume_size_gb,
+			ssh_key_name,
+			security_group_name,
+		}) => {
+			// パスワードバリデーション
+			const pwError = validateServerPassword(password);
+			if (pwError) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({ error: pwError }),
+						},
+					],
+					isError: true,
+				};
+			}
+
+			// image_id と boot_volume_id は排他必須
+			if (!image_id && !boot_volume_id) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error:
+									"image_id（自動モード）または boot_volume_id（手動モード）のどちらかを指定してください",
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			if (image_id && boot_volume_id) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: "image_id と boot_volume_id は同時に指定できません",
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+
+			if (isMockMode()) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								server: {
+									id: "mock-new-server-id",
+									name,
+									status: "building",
+								},
+								mode: image_id ? "auto" : "manual",
+								...(image_id && { boot_volume_id: "mock-boot-volume-id" }),
+							}),
+						},
+					],
+				};
+			}
+
+			// モード判定: 自動モード(image_id)ならボリューム作成、手動モード(boot_volume_id)ならスキップ
+			let bootVolumeId: string;
+			const createdByUs = !boot_volume_id;
+
+			if (!createdByUs) {
+				// 手動モード: ユーザーが用意したボリュームIDをそのまま使う
+				bootVolumeId = boot_volume_id as string;
+			} else {
+				// 自動モード: ボリュームタイプ取得 → ボリューム作成 → ポーリング
+				const typesResponse = await executeOpenstackApi(
+					"GET",
+					OPENSTACK_VOLUME_BASE_URL,
+					`/${TENANT_ID}/types`,
+				);
+				if (!typesResponse.ok) {
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify({
+									error: `ボリュームタイプ取得に失敗しました (${typesResponse.status})`,
+									detail: await typesResponse.text(),
+								}),
+							},
+						],
+						isError: true,
+					};
+				}
+				const typesJson = (await typesResponse.json()) as {
+					volume_types: Array<{ name: string }>;
+				};
+				// ConoHa VPSでは "-boot" サフィックス付きがブート用ボリュームタイプ
+				const bootType = typesJson.volume_types?.find((t) =>
+					t.name?.includes("-boot"),
+				);
+				const volumeType = bootType?.name ?? typesJson.volume_types?.[0]?.name;
+				if (!volumeType) {
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify({
+									error: "利用可能なボリュームタイプがありません",
+								}),
+							},
+						],
+						isError: true,
+					};
+				}
+
+				// ブートボリューム作成
+				// ConoHa制約: 512MBプランは30GB、その他は100GB以上が必須
+				// image_id は自動モードでは必ず存在（排他バリデーション済み）
+				const volumeBody = {
+					volume: {
+						size: boot_volume_size_gb ?? 100,
+						name: `${name}-boot`,
+						volume_type: volumeType,
+						imageRef: image_id as string,
+					},
+				};
+				const volumeResponse = await executeOpenstackApi(
+					"POST",
+					OPENSTACK_VOLUME_BASE_URL,
+					`/${TENANT_ID}/volumes`,
+					volumeBody,
+				);
+				if (!volumeResponse.ok) {
+					const volErrText = await volumeResponse.text();
+					const isLimit = volErrText.includes(
+						"boot volumes that are not associated",
+					);
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify({
+									error: `ブートボリューム作成に失敗しました (${volumeResponse.status})`,
+									detail: volErrText,
+									...(isLimit && {
+										hint: "サーバー未紐付けのブートボリュームが上限に達しています。ConoHa管理画面または conoha_get /volumes/detail でボリューム一覧を確認し、不要なものを削除してください。",
+									}),
+								}),
+							},
+						],
+						isError: true,
+					};
+				}
+				const volumeJson = (await volumeResponse.json()) as {
+					volume: { id: string };
+				};
+				const createdId = volumeJson.volume?.id;
+				if (!createdId) {
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify({
+									error: "ブートボリュームIDを取得できませんでした",
+								}),
+							},
+						],
+						isError: true,
+					};
+				}
+				bootVolumeId = createdId;
+
+				// ボリュームが available 状態になるまでポーリング（最大90秒）
+				const maxWaitMs = 90_000;
+				const intervalMs = 3_000;
+				const start = Date.now();
+				let volumeStatus = "creating";
+				while (Date.now() - start < maxWaitMs) {
+					await new Promise((r) => setTimeout(r, intervalMs));
+					const statusResponse = await executeOpenstackApi(
+						"GET",
+						OPENSTACK_VOLUME_BASE_URL,
+						`/${TENANT_ID}/volumes/${bootVolumeId}`,
+					);
+					if (!statusResponse.ok) continue;
+					const statusJson = (await statusResponse.json()) as {
+						volume?: { status?: string };
+					};
+					volumeStatus = statusJson.volume?.status ?? "unknown";
+					if (volumeStatus === "available") break;
+					if (volumeStatus === "error") {
+						await deleteIfOwned();
+						return {
+							content: [
+								{
+									type: "text",
+									text: JSON.stringify({
+										error: "ブートボリュームがエラー状態になりました",
+										volume_id: bootVolumeId,
+									}),
+								},
+							],
+							isError: true,
+						};
+					}
+				}
+				if (volumeStatus !== "available") {
+					await deleteIfOwned();
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify({
+									error: `ブートボリュームが available になりませんでした (status=${volumeStatus})`,
+									volume_id: bootVolumeId,
+								}),
+							},
+						],
+						isError: true,
+					};
+				}
+			}
+
+			// 失敗時のクリーンアップ: 自動モードで作成したボリュームのみ削除（手動モードはno-op）
+			async function deleteIfOwned(): Promise<void> {
+				if (!createdByUs) return;
+				try {
+					await executeOpenstackApi(
+						"DELETE",
+						OPENSTACK_VOLUME_BASE_URL,
+						`/${TENANT_ID}/volumes/${bootVolumeId}`,
+					);
+				} catch {
+					// 削除失敗は黙殺（元のエラーを優先）
+				}
+			}
+
+			// サーバー作成（決定したボリュームUUIDを指定）
+			const serverBody: Record<
+				string,
+				| string
+				| Array<{ uuid: string }>
+				| Record<string, string>
+				| Array<{ name: string }>
+			> = {
+				flavorRef: flavor_id,
+				adminPass: password,
+				block_device_mapping_v2: [{ uuid: bootVolumeId }],
+				metadata: { instance_name_tag: name },
+			};
+			if (ssh_key_name) serverBody.key_name = ssh_key_name;
+			if (security_group_name) {
+				serverBody.security_groups = [{ name: security_group_name }];
+			}
+			const body = { server: serverBody };
+
+			const response = await executeOpenstackApi(
+				"POST",
+				OPENSTACK_COMPUTE_BASE_URL,
+				"/servers",
+				body,
+			);
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				await deleteIfOwned();
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: `サーバー作成に失敗しました (${response.status})`,
+								detail: errorText,
+								...(createdByUs && {
+									cleanup: `ブートボリューム ${bootVolumeId} を削除しました`,
+								}),
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+
+			const json = (await response.json()) as {
+				server: Record<string, unknown>;
+			};
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify({
+							server: {
+								id: String(json.server?.id ?? ""),
+								name: String(json.server?.name ?? ""),
+								status: "building",
+							},
+							mode: createdByUs ? "auto" : "manual",
+							boot_volume_id: bootVolumeId,
+							...(createdByUs && { boot_volume_created: true }),
+						}),
+					},
+				],
+			};
+		},
+	);
 }
