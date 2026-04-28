@@ -30,12 +30,16 @@ import {
 } from "../features/openstack/constants.js";
 import {
 	deleteStorageContainer,
+	deleteStorageObject,
 	getStorageContainerList,
+	getStorageObjectList,
 	setPutStorageMetadata,
+	uploadStorageObject,
 } from "../features/openstack/storage/storage-client.js";
 import type {
 	AppContainer,
 	AppImage,
+	AppObject,
 	AppSecurityGroup,
 	AppServer,
 	AppServerMetrics,
@@ -45,6 +49,7 @@ import type {
 import {
 	getMockContainers,
 	getMockImages,
+	getMockObjects,
 	getMockSecurityGroups,
 	getMockServer,
 	getMockServerMetrics,
@@ -75,6 +80,9 @@ export function registerAppsTools(server: McpServer): void {
 	registerListContainers(server);
 	registerCreateContainer(server);
 	registerDeleteContainer(server);
+	registerListObjects(server);
+	registerUploadObject(server);
+	registerDeleteObject(server);
 }
 
 /**
@@ -1645,6 +1653,241 @@ function registerDeleteContainer(server: McpServer): void {
 					{
 						type: "text",
 						text: JSON.stringify({ container: { name }, deleted: true }),
+					},
+				],
+			};
+		},
+	);
+}
+
+/**
+ * 指定コンテナ内のオブジェクト一覧を解決（モックまたは実API）
+ *
+ * @internal
+ */
+async function resolveObjects(containerName: string): Promise<AppObject[]> {
+	if (isMockMode()) {
+		return getMockObjects(containerName);
+	}
+	const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
+	if (!TENANT_ID) return [];
+	const raw = await getStorageObjectList(
+		`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(containerName)}?format=json`,
+	);
+	const parsed = JSON.parse(raw) as { status: number; body: unknown };
+	if (parsed.status !== 200) return [];
+	const list = Array.isArray(parsed.body) ? parsed.body : [];
+	return list.map(mapSwiftObjectToAppObject);
+}
+
+/**
+ * Swift object オブジェクトを AppObject に変換
+ *
+ * @internal
+ */
+function mapSwiftObjectToAppObject(o: unknown): AppObject {
+	const obj = (o ?? {}) as Record<string, unknown>;
+	return {
+		name: String(obj.name ?? ""),
+		bytes: Number(obj.bytes ?? 0),
+		content_type: String(obj.content_type ?? "application/octet-stream"),
+		...(obj.last_modified ? { last_modified: String(obj.last_modified) } : {}),
+		...(obj.hash ? { hash: String(obj.hash) } : {}),
+	};
+}
+
+/**
+ * list_objects: コンテナ内のオブジェクト一覧を取得
+ *
+ * @internal
+ */
+function registerListObjects(server: McpServer): void {
+	server.registerTool(
+		"list_objects",
+		{
+			title: "コンテナ内オブジェクト一覧取得",
+			description:
+				"指定したストレージコンテナ内のオブジェクト一覧（名前・サイズ・MIMEタイプ）を取得します。",
+			inputSchema: {
+				container: z.string().min(1).describe("コンテナ名"),
+			},
+			outputSchema: {
+				container: z.string(),
+				objects: z.array(
+					z.object({
+						name: z.string(),
+						bytes: z.number(),
+						content_type: z.string(),
+						last_modified: z.string().optional(),
+						hash: z.string().optional(),
+					}),
+				),
+				total: z.number(),
+			},
+		},
+		async ({ container }) => {
+			const objects = await resolveObjects(container);
+			const output = { container, objects, total: objects.length };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+				structuredContent: output,
+			};
+		},
+	);
+}
+
+/**
+ * upload_object: コンテナにオブジェクトをアップロード
+ *
+ * @remarks
+ * ブラウザの File API で読み出した内容を Base64 エンコードして渡す。
+ * MCP メッセージサイズの制約があるため大きなファイル（おおむね 10MB 超）は推奨しない。
+ * @internal
+ */
+function registerUploadObject(server: McpServer): void {
+	server.registerTool(
+		"upload_object",
+		{
+			title: "オブジェクトアップロード",
+			description:
+				"指定コンテナにオブジェクトをアップロードします。content_base64 はブラウザの File API で得たバイト列の Base64 エンコード文字列を渡してください。",
+			inputSchema: {
+				container: z.string().min(1).describe("アップロード先のコンテナ名"),
+				object_name: z.string().min(1).describe("オブジェクト名"),
+				content_base64: z
+					.string()
+					.min(1)
+					.describe("Base64 エンコードされたオブジェクト本体"),
+				content_type: z
+					.string()
+					.optional()
+					.describe("MIMEタイプ（省略時は application/octet-stream 相当）"),
+			},
+		},
+		async ({ container, object_name, content_base64, content_type }) => {
+			if (isMockMode()) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								object: {
+									name: object_name,
+									bytes: Math.floor((content_base64.length * 3) / 4),
+									content_type: content_type ?? "application/octet-stream",
+								},
+								uploaded: true,
+							}),
+						},
+					],
+				};
+			}
+			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
+			if (!TENANT_ID) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: "OPENSTACK_TENANT_ID が設定されていません",
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			const path = `/v1/AUTH_${TENANT_ID}/${encodeURIComponent(container)}/${encodeURIComponent(object_name)}`;
+			const raw = await uploadStorageObject(path, content_base64, content_type);
+			const parsed = JSON.parse(raw) as { status: number };
+			// PUT は 201 Created（新規）または 202 Accepted（上書き）が成功
+			if (parsed.status !== 201 && parsed.status !== 202) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: `アップロードに失敗しました (${parsed.status})`,
+								detail: raw,
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify({
+							object: {
+								name: object_name,
+								bytes: Math.floor((content_base64.length * 3) / 4),
+								content_type: content_type ?? "application/octet-stream",
+							},
+							uploaded: true,
+						}),
+					},
+				],
+			};
+		},
+	);
+}
+
+/**
+ * delete_object: コンテナ内のオブジェクトを削除
+ *
+ * @internal
+ */
+function registerDeleteObject(server: McpServer): void {
+	server.registerTool(
+		"delete_object",
+		{
+			title: "オブジェクト削除",
+			description: "指定コンテナ内のオブジェクトを削除します。",
+			inputSchema: {
+				container: z.string().min(1).describe("コンテナ名"),
+				object_name: z.string().min(1).describe("削除するオブジェクト名"),
+			},
+		},
+		async ({ container, object_name }) => {
+			if (isMockMode()) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								object: { name: object_name },
+								deleted: true,
+							}),
+						},
+					],
+				};
+			}
+			const path = `/v1/AUTH_{tenantId}/${encodeURIComponent(container)}/${encodeURIComponent(object_name)}`;
+			const raw = await deleteStorageObject(path);
+			const parsed = JSON.parse(raw) as { status: number };
+			if (parsed.status !== 204) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: `オブジェクト削除に失敗しました (${parsed.status})`,
+								detail: raw,
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify({
+							object: { name: object_name },
+							deleted: true,
+						}),
 					},
 				],
 			};

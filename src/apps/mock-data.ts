@@ -12,6 +12,7 @@
 import type {
 	AppContainer,
 	AppImage,
+	AppObject,
 	AppSecurityGroup,
 	AppServer,
 	AppServerMetrics,
@@ -20,6 +21,7 @@ import type {
 import { containers } from "./fixtures/containers.js";
 import { images } from "./fixtures/images.js";
 import { metrics } from "./fixtures/metrics.js";
+import { objectsByContainer } from "./fixtures/objects.js";
 import { securityGroups } from "./fixtures/security-groups.js";
 import { servers } from "./fixtures/servers.js";
 import { volumes } from "./fixtures/volumes.js";
@@ -98,4 +100,14 @@ export function getMockServerMetrics(
  */
 export function getMockContainers(): AppContainer[] {
 	return containers;
+}
+
+/**
+ * 指定コンテナ内のオブジェクト一覧を取得（モック）
+ *
+ * @param containerName - コンテナ名
+ * @returns 該当コンテナのオブジェクト一覧。存在しないコンテナでは空配列
+ */
+export function getMockObjects(containerName: string): AppObject[] {
+	return objectsByContainer[containerName] ?? [];
 }

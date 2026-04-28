@@ -78,6 +78,22 @@ export interface AppContainer {
 }
 
 /**
+ * ストレージオブジェクト情報
+ */
+export interface AppObject {
+	/** オブジェクト名 */
+	name: string;
+	/** サイズ（バイト） */
+	bytes: number;
+	/** MIMEタイプ */
+	content_type: string;
+	/** 最終更新日時（ISO 8601） */
+	last_modified?: string;
+	/** ETag（ハッシュ） */
+	hash?: string;
+}
+
+/**
  * セキュリティグループルール
  */
 export interface SecurityGroupRule {

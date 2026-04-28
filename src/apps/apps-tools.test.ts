@@ -57,6 +57,9 @@ describe("MCP Apps ツール登録", () => {
 		expect(toolNames).toContain("list_containers");
 		expect(toolNames).toContain("create_container");
 		expect(toolNames).toContain("delete_container");
+		expect(toolNames).toContain("list_objects");
+		expect(toolNames).toContain("upload_object");
+		expect(toolNames).toContain("delete_object");
 	});
 });
 
@@ -320,6 +323,109 @@ describe("create_container", () => {
 		// Zod スキーマの正規表現がコンテナ名を制限していることを構造として確認
 		const nameSchema = tool.inputSchema?.shape?.name ?? tool.inputSchema?.name;
 		expect(nameSchema).toBeDefined();
+	});
+});
+
+describe("list_objects", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("モックモードで指定コンテナのオブジェクト一覧を返す", async () => {
+		const result = await callTool(server, "list_objects", {
+			container: "backups",
+		});
+		expect(result.structuredContent.container).toBe("backups");
+		expect(result.structuredContent.total).toBeGreaterThan(0);
+	});
+
+	it("存在しないコンテナでは空の一覧を返す", async () => {
+		const result = await callTool(server, "list_objects", {
+			container: "nonexistent",
+		});
+		expect(result.structuredContent.total).toBe(0);
+		expect(result.structuredContent.objects).toEqual([]);
+	});
+
+	it("各オブジェクトに name/bytes/content_type が含まれる", async () => {
+		const result = await callTool(server, "list_objects", {
+			container: "media-assets",
+		});
+		for (const o of result.structuredContent.objects) {
+			expect(o.name).toBeTypeOf("string");
+			expect(o.bytes).toBeTypeOf("number");
+			expect(o.content_type).toBeTypeOf("string");
+		}
+	});
+});
+
+describe("upload_object", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("モックモードで Base64 を渡すとアップロード成功応答を返す", async () => {
+		// "hello" の Base64
+		const result = await callTool(server, "upload_object", {
+			container: "backups",
+			object_name: "hello.txt",
+			content_base64: "aGVsbG8=",
+			content_type: "text/plain",
+		});
+		const data = JSON.parse(result.content[0].text);
+		expect(data.uploaded).toBe(true);
+		expect(data.object.name).toBe("hello.txt");
+		expect(data.object.content_type).toBe("text/plain");
+	});
+
+	it("content_type 省略時は application/octet-stream を返す", async () => {
+		const result = await callTool(server, "upload_object", {
+			container: "backups",
+			object_name: "binary.bin",
+			content_base64: "AQID",
+		});
+		const data = JSON.parse(result.content[0].text);
+		expect(data.object.content_type).toBe("application/octet-stream");
+	});
+});
+
+describe("delete_object", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("モックモードで削除成功応答を返す", async () => {
+		const result = await callTool(server, "delete_object", {
+			container: "backups",
+			object_name: "hello.txt",
+		});
+		const data = JSON.parse(result.content[0].text);
+		expect(data.deleted).toBe(true);
+		expect(data.object.name).toBe("hello.txt");
 	});
 });
 

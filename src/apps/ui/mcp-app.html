@@ -74,6 +74,27 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 .empty-desc{font-family:var(--mono);font-size:11px;color:var(--text3)}
 .form-error{font-family:var(--mono);font-size:11px;color:var(--red);margin-top:4px}
 
+/* オブジェクト一覧（コンテナ詳細） */
+.back-link{padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--cyan-dk);background:transparent;border:1px solid transparent;border-radius:var(--radius);cursor:pointer;transition:all .15s;margin-right:4px}
+.back-link:hover{background:var(--cyan-lt);border-color:var(--cyan)}
+.container-bc-icon{font-size:14px}
+.container-bc-name{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upload-controls{display:flex;align-items:center;gap:8px}
+.upload-progress{padding:6px 16px;background:var(--cyan-lt);border-bottom:1px solid var(--cyan);display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;color:var(--cyan-dk);position:relative;overflow:hidden}
+.upload-progress::before{content:"";position:absolute;top:0;left:-30%;width:30%;height:100%;background:linear-gradient(90deg,transparent,var(--cyan) 50%,transparent);animation:shimmer 1.4s linear infinite;opacity:.3}
+@keyframes shimmer{0%{left:-30%}100%{left:130%}}
+.progress-label{position:relative;z-index:1}
+.object-list{flex:1;min-height:0;overflow-y:auto;padding:4px 16px 16px}
+.object-row{display:grid;grid-template-columns:24px 1fr auto auto auto;align-items:center;gap:10px;padding:10px 12px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);margin-top:8px;transition:all .15s}
+.object-row:hover{border-color:var(--cyan);box-shadow:0 2px 8px rgba(0,201,227,.08)}
+.object-icon{font-size:16px;text-align:center}
+.object-name{font-family:var(--mono);font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.object-meta{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;white-space:nowrap}
+.object-size{font-family:var(--mono);font-size:11px;color:var(--text2);font-weight:500;white-space:nowrap}
+.object-action{padding:4px 10px;font-size:10px;font-family:var(--mono);border:1px solid var(--border);background:var(--white);color:var(--text2);border-radius:4px;cursor:pointer;transition:all .12s}
+.object-action:hover{border-color:var(--red);color:var(--red);background:var(--red-lt)}
+.container-card{cursor:pointer}
+
 /* 検索バー */
 .search-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--white);border-bottom:1px solid var(--border)}
 .search-input{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--mono);font-size:12px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
@@ -372,6 +393,27 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
       <button type="button" class="btn btn-primary btn-sm" id="btn-create-container">+ コンテナ作成</button>
     </div>
     <div class="container-list" id="container-list"></div>
+  </div>
+
+  <!-- オブジェクト一覧パネル（コンテナ詳細） -->
+  <div id="panel-objects" style="display:none;flex-direction:column;flex:1;min-height:0">
+    <div class="storage-bar">
+      <div class="storage-summary">
+        <button type="button" class="back-link" id="btn-back-to-containers" title="コンテナ一覧へ戻る">← 戻る</button>
+        <span class="container-bc-icon">📦</span>
+        <span class="container-bc-name" id="objects-container-name">—</span>
+        <span class="storage-count" id="objects-count">—</span>
+      </div>
+      <div class="upload-controls">
+        <input type="file" id="f-upload-file" hidden>
+        <button type="button" class="btn btn-primary btn-sm" id="btn-upload-object">📤 ファイルをアップロード</button>
+      </div>
+    </div>
+    <div class="upload-progress" id="upload-progress" style="display:none">
+      <div class="progress-fill"></div>
+      <span class="progress-label" id="progress-label">アップロード中…</span>
+    </div>
+    <div class="object-list" id="object-list"></div>
   </div>
 
   <!-- コンテナ作成パネル -->
