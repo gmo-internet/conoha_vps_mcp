@@ -34,5 +34,8 @@ settings.local.json
 .env
 .env.local
 
+# brand assets (未公開許可)
+src/apps/ui/conoha-brand.css
+
 # outputs
 test-results
