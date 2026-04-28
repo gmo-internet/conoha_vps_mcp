@@ -3,8 +3,8 @@
  *
  * @remarks
  * `CONOHA_MCP_MOCK=1` 環境変数が設定されている場合、
- * 実APIの代わりにフィクスチャJSONを返します。
- * esbuildバンドル時にJSONがインライン化されるよう、importで読み込みます。
+ * 実APIの代わりにフィクスチャを返します。
+ * フィクスチャは TS で型注釈付き定義しており、ランタイム検証なしに型安全に扱えます。
  *
  * @packageDocumentation
  */
@@ -16,11 +16,11 @@ import type {
 	AppServerMetrics,
 	AppVolume,
 } from "./apps-types.js";
-import imagesFixture from "./fixtures/images.json";
-import metricsFixture from "./fixtures/metrics.json";
-import securityGroupsFixture from "./fixtures/security-groups.json";
-import serversFixture from "./fixtures/servers.json";
-import volumesFixture from "./fixtures/volumes.json";
+import { images } from "./fixtures/images.js";
+import { metrics } from "./fixtures/metrics.js";
+import { securityGroups } from "./fixtures/security-groups.js";
+import { servers } from "./fixtures/servers.js";
+import { volumes } from "./fixtures/volumes.js";
 
 /**
  * モックモードが有効か判定
@@ -37,7 +37,7 @@ export function isMockMode(): boolean {
  * @returns モックサーバー一覧
  */
 export function getMockServers(): AppServer[] {
-	return serversFixture.servers as AppServer[];
+	return servers;
 }
 
 /**
@@ -47,7 +47,6 @@ export function getMockServers(): AppServer[] {
  * @returns サーバー情報。見つからない場合はnull
  */
 export function getMockServer(serverId: string): AppServer | null {
-	const servers = serversFixture.servers as AppServer[];
 	return servers.find((s) => s.id === serverId) ?? null;
 }
 
@@ -57,7 +56,7 @@ export function getMockServer(serverId: string): AppServer | null {
  * @returns モックボリューム一覧
  */
 export function getMockVolumes(): AppVolume[] {
-	return volumesFixture.volumes as AppVolume[];
+	return volumes;
 }
 
 /**
@@ -66,7 +65,7 @@ export function getMockVolumes(): AppVolume[] {
  * @returns モックイメージ一覧
  */
 export function getMockImages(): AppImage[] {
-	return imagesFixture.images as AppImage[];
+	return images;
 }
 
 /**
@@ -75,7 +74,7 @@ export function getMockImages(): AppImage[] {
  * @returns モックセキュリティグループ一覧
  */
 export function getMockSecurityGroups(): AppSecurityGroup[] {
-	return securityGroupsFixture.security_groups as AppSecurityGroup[];
+	return securityGroups;
 }
 
 /**
@@ -87,6 +86,5 @@ export function getMockSecurityGroups(): AppSecurityGroup[] {
 export function getMockServerMetrics(
 	serverId: string,
 ): AppServerMetrics | null {
-	const metrics = metricsFixture.metrics as Record<string, AppServerMetrics>;
 	return metrics[serverId] ?? null;
 }
