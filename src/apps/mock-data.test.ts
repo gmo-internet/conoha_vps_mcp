@@ -36,7 +36,7 @@ describe("getMockServers", () => {
 		expect(servers).toHaveLength(5);
 	});
 
-	it("各サーバーに必須フィールドが存��する", () => {
+	it("各サーバーに必須フィールドが存在する", () => {
 		const servers = getMockServers();
 		for (const server of servers) {
 			expect(server).toHaveProperty("id");
@@ -80,7 +80,7 @@ describe("getMockVolumes", () => {
 		expect(volumes).toHaveLength(3);
 	});
 
-	it("各ボリュ��ムに必須フィールドが存��する", () => {
+	it("各ボリュームに必須フィールドが存在する", () => {
 		const volumes = getMockVolumes();
 		for (const volume of volumes) {
 			expect(volume).toHaveProperty("id");
@@ -132,7 +132,7 @@ describe("getMockServerMetrics", () => {
 		expect(metrics?.disk_usage_percent).toBeTypeOf("number");
 	});
 
-	it("存在しないサー��ーIDでnullを返す", () => {
+	it("存在しないサーバーIDでnullを返す", () => {
 		const metrics = getMockServerMetrics("nonexistent-id");
 		expect(metrics).toBeNull();
 	});
