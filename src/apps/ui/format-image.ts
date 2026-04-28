@@ -28,14 +28,13 @@ export interface ImageDisplayInput {
 
 /**
  * イメージ表示の3要素
- *
- * @property primary - 主表示（人間語、例: "Ubuntu 24.04"）
- * @property secondary - 副次表示（API名、例: "vmi-ubuntu-24.04-amd64"）
- * @property tooltip - ホバー時の詳細（OS/最小要件/サイズ/作成日）
  */
 export interface ImageDisplay {
+	/** 主表示（人間語、例: "Ubuntu 24.04"） */
 	primary: string;
+	/** 副次表示（API名、例: "vmi-ubuntu-24.04-amd64"） */
 	secondary: string;
+	/** ホバー時の詳細（OS種別/最小要件/サイズ/作成日） */
 	tooltip: string;
 }
 
