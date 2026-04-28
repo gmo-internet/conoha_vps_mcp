@@ -64,6 +64,20 @@ export interface AppImage {
 }
 
 /**
+ * ストレージコンテナ情報
+ */
+export interface AppContainer {
+	/** コンテナ名 */
+	name: string;
+	/** 含まれるオブジェクト数 */
+	count: number;
+	/** 合計サイズ（バイト） */
+	bytes: number;
+	/** 最終更新日時（ISO 8601） */
+	last_modified?: string;
+}
+
+/**
  * セキュリティグループルール
  */
 export interface SecurityGroupRule {

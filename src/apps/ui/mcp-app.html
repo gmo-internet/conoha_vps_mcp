@@ -44,6 +44,35 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 .nav-toggle{display:none;padding:6px 12px;border-radius:var(--radius);font-size:11px;font-family:var(--mono);font-weight:500;color:var(--cyan-dk);border:1px dashed var(--cyan);background:var(--cyan-lt);cursor:pointer;transition:all .15s}
 .nav-toggle:hover{background:var(--cyan);color:#fff;border-style:solid}
 .nav-toggle.show{display:inline-block}
+.nav-divider{display:inline-block;width:1px;height:18px;background:var(--border);margin:0 4px}
+
+/* ストレージ（コンテナ一覧） */
+.storage-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border)}
+.storage-summary{display:flex;align-items:baseline;gap:8px}
+.storage-label{font-family:var(--mono);font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.storage-count{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:11px}
+.container-list{flex:1;min-height:0;overflow-y:auto;padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;align-content:start}
+.container-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:default;transition:all .18s ease;position:relative;overflow:hidden}
+.container-card::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--cyan);opacity:0;transition:opacity .18s}
+.container-card:hover{border-color:var(--cyan);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,201,227,.12)}
+.container-card:hover::before{opacity:1}
+.container-card-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.container-icon{width:28px;height:28px;border-radius:6px;background:var(--cyan-lt);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.container-name{flex:1;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.container-actions{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.container-card:hover .container-actions{opacity:1}
+.container-action{padding:4px 8px;font-size:10px;font-family:var(--mono);border:1px solid var(--border);background:var(--white);color:var(--text2);border-radius:4px;cursor:pointer;transition:all .12s}
+.container-action:hover{border-color:var(--red);color:var(--red);background:var(--red-lt)}
+.container-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-family:var(--mono);font-size:11px;color:var(--text2);padding:8px 0;border-top:1px dashed var(--border);border-bottom:1px dashed var(--border)}
+.container-stat-key{color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.container-stat-val{color:var(--text);font-size:12px;font-weight:500}
+.container-meta{margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text3)}
+.storage-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;color:var(--text2)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.empty-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+.empty-desc{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.form-error{font-family:var(--mono);font-size:11px;color:var(--red);margin-top:4px}
 
 /* 検索バー */
 .search-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--white);border-bottom:1px solid var(--border)}
@@ -192,6 +221,8 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
   <div class="nav">
     <button type="button" class="nav-btn on" id="btn-list">サーバー一覧</button>
     <button type="button" class="nav-btn" id="btn-create">+ 新規作成</button>
+    <span class="nav-divider"></span>
+    <button type="button" class="nav-btn" id="btn-storage">ストレージ</button>
     <span class="nav-sp"></span>
     <button type="button" class="nav-toggle" id="btn-mode-toggle">ボリューム手動作成 →</button>
   </div>
@@ -328,6 +359,40 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
     <div class="btn-row">
       <button type="button" class="btn btn-cancel" id="btn-create-cancel">キャンセル</button>
       <button type="button" class="btn btn-primary" id="btn-create-submit" disabled>サーバーを作成</button>
+    </div>
+  </div>
+
+  <!-- ストレージ（コンテナ一覧）パネル -->
+  <div id="panel-storage" style="display:none;flex-direction:column;flex:1;min-height:0">
+    <div class="storage-bar">
+      <div class="storage-summary">
+        <span class="storage-label">コンテナ</span>
+        <span class="storage-count" id="storage-count">—</span>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" id="btn-create-container">+ コンテナ作成</button>
+    </div>
+    <div class="container-list" id="container-list">
+      <div class="storage-empty" id="storage-empty" style="display:none">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">コンテナがまだありません</div>
+        <div class="empty-desc">「+ コンテナ作成」から最初のコンテナを作りましょう。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- コンテナ作成パネル -->
+  <div class="form-panel" id="panel-create-container" style="display:none">
+    <div class="form-section">
+      <div class="form-group">
+        <label class="form-label" for="f-container-name">コンテナ名 <span class="req">必須</span></label>
+        <input type="text" class="form-input" id="f-container-name" placeholder="例: backups" maxlength="256" autocomplete="off">
+        <span class="form-hint">英数字・ハイフン・アンダースコア・ピリオドのみ。スラッシュは不可。</span>
+        <span class="form-error" id="f-container-error" style="display:none"></span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-cancel" id="btn-create-container-cancel">キャンセル</button>
+      <button type="button" class="btn btn-primary" id="btn-create-container-submit" disabled>コンテナを作成</button>
     </div>
   </div>
 </div>

@@ -10,12 +10,14 @@
  */
 
 import type {
+	AppContainer,
 	AppImage,
 	AppSecurityGroup,
 	AppServer,
 	AppServerMetrics,
 	AppVolume,
 } from "./apps-types.js";
+import { containers } from "./fixtures/containers.js";
 import { images } from "./fixtures/images.js";
 import { metrics } from "./fixtures/metrics.js";
 import { securityGroups } from "./fixtures/security-groups.js";
@@ -87,4 +89,13 @@ export function getMockServerMetrics(
 	serverId: string,
 ): AppServerMetrics | null {
 	return metrics[serverId] ?? null;
+}
+
+/**
+ * ストレージコンテナ一覧を取得（モック）
+ *
+ * @returns モックコンテナ一覧
+ */
+export function getMockContainers(): AppContainer[] {
+	return containers;
 }

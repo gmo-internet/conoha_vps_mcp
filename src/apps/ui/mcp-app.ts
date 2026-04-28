@@ -74,7 +74,14 @@ interface VolumeOption {
 	size_gb: number;
 }
 
-type ViewMode = "list" | "create";
+type ViewMode = "list" | "create" | "storage" | "create-container";
+
+interface ContainerData {
+	name: string;
+	count: number;
+	bytes: number;
+	last_modified?: string;
+}
 type CreateMode = "auto" | "manual";
 
 // ──────────────────────────────────────────────
@@ -90,6 +97,7 @@ let allKeypairs: KeypairOption[] = [];
 let allSecGroups: SecurityGroupOption[] = [];
 let allBootVolumes: VolumeOption[] = [];
 let createMode: CreateMode = "auto";
+let allContainers: ContainerData[] = [];
 
 // ──────────────────────────────────────────────
 // MCP App 接続
@@ -227,6 +235,67 @@ async function fetchAvailableVolumes(): Promise<VolumeOption[]> {
 	return [];
 }
 
+async function fetchContainers(): Promise<ContainerData[]> {
+	try {
+		const result = await app.callServerTool({
+			name: "list_containers",
+			arguments: {},
+		});
+		const text = extractText(result);
+		if (text) return JSON.parse(text).containers ?? [];
+	} catch {
+		/* ignore */
+	}
+	return [];
+}
+
+async function callCreateContainer(
+	name: string,
+): Promise<{ ok: boolean; error?: string }> {
+	try {
+		const result = await app.callServerTool({
+			name: "create_container",
+			arguments: { name },
+		});
+		const text = extractText(result);
+		if (!text) return { ok: false, error: "応答が空でした" };
+		const data = JSON.parse(text);
+		if (data.error) return { ok: false, error: String(data.error) };
+		return { ok: true };
+	} catch (e) {
+		return {
+			ok: false,
+			error: e instanceof Error ? e.message : "不明なエラー",
+		};
+	}
+}
+
+async function callDeleteContainer(
+	name: string,
+): Promise<{ ok: boolean; error?: string; hint?: string }> {
+	try {
+		const result = await app.callServerTool({
+			name: "delete_container",
+			arguments: { name },
+		});
+		const text = extractText(result);
+		if (!text) return { ok: false, error: "応答が空でした" };
+		const data = JSON.parse(text);
+		if (data.error)
+			return {
+				ok: false,
+				error: String(data.error),
+				...(data.hint && { hint: String(data.hint) }),
+			};
+		return { ok: true };
+	} catch (e) {
+		return {
+			ok: false,
+			error: e instanceof Error ? e.message : "不明なエラー",
+		};
+	}
+}
+
 // ──────────────────────────────────────────────
 // ビュー切り替え
 // ──────────────────────────────────────────────
@@ -235,20 +304,43 @@ function switchView(view: ViewMode): void {
 	currentView = view;
 	const listPanel = document.getElementById("panel-list");
 	const createPanel = document.getElementById("panel-create");
+	const storagePanel = document.getElementById("panel-storage");
+	const createContainerPanel = document.getElementById(
+		"panel-create-container",
+	);
 	const btnList = document.getElementById("btn-list");
 	const btnCreate = document.getElementById("btn-create");
+	const btnStorage = document.getElementById("btn-storage");
 	const btnToggle = document.getElementById("btn-mode-toggle");
 
 	if (listPanel) listPanel.style.display = view === "list" ? "flex" : "none";
 	if (createPanel) createPanel.classList.toggle("open", view === "create");
+	if (storagePanel)
+		storagePanel.style.display = view === "storage" ? "flex" : "none";
+	if (createContainerPanel)
+		createContainerPanel.classList.toggle("open", view === "create-container");
 	if (btnList) btnList.classList.toggle("on", view === "list");
 	if (btnCreate) btnCreate.classList.toggle("on", view === "create");
+	if (btnStorage)
+		btnStorage.classList.toggle(
+			"on",
+			view === "storage" || view === "create-container",
+		);
 	if (btnToggle) btnToggle.classList.toggle("show", view === "create");
 
-	setTxt("page-label", view === "list" ? "servers" : "create server");
+	const pageLabels: Record<ViewMode, string> = {
+		list: "servers",
+		create: "create server",
+		storage: "storage",
+		"create-container": "create container",
+	};
+	setTxt("page-label", pageLabels[view]);
 
 	if (view === "create") {
 		void loadCreateFormOptions();
+	}
+	if (view === "storage") {
+		void loadContainers();
 	}
 }
 
@@ -353,6 +445,151 @@ function showEmpty(msg: string): void {
 	if (container) {
 		container.innerHTML = `<div class="empty">${esc(msg)}</div>`;
 	}
+}
+
+// ──────────────────────────────────────────────
+// ストレージコンテナ
+// ──────────────────────────────────────────────
+
+async function loadContainers(): Promise<void> {
+	const list = document.getElementById("container-list");
+	if (list) {
+		list.innerHTML =
+			'<div class="storage-empty"><div class="empty-icon">⏳</div><div class="empty-title">読み込み中…</div></div>';
+	}
+	const containers = await fetchContainers();
+	allContainers = containers;
+	renderContainerList();
+}
+
+function renderContainerList(): void {
+	const list = document.getElementById("container-list");
+	if (!list) return;
+	setTxt("storage-count", `${allContainers.length} 件`);
+
+	if (allContainers.length === 0) {
+		list.innerHTML = `
+			<div class="storage-empty">
+				<div class="empty-icon">📦</div>
+				<div class="empty-title">コンテナがまだありません</div>
+				<div class="empty-desc">「+ コンテナ作成」から最初のコンテナを作りましょう。</div>
+			</div>`;
+		return;
+	}
+
+	list.innerHTML = allContainers
+		.map((c) => {
+			const sizeText = formatBytes(c.bytes);
+			const lm = c.last_modified ? `更新: ${c.last_modified.slice(0, 10)}` : "";
+			return `
+				<div class="container-card" data-name="${esc(c.name)}">
+					<div class="container-card-head">
+						<div class="container-icon">📦</div>
+						<div class="container-name" title="${esc(c.name)}">${esc(c.name)}</div>
+						<div class="container-actions">
+							<button type="button" class="container-action" data-action="delete" data-name="${esc(c.name)}">削除</button>
+						</div>
+					</div>
+					<div class="container-stats">
+						<div>
+							<div class="container-stat-key">Objects</div>
+							<div class="container-stat-val">${c.count.toLocaleString()}</div>
+						</div>
+						<div>
+							<div class="container-stat-key">Size</div>
+							<div class="container-stat-val">${sizeText}</div>
+						</div>
+					</div>
+					${lm ? `<div class="container-meta">${esc(lm)}</div>` : ""}
+				</div>`;
+		})
+		.join("");
+
+	for (const btn of Array.from(
+		list.querySelectorAll<HTMLButtonElement>(".container-action"),
+	)) {
+		btn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			const name = btn.dataset.name ?? "";
+			if (btn.dataset.action === "delete") void confirmDeleteContainer(name);
+		});
+	}
+}
+
+function formatBytes(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	const units = ["KB", "MB", "GB", "TB"];
+	let n = bytes / 1024;
+	let i = 0;
+	while (n >= 1024 && i < units.length - 1) {
+		n /= 1024;
+		i++;
+	}
+	return `${n.toFixed(n >= 100 ? 0 : 1)} ${units[i]}`;
+}
+
+async function confirmDeleteContainer(name: string): Promise<void> {
+	// 既存の confirm-overlay を再利用
+	setTxt("confirm-title", "コンテナを削除しますか？");
+	const body = document.getElementById("confirm-body");
+	if (body) {
+		body.innerHTML = `
+			コンテナ <code>${esc(name)}</code> を削除します。<br>
+			<span style="color:var(--red);font-size:11px">空でないコンテナは削除できません。先にオブジェクトを削除してください。</span>
+		`;
+	}
+	const overlay = document.getElementById("confirm-overlay");
+	const okBtn = document.getElementById("confirm-ok");
+	if (!overlay || !okBtn) return;
+
+	overlay.classList.add("open");
+	const onConfirm = async () => {
+		overlay.classList.remove("open");
+		okBtn.removeEventListener("click", onConfirm);
+		const r = await callDeleteContainer(name);
+		if (!r.ok) {
+			showToast(r.hint ?? r.error ?? "削除に失敗しました", "error");
+			return;
+		}
+		showToast(`コンテナ ${name} を削除しました`, "success");
+		await loadContainers();
+	};
+	okBtn.addEventListener("click", onConfirm, { once: true });
+}
+
+async function executeCreateContainer(): Promise<void> {
+	const input = document.getElementById(
+		"f-container-name",
+	) as HTMLInputElement | null;
+	const name = (input?.value ?? "").trim();
+	if (!name) return;
+	const submit = document.getElementById(
+		"btn-create-container-submit",
+	) as HTMLButtonElement | null;
+	if (submit) submit.disabled = true;
+
+	const r = await callCreateContainer(name);
+	if (!r.ok) {
+		showContainerError(r.error ?? "作成に失敗しました");
+		if (submit) submit.disabled = false;
+		return;
+	}
+	showToast(`コンテナ ${name} を作成しました`, "success");
+	if (input) input.value = "";
+	switchView("storage");
+}
+
+function showContainerError(msg: string): void {
+	const err = document.getElementById("f-container-error");
+	if (err) {
+		err.textContent = msg;
+		err.style.display = "block";
+	}
+}
+
+function clearContainerError(): void {
+	const err = document.getElementById("f-container-error");
+	if (err) err.style.display = "none";
 }
 
 // ──────────────────────────────────────────────
@@ -926,6 +1163,44 @@ document.getElementById("btn-list")?.addEventListener("click", () => {
 });
 document.getElementById("btn-create")?.addEventListener("click", () => {
 	switchView("create");
+});
+document.getElementById("btn-storage")?.addEventListener("click", () => {
+	switchView("storage");
+});
+
+// ストレージ: コンテナ作成
+document
+	.getElementById("btn-create-container")
+	?.addEventListener("click", () => {
+		switchView("create-container");
+	});
+document
+	.getElementById("btn-create-container-cancel")
+	?.addEventListener("click", () => {
+		clearContainerError();
+		switchView("storage");
+	});
+document
+	.getElementById("btn-create-container-submit")
+	?.addEventListener("click", () => {
+		void executeCreateContainer();
+	});
+
+// コンテナ名の入力検証 → 送信ボタン活性化
+document.getElementById("f-container-name")?.addEventListener("input", (e) => {
+	const value = (e.target as HTMLInputElement).value.trim();
+	const valid = value.length > 0 && /^[A-Za-z0-9._-]+$/.test(value);
+	const submit = document.getElementById(
+		"btn-create-container-submit",
+	) as HTMLButtonElement | null;
+	if (submit) submit.disabled = !valid;
+	if (value.length > 0 && !valid) {
+		showContainerError(
+			"英数字・ハイフン・アンダースコア・ピリオドのみ使用できます",
+		);
+	} else {
+		clearContainerError();
+	}
 });
 
 // 検索

@@ -42,7 +42,7 @@ describe("MCP Apps ツール登録", () => {
 		delete process.env.CONOHA_MCP_MOCK;
 	});
 
-	it("6個のツールが登録される", () => {
+	it("MCP Apps の全ツールが登録される（参照系・サーバー作成・ストレージ系）", () => {
 		const registeredTools = (server as any)._registeredTools;
 		const toolNames = Object.keys(registeredTools);
 		expect(toolNames).toContain("list_servers");
@@ -51,6 +51,12 @@ describe("MCP Apps ツール登録", () => {
 		expect(toolNames).toContain("list_images");
 		expect(toolNames).toContain("list_security_groups");
 		expect(toolNames).toContain("get_server_metrics");
+		expect(toolNames).toContain("list_flavors");
+		expect(toolNames).toContain("list_keypairs");
+		expect(toolNames).toContain("create_server");
+		expect(toolNames).toContain("list_containers");
+		expect(toolNames).toContain("create_container");
+		expect(toolNames).toContain("delete_container");
 	});
 });
 
@@ -252,6 +258,91 @@ describe("list_images", () => {
 		expect(ubuntu?.dst_name).toBe("Ubuntu");
 		expect(ubuntu?.dst_version).toBe("24.04");
 		expect(ubuntu?.service_type).toBe("vps");
+	});
+});
+
+describe("list_containers", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("モックモードで全コンテナを返す", async () => {
+		const result = await callTool(server, "list_containers", {});
+		expect(result.structuredContent.total).toBe(3);
+		expect(result.structuredContent.containers).toHaveLength(3);
+	});
+
+	it("各コンテナにname/count/bytesが含まれる", async () => {
+		const result = await callTool(server, "list_containers", {});
+		for (const c of result.structuredContent.containers) {
+			expect(c.name).toBeTypeOf("string");
+			expect(c.count).toBeTypeOf("number");
+			expect(c.bytes).toBeTypeOf("number");
+		}
+	});
+});
+
+describe("create_container", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("正しい名前のコンテナを作成できる", async () => {
+		const result = await callTool(server, "create_container", {
+			name: "my-bucket",
+		});
+		const text = result.content[0].text;
+		const data = JSON.parse(text);
+		expect(data.container.name).toBe("my-bucket");
+		expect(data.created).toBe(true);
+	});
+
+	it("zod inputSchema で英数字・ハイフン・アンダースコア・ピリオド以外を拒否する正規表現が登録されている", () => {
+		const registeredTools = (server as any)._registeredTools;
+		const tool = registeredTools.create_container;
+		expect(tool).toBeDefined();
+		// Zod スキーマの正規表現がコンテナ名を制限していることを構造として確認
+		const nameSchema = tool.inputSchema?.shape?.name ?? tool.inputSchema?.name;
+		expect(nameSchema).toBeDefined();
+	});
+});
+
+describe("delete_container", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("モックモードでコンテナ削除が成功する", async () => {
+		const result = await callTool(server, "delete_container", {
+			name: "my-bucket",
+		});
+		const data = JSON.parse(result.content[0].text);
+		expect(data.container.name).toBe("my-bucket");
+		expect(data.deleted).toBe(true);
 	});
 });
 

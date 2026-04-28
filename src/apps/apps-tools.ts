@@ -28,7 +28,13 @@ import {
 	OPENSTACK_NETWORK_BASE_URL,
 	OPENSTACK_VOLUME_BASE_URL,
 } from "../features/openstack/constants.js";
+import {
+	deleteStorageContainer,
+	getStorageContainerList,
+	setPutStorageMetadata,
+} from "../features/openstack/storage/storage-client.js";
 import type {
+	AppContainer,
 	AppImage,
 	AppSecurityGroup,
 	AppServer,
@@ -37,6 +43,7 @@ import type {
 	SecurityGroupRule,
 } from "./apps-types.js";
 import {
+	getMockContainers,
 	getMockImages,
 	getMockSecurityGroups,
 	getMockServer,
@@ -65,6 +72,9 @@ export function registerAppsTools(server: McpServer): void {
 	registerListFlavors(server);
 	registerListKeypairs(server);
 	registerCreateServer(server);
+	registerListContainers(server);
+	registerCreateContainer(server);
+	registerDeleteContainer(server);
 }
 
 /**
@@ -1408,6 +1418,233 @@ function registerCreateServer(server: McpServer): void {
 							boot_volume_id: bootVolumeId,
 							...(createdByUs && { boot_volume_created: true }),
 						}),
+					},
+				],
+			};
+		},
+	);
+}
+
+/**
+ * ストレージコンテナ一覧を解決（モックまたは実API）
+ *
+ * @returns コンテナ情報の配列
+ * @internal
+ */
+async function resolveContainers(): Promise<AppContainer[]> {
+	if (isMockMode()) {
+		return getMockContainers();
+	}
+	const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
+	if (!TENANT_ID) return [];
+	const raw = await getStorageContainerList(
+		`/v1/AUTH_${TENANT_ID}?format=json`,
+	);
+	const parsed = JSON.parse(raw) as {
+		status: number;
+		body: unknown;
+	};
+	if (parsed.status !== 200) return [];
+	const list = Array.isArray(parsed.body) ? parsed.body : [];
+	return list.map(mapSwiftContainerToAppContainer);
+}
+
+/**
+ * Swift container オブジェクトを AppContainer に変換
+ *
+ * @internal
+ */
+function mapSwiftContainerToAppContainer(c: unknown): AppContainer {
+	const obj = (c ?? {}) as Record<string, unknown>;
+	return {
+		name: String(obj.name ?? ""),
+		count: Number(obj.count ?? 0),
+		bytes: Number(obj.bytes ?? 0),
+		...(obj.last_modified ? { last_modified: String(obj.last_modified) } : {}),
+	};
+}
+
+/**
+ * list_containers: ストレージコンテナ一覧を取得
+ *
+ * @remarks
+ * 冪等: はい（参照のみ）
+ * ドライラン: 不要（副作用なし）
+ * @internal
+ */
+function registerListContainers(server: McpServer): void {
+	server.registerTool(
+		"list_containers",
+		{
+			title: "ストレージコンテナ一覧取得",
+			description:
+				"オブジェクトストレージのコンテナ一覧（名前・オブジェクト数・サイズ）を取得します。",
+			inputSchema: {},
+			outputSchema: {
+				containers: z.array(
+					z.object({
+						name: z.string(),
+						count: z.number(),
+						bytes: z.number(),
+						last_modified: z.string().optional(),
+					}),
+				),
+				total: z.number(),
+			},
+		},
+		async () => {
+			const containers = await resolveContainers();
+			const output = { containers, total: containers.length };
+			return {
+				content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+				structuredContent: output,
+			};
+		},
+	);
+}
+
+/**
+ * create_container: ストレージコンテナを作成
+ *
+ * @remarks
+ * 冪等: はい（既存コンテナへの PUT は 202 Accepted で no-op）
+ * ドライラン: 非対応（実APIで即作成）
+ * @internal
+ */
+function registerCreateContainer(server: McpServer): void {
+	server.registerTool(
+		"create_container",
+		{
+			title: "ストレージコンテナ作成",
+			description:
+				"オブジェクトストレージにコンテナを新規作成します。既存名への PUT は 202 で no-op です。",
+			inputSchema: {
+				name: z
+					.string()
+					.min(1)
+					.regex(
+						/^[A-Za-z0-9._-]+$/,
+						"コンテナ名は英数字とハイフン・アンダースコア・ピリオドのみ使用できます",
+					)
+					.describe("作成するコンテナ名"),
+			},
+		},
+		async ({ name }) => {
+			if (isMockMode()) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({ container: { name }, created: true }),
+						},
+					],
+				};
+			}
+			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
+			if (!TENANT_ID) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: "OPENSTACK_TENANT_ID が設定されていません",
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			const raw = await setPutStorageMetadata(
+				`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(name)}`,
+			);
+			const parsed = JSON.parse(raw) as { status: number };
+			// PUT は 201 Created（新規）または 202 Accepted（既存・no-op）が成功
+			if (parsed.status !== 201 && parsed.status !== 202) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: `コンテナ作成に失敗しました (${parsed.status})`,
+								detail: raw,
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify({
+							container: { name },
+							created: parsed.status === 201,
+						}),
+					},
+				],
+			};
+		},
+	);
+}
+
+/**
+ * delete_container: ストレージコンテナを削除
+ *
+ * @remarks
+ * 冪等: いいえ（存在しないコンテナへの DELETE は 404）
+ * ドライラン: 非対応
+ * Swift は空でないコンテナを削除できないため、事前にオブジェクトを空にする必要がある
+ * @internal
+ */
+function registerDeleteContainer(server: McpServer): void {
+	server.registerTool(
+		"delete_container",
+		{
+			title: "ストレージコンテナ削除",
+			description:
+				"オブジェクトストレージのコンテナを削除します。空でないコンテナは削除できません。",
+			inputSchema: {
+				name: z.string().min(1).describe("削除するコンテナ名"),
+			},
+		},
+		async ({ name }) => {
+			if (isMockMode()) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({ container: { name }, deleted: true }),
+						},
+					],
+				};
+			}
+			const raw = await deleteStorageContainer(
+				`/v1/AUTH_{tenantId}/${encodeURIComponent(name)}`,
+			);
+			const parsed = JSON.parse(raw) as { status: number };
+			if (parsed.status !== 204) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: `コンテナ削除に失敗しました (${parsed.status})`,
+								detail: raw,
+								...(parsed.status === 409 && {
+									hint: "コンテナが空ではありません。先にオブジェクトを全て削除してください。",
+								}),
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify({ container: { name }, deleted: true }),
 					},
 				],
 			};
