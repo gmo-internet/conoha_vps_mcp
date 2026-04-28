@@ -76,7 +76,7 @@ describe("getMockServer", () => {
 });
 
 describe("getMockVolumes", () => {
-	it("3��のボリュームを返す", () => {
+	it("3件のボリュームを返す", () => {
 		const volumes = getMockVolumes();
 		expect(volumes).toHaveLength(3);
 	});
