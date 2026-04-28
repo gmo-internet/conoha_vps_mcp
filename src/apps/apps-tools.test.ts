@@ -255,6 +255,53 @@ describe("list_images", () => {
 	});
 });
 
+describe("mapNovaServerToAppServer", () => {
+	it("ConoHa が vm-xxxxxxxx-xx 形式に上書きした name よりも metadata.instance_name_tag をユーザー表示名として優先する", async () => {
+		const { mapNovaServerToAppServer } = await import("./apps-tools");
+		const result = mapNovaServerToAppServer({
+			id: "srv-1",
+			name: "vm-0cfcbb00-1d",
+			status: "ACTIVE",
+			metadata: { instance_name_tag: "ConoHa-MCPApp-PoC-test-02" },
+			flavor: { id: "flv-1" },
+			addresses: {},
+			created: "2026-04-28T02:31:40Z",
+		});
+		expect(result.name).toBe("ConoHa-MCPApp-PoC-test-02");
+	});
+
+	it("instance_name_tag が未設定の場合は Nova の name にフォールバックする", async () => {
+		const { mapNovaServerToAppServer } = await import("./apps-tools");
+		const result = mapNovaServerToAppServer({
+			id: "srv-2",
+			name: "vm-fallback",
+			status: "ACTIVE",
+			metadata: {},
+			flavor: { id: "flv-1" },
+			addresses: {},
+			created: "2026-04-28T02:31:40Z",
+		});
+		expect(result.name).toBe("vm-fallback");
+	});
+
+	it("metadata.image_name を OS フィールドにマップする", async () => {
+		const { mapNovaServerToAppServer } = await import("./apps-tools");
+		const result = mapNovaServerToAppServer({
+			id: "srv-3",
+			name: "vm-3",
+			status: "ACTIVE",
+			metadata: {
+				instance_name_tag: "test-server",
+				image_name: "vmi-ubuntu-24.04-amd64",
+			},
+			flavor: { id: "flv-1" },
+			addresses: {},
+			created: "2026-04-28T02:31:40Z",
+		});
+		expect(result.os).toBe("vmi-ubuntu-24.04-amd64");
+	});
+});
+
 describe("mapGlanceImageToAppImage", () => {
 	it("ConoHa Glance APIの tags 配列を AppImage のメタデータフィールドに展開する", async () => {
 		const { mapGlanceImageToAppImage } = await import("./apps-tools");

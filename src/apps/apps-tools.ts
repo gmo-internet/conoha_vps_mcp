@@ -718,7 +718,7 @@ function mapNovaStatus(status: string): "running" | "stopped" | "building" {
  * @returns アプリ用サーバー情報
  * @internal
  */
-function mapNovaServerToAppServer(
+export function mapNovaServerToAppServer(
 	s: Record<string, unknown>,
 	flavorMap?: Map<string, { vcpus: number; ram: number; disk: number }>,
 	volumeSizeMap?: Map<string, number>,
@@ -750,9 +750,14 @@ function mapNovaServerToAppServer(
 		}
 	}
 
+	// ConoHaは Nova の `name` を `vm-xxxxxxxx-xx` 形式に強制上書きし、ユーザー指定名は
+	// `metadata.instance_name_tag` に格納する。表示用には instance_name_tag を優先する
+	const metadata = (s.metadata ?? {}) as Record<string, string | undefined>;
+	const displayName = metadata.instance_name_tag || String(s.name ?? "");
+
 	return {
 		id: String(s.id ?? ""),
-		name: String(s.name ?? ""),
+		name: displayName,
 		status: mapNovaStatus(String(s.status ?? "")),
 		vcpu: flavorSpec?.vcpus ?? Number(flavorRef.vcpus ?? 0),
 		memory_gb: Math.round(
@@ -760,9 +765,7 @@ function mapNovaServerToAppServer(
 		),
 		disk_gb: diskGb,
 		plan: String(flavorRef.original_name ?? flavorRef.id ?? ""),
-		os: String(
-			(s.metadata as Record<string, string> | undefined)?.image_name ?? "",
-		),
+		os: String(metadata.image_name ?? ""),
 		ipv4,
 		ipv6,
 		region: "tyo3",
@@ -1389,6 +1392,8 @@ function registerCreateServer(server: McpServer): void {
 			const json = (await response.json()) as {
 				server: Record<string, unknown>;
 			};
+			// 作成直後のレスポンスでも `name` は ConoHa が `vm-...` で上書きするため、
+			// ユーザー入力名（リクエスト時の name）をそのまま返す
 			return {
 				content: [
 					{
@@ -1396,7 +1401,7 @@ function registerCreateServer(server: McpServer): void {
 						text: JSON.stringify({
 							server: {
 								id: String(json.server?.id ?? ""),
-								name: String(json.server?.name ?? ""),
+								name,
 								status: "building",
 							},
 							mode: createdByUs ? "auto" : "manual",
