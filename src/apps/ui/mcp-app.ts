@@ -654,6 +654,7 @@ async function confirmDeleteContainer(name: string): Promise<void> {
 	// 既存の confirm-overlay を再利用。executeCreateServer も同じボタンを聞いているが、
 	// あちらは currentView==="create" でガードしているため誤発火しない
 	setTxt("confirm-title", "コンテナを削除しますか？");
+	setTxt("confirm-ok", "削除する");
 	const body = document.getElementById("confirm-body");
 	if (body) {
 		body.innerHTML = `
@@ -801,6 +802,7 @@ async function confirmDeleteObject(name: string): Promise<void> {
 	const container = currentContainerName;
 	if (!container) return;
 	setTxt("confirm-title", "オブジェクトを削除しますか？");
+	setTxt("confirm-ok", "削除する");
 	const body = document.getElementById("confirm-body");
 	if (body) {
 		body.innerHTML = `コンテナ <code>${esc(container)}</code> 内の <code>${esc(name)}</code> を削除します。`;
@@ -1266,6 +1268,7 @@ function showConfirmCreate(): void {
 	}
 
 	setTxt("confirm-title", "サーバーを作成しますか？");
+	setTxt("confirm-ok", "作成する");
 	const body = document.getElementById("confirm-body");
 	if (body) {
 		body.innerHTML = `
