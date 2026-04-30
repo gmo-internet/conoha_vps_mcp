@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ConoHa VPS — MCP App</title>
+<title>ConoHa VPS Storage — MCP App</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -15,8 +15,6 @@
   --border:#e6e9eb;--border2:#aeb4b8;
   --red:#e53e3e;--red-lt:#fff5f5;
   --green:#38a169;--green-lt:#f0fff4;
-  --blue:#3182ce;--blue-lt:#ebf8ff;
-  --amber:#d97706;--amber-lt:#fffbeb;
   --mono:'IBM Plex Mono',monospace;--sans:'Noto Sans JP',sans-serif;
   --radius:6px;
   --sh:0 2px 10px rgba(0,0,0,.04);
@@ -41,10 +39,6 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 .nav-btn:hover{border-color:var(--border2);color:var(--text)}
 .nav-btn.on{background:var(--cyan);color:#fff;border-color:var(--cyan)}
 .nav-sp{flex:1}
-.nav-toggle{display:none;padding:6px 12px;border-radius:var(--radius);font-size:11px;font-family:var(--mono);font-weight:500;color:var(--cyan-dk);border:1px dashed var(--cyan);background:var(--cyan-lt);cursor:pointer;transition:all .15s}
-.nav-toggle:hover{background:var(--cyan);color:#fff;border-style:solid}
-.nav-toggle.show{display:inline-block}
-.nav-divider{display:inline-block;width:1px;height:18px;background:var(--border);margin:0 4px}
 
 /* ストレージ（コンテナ一覧） */
 .storage-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border)}
@@ -53,7 +47,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 .storage-count{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text)}
 .btn-sm{padding:6px 12px;font-size:11px}
 .container-list{flex:1;min-height:0;overflow-y:auto;padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;align-content:start}
-.container-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:default;transition:all .18s ease;position:relative;overflow:hidden}
+.container-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px;cursor:pointer;transition:all .18s ease;position:relative;overflow:hidden}
 .container-card::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--cyan);opacity:0;transition:opacity .18s}
 .container-card:hover{border-color:var(--cyan);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,201,227,.12)}
 .container-card:hover::before{opacity:1}
@@ -72,7 +66,6 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 .empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
 .empty-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
 .empty-desc{font-family:var(--mono);font-size:11px;color:var(--text3)}
-.form-error{font-family:var(--mono);font-size:11px;color:var(--red);margin-top:4px}
 
 /* オブジェクト一覧（コンテナ詳細） */
 .back-link{padding:4px 10px;font-family:var(--mono);font-size:11px;color:var(--cyan-dk);background:transparent;border:1px solid transparent;border-radius:var(--radius);cursor:pointer;transition:all .15s;margin-right:4px}
@@ -93,36 +86,8 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 .object-size{font-family:var(--mono);font-size:11px;color:var(--text2);font-weight:500;white-space:nowrap}
 .object-action{padding:4px 10px;font-size:10px;font-family:var(--mono);border:1px solid var(--border);background:var(--white);color:var(--text2);border-radius:4px;cursor:pointer;transition:all .12s}
 .object-action:hover{border-color:var(--red);color:var(--red);background:var(--red-lt)}
-.container-card{cursor:pointer}
 
-/* 検索バー */
-.search-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--white);border-bottom:1px solid var(--border)}
-.search-input{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--mono);font-size:12px;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
-.search-input:focus{border-color:var(--cyan)}
-.search-input::placeholder{color:var(--text3)}
-.search-count{font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap}
-
-/* コンテンツエリア */
-.content{flex:1;overflow-y:auto;min-height:0}
-
-/* サーバー一覧 */
-.server-list{display:flex;flex-direction:column}
-.server-item{display:grid;grid-template-columns:1fr auto auto;gap:8px 16px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white);cursor:pointer;transition:background .1s}
-.server-item:hover{background:var(--cyan-lt)}
-.server-name{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.server-id{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px}
-.server-ip{font-family:var(--mono);font-size:12px;color:var(--text2);text-align:right}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100vmax;font-family:var(--mono);font-size:10px;font-weight:500}
-.badge::before{content:'';width:6px;height:6px;border-radius:50%}
-.badge.run{background:var(--green-lt);color:var(--green)}.badge.run::before{background:var(--green)}
-.badge.stp{background:var(--red-lt);color:var(--red)}.badge.stp::before{background:var(--red)}
-.badge.bld{background:var(--blue-lt);color:var(--blue)}.badge.bld::before{background:var(--blue);animation:blink .8s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* 空状態 */
-.empty{padding:48px 16px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text3)}
-
-/* サーバー作成フォーム */
+/* フォーム（コンテナ作成） */
 .form-panel{display:none;flex-direction:column;overflow-y:auto;min-height:0;flex:1}
 .form-panel.open{display:flex}
 .form-section{padding:16px;display:flex;flex-direction:column;gap:14px}
@@ -132,44 +97,8 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 .form-input{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--mono);font-size:13px;color:var(--text);background:var(--white);outline:none;transition:border-color .15s}
 .form-input:focus{border-color:var(--cyan)}
 .form-input::placeholder{color:var(--text3)}
-.form-select{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--mono);font-size:13px;color:var(--text);background:var(--white);outline:none;cursor:pointer;transition:border-color .15s}
-.form-select:focus{border-color:var(--cyan)}
-
-/* カスタムドロップダウン（ConoHa風） */
-.dd{position:relative}
-.dd-trigger{width:100%;padding:8px 12px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);font-family:var(--mono);font-size:13px;color:var(--text);text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:border-color .15s}
-.dd-trigger:hover{border-color:var(--border2)}
-.dd-trigger:focus,.dd.open .dd-trigger{border-color:var(--cyan);outline:none;box-shadow:0 0 0 3px rgba(0,201,227,.15)}
-.dd-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dd-label.placeholder{color:var(--text3)}
-.dd-caret{flex-shrink:0;transition:transform .15s;color:var(--text2)}
-.dd.open .dd-caret{transform:rotate(180deg);color:var(--cyan)}
-.dd-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1px solid var(--border2);border-radius:var(--radius);box-shadow:var(--sh);overflow:hidden;z-index:50}
-.dd.open .dd-panel{display:block}
-.dd-search-wrap{display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--border);height:36px;background:var(--bg);color:var(--text3)}
-.dd-search-wrap svg{flex-shrink:0}
-.dd-search{flex:1;border:none;font-family:var(--mono);font-size:12px;background:transparent;outline:none;color:var(--text);height:100%;padding:0}
-.dd-search::placeholder{color:var(--text3)}
-.dd-list{max-height:200px;overflow-y:auto}
-.dd-item{padding:8px 12px;font-family:var(--mono);font-size:13px;color:var(--text);cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:2px}
-.dd-item:last-child{border-bottom:none}
-.dd-item:hover{background:var(--cyan-lt)}
-.dd-item.selected{background:var(--cyan-lt);color:var(--cyan-dk);font-weight:500}
-.dd-item.selected .dd-item-label::before{content:'✓ ';color:var(--cyan-dk)}
-.dd-item-label{display:block;font-weight:inherit}
-.dd-item-sub{display:block;font-size:11px;color:var(--text3);font-weight:400;letter-spacing:.02em}
-.dd-empty{padding:12px;font-family:var(--mono);font-size:11px;color:var(--text3);text-align:center}
 .form-hint{font-size:10px;color:var(--text3);font-family:var(--mono);line-height:1.4}
-.form-error{font-size:10px;color:var(--red);font-family:var(--mono);display:none}
-.form-error.show{display:block}
-
-/* パスワード強度バー */
-.pw-strength{display:flex;gap:3px;margin-top:4px}
-.pw-bar{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background .2s}
-.pw-bar.weak{background:var(--red)}
-.pw-bar.medium{background:var(--amber)}
-.pw-bar.strong{background:var(--green)}
-.pw-text{font-family:var(--mono);font-size:10px;margin-top:2px}
+.form-error{font-family:var(--mono);font-size:11px;color:var(--red);margin-top:4px}
 
 /* ボタン */
 .btn-row{display:flex;gap:8px;padding:16px;background:var(--bg);border-top:1px solid var(--border);margin-top:auto}
@@ -189,32 +118,6 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 .confirm-body code{background:var(--bg2);padding:1px 6px;border-radius:3px;font-family:var(--mono);font-size:12px}
 .confirm-btns{display:flex;gap:8px;justify-content:center}
 
-/* サーバー詳細パネル */
-.detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:100;align-items:center;justify-content:center}
-.detail-overlay.open{display:flex}
-.detail-panel{background:var(--white);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.15);width:480px;max-width:90vw;overflow:hidden}
-.dp-bar{display:flex;align-items:center;gap:8px;padding:9px 16px;background:var(--cyan);font-family:var(--mono);font-size:11px}
-.dp-bar .header-icon{width:18px;height:18px}
-.dp-title-text{color:#fff;font-weight:500}
-.dp-sp{flex:1}
-.dp-close{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:100vmax;padding:2px 10px;font-size:11px;cursor:pointer;font-family:var(--mono)}
-.dp-close:hover{background:rgba(255,255,255,.35)}
-.dp-content{padding:16px}
-.dp-name{font-family:var(--mono);font-size:15px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.dp-id{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:14px}
-.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.dp-field{display:flex;flex-direction:column;gap:2px}
-.dp-key{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
-.dp-val{font-family:var(--mono);font-size:12px;color:var(--text)}
-.dp-val.dim{color:var(--text2)}
-.dp-actions{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);background:var(--bg)}
-.dp-action{padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--white);font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;transition:all .15s}
-.dp-action:hover{border-color:var(--border2);color:var(--text)}
-.dp-action.primary{background:var(--cyan);color:#fff;border-color:var(--cyan)}
-.dp-action.primary:hover{background:var(--cyan-dk)}
-.dp-action.danger{color:var(--red);border-color:#fecaca}
-.dp-action.danger:hover{background:var(--red);color:#fff}
-
 /* 結果通知 */
 .toast{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:var(--radius);font-family:var(--mono);font-size:12px;color:#fff;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.15)}
 .toast.show{display:block;animation:toast-in .3s ease}
@@ -225,6 +128,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 /* フッター */
 .footer{display:flex;align-items:center;justify-content:space-between;padding:7px 16px;background:var(--bg);border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--text3)}
 .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s ease-in-out infinite;display:inline-block;margin-right:6px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
 </head>
 <body>
@@ -233,154 +137,15 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
   <div class="header-icon">C</div>
   <span class="header-title">ConoHa VPS</span>
   <span class="header-sep">/</span>
-  <span class="header-page" id="page-label">servers</span>
+  <span class="header-page" id="page-label">storage</span>
   <span class="header-sp"></span>
   <span class="header-badge">MCP App</span>
 </div>
 
 <div class="main">
   <div class="nav">
-    <button type="button" class="nav-btn on" id="btn-list">サーバー一覧</button>
-    <button type="button" class="nav-btn" id="btn-create">+ 新規作成</button>
-    <span class="nav-divider"></span>
-    <button type="button" class="nav-btn" id="btn-storage">ストレージ</button>
+    <button type="button" class="nav-btn on" id="btn-storage">ストレージ</button>
     <span class="nav-sp"></span>
-    <button type="button" class="nav-toggle" id="btn-mode-toggle">ボリューム手動作成 →</button>
-  </div>
-
-  <!-- サーバー一覧パネル -->
-  <div id="panel-list" style="display:flex;flex-direction:column;flex:1;min-height:0">
-    <div class="search-bar">
-      <input type="text" class="search-input" id="search-input" placeholder="サーバー名・IPで検索...">
-      <span class="search-count" id="search-count"></span>
-    </div>
-    <div class="content" id="server-list-container">
-      <div class="server-list" id="server-list">
-        <div class="empty">読み込み中...</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- サーバー作成パネル -->
-  <div class="form-panel" id="panel-create">
-    <div class="form-section">
-      <div class="form-group">
-        <label class="form-label" for="f-name">サーバー名 <span class="req">必須</span></label>
-        <input type="text" class="form-input" id="f-name" placeholder="例: web-server-01" maxlength="255">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="f-password">rootパスワード <span class="req">必須</span></label>
-        <input type="password" class="form-input" id="f-password" placeholder="9文字以上・大小英数記号を含む">
-        <div class="pw-strength" id="pw-strength">
-          <div class="pw-bar" id="pw-bar-1"></div>
-          <div class="pw-bar" id="pw-bar-2"></div>
-          <div class="pw-bar" id="pw-bar-3"></div>
-          <div class="pw-bar" id="pw-bar-4"></div>
-        </div>
-        <span class="pw-text" id="pw-text"></span>
-        <span class="form-error" id="pw-error"></span>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">プラン <span class="req">必須</span></label>
-        <div class="dd" id="dd-flavor">
-          <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false">
-            <span class="dd-label placeholder">プランを選択</span>
-            <svg class="dd-caret" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="dd-panel" role="listbox">
-            <div class="dd-search-wrap">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <input type="text" class="dd-search" placeholder="プランを検索（例: c1m512）" aria-label="プラン検索">
-            </div>
-            <div class="dd-list"></div>
-          </div>
-        </div>
-        <input type="hidden" id="f-flavor">
-      </div>
-
-      <div class="form-group" id="group-image">
-        <label class="form-label">OSイメージ <span class="req">必須</span></label>
-        <div class="dd" id="dd-image">
-          <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false">
-            <span class="dd-label placeholder">イメージを選択</span>
-            <svg class="dd-caret" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="dd-panel" role="listbox">
-            <div class="dd-search-wrap">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <input type="text" class="dd-search" placeholder="OSイメージを検索（例: ubuntu, rails）" aria-label="OSイメージ検索">
-            </div>
-            <div class="dd-list"></div>
-          </div>
-        </div>
-        <input type="hidden" id="f-image">
-        <span class="form-hint">ブートボリュームは自動で作成されます（512MBプラン: 30GB / その他: 100GB・サーバー作成後に課金対象）</span>
-      </div>
-
-      <div class="form-group" id="group-volume" style="display:none">
-        <label class="form-label">ブートボリューム <span class="req">必須</span></label>
-        <div class="dd" id="dd-volume">
-          <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false">
-            <span class="dd-label placeholder">ブートボリュームを選択</span>
-            <svg class="dd-caret" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="dd-panel" role="listbox">
-            <div class="dd-search-wrap">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <input type="text" class="dd-search" placeholder="ボリューム名で検索" aria-label="ボリューム検索">
-            </div>
-            <div class="dd-list"></div>
-          </div>
-        </div>
-        <input type="hidden" id="f-volume">
-        <span class="form-hint">事前作成済みの available ボリュームのみ表示。存在しない場合は自動モードへ切り替えてください。</span>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">SSHキー</label>
-        <div class="dd" id="dd-sshkey">
-          <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false">
-            <span class="dd-label placeholder">使用しない</span>
-            <svg class="dd-caret" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="dd-panel" role="listbox">
-            <div class="dd-search-wrap">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <input type="text" class="dd-search" placeholder="SSHキーを検索" aria-label="SSHキー検索">
-            </div>
-            <div class="dd-list"></div>
-          </div>
-        </div>
-        <input type="hidden" id="f-sshkey">
-        <span class="form-hint">キーペアが登録済みの場合に選択できます</span>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">セキュリティグループ</label>
-        <div class="dd" id="dd-secgroup">
-          <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false">
-            <span class="dd-label placeholder">デフォルト</span>
-            <svg class="dd-caret" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="dd-panel" role="listbox">
-            <div class="dd-search-wrap">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5L12 12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <input type="text" class="dd-search" placeholder="セキュリティグループを検索" aria-label="セキュリティグループ検索">
-            </div>
-            <div class="dd-list"></div>
-          </div>
-        </div>
-        <input type="hidden" id="f-secgroup">
-        <span class="form-hint">ファイアウォールルールを適用します</span>
-      </div>
-    </div>
-
-    <div class="btn-row">
-      <button type="button" class="btn btn-cancel" id="btn-create-cancel">キャンセル</button>
-      <button type="button" class="btn btn-primary" id="btn-create-submit" disabled>サーバーを作成</button>
-    </div>
   </div>
 
   <!-- ストレージ（コンテナ一覧）パネル -->
@@ -410,7 +175,6 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
       </div>
     </div>
     <div class="upload-progress" id="upload-progress" style="display:none">
-      <div class="progress-fill"></div>
       <span class="progress-label" id="progress-label">アップロード中…</span>
     </div>
     <div class="object-list" id="object-list"></div>
@@ -436,48 +200,18 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);height:600px
 <!-- 確認ダイアログ -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-panel">
-    <div class="confirm-title" id="confirm-title">サーバーを作成しますか？</div>
+    <div class="confirm-title" id="confirm-title">削除しますか？</div>
     <div class="confirm-body" id="confirm-body"></div>
     <div class="confirm-btns">
       <button type="button" class="btn btn-cancel" id="confirm-cancel">キャンセル</button>
-      <button type="button" class="btn btn-primary" id="confirm-ok">作成する</button>
+      <button type="button" class="btn btn-primary" id="confirm-ok">削除する</button>
     </div>
   </div>
 </div>
-
-<!-- サーバー詳細パネル -->
-<div class="detail-overlay" id="detail-overlay">
-  <div class="detail-panel">
-    <div class="dp-bar">
-      <div class="header-icon">C</div>
-      <span class="dp-title-text">サーバー詳細</span>
-      <span class="dp-sp"></span>
-      <button type="button" class="dp-close" id="close-detail">✕</button>
-    </div>
-    <div class="dp-content">
-      <div class="dp-name"><span id="dp-name">—</span><span id="dp-badge"></span></div>
-      <div class="dp-id" id="dp-id">—</div>
-      <div class="dp-grid">
-        <div class="dp-field"><span class="dp-key">vCPU</span><span class="dp-val" id="dp-vcpu">—</span></div>
-        <div class="dp-field"><span class="dp-key">Memory</span><span class="dp-val" id="dp-mem">—</span></div>
-        <div class="dp-field"><span class="dp-key">Disk</span><span class="dp-val" id="dp-disk">—</span></div>
-        <div class="dp-field"><span class="dp-key">Plan</span><span class="dp-val dim" id="dp-plan">—</span></div>
-        <div class="dp-field"><span class="dp-key">IPv4</span><span class="dp-val" id="dp-ipv4">—</span></div>
-        <div class="dp-field"><span class="dp-key">IPv6</span><span class="dp-val dim" id="dp-ipv6" style="font-size:10px">—</span></div>
-        <div class="dp-field"><span class="dp-key">Region</span><span class="dp-val dim" id="dp-region">—</span></div>
-        <div class="dp-field"><span class="dp-key">作成日</span><span class="dp-val dim" id="dp-created">—</span></div>
-      </div>
-    </div>
-    <div class="dp-actions" id="dp-actions"></div>
-  </div>
-</div>
-
-<!-- トースト通知 -->
-<div class="toast" id="toast"></div>
 
 <div class="footer">
   <span><span class="status-dot"></span>MCP App 接続中</span>
-  <span id="last-updated">最終更新: —</span>
+  <span>最終更新: <span id="last-update">—</span></span>
 </div>
 
 <script type="module" src="./mcp-app.ts"></script>
