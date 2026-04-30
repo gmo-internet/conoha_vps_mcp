@@ -17,6 +17,7 @@ import { resolve } from "node:path";
 import {
 	RESOURCE_MIME_TYPE,
 	registerAppResource,
+	registerAppTool,
 } from "@modelcontextprotocol/ext-apps/server";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
@@ -118,15 +119,17 @@ function mapSwiftContainerToAppContainer(c: unknown): AppContainer {
 }
 
 /**
- * list_containers: ストレージコンテナ一覧を取得
+ * list_containers: ストレージコンテナ一覧を取得（MCP App UI 付き）
  *
  * @remarks
  * 冪等: はい（参照のみ）
  * ドライラン: 不要（副作用なし）
+ * UI: ConoHa VPS Storage ダッシュボード（コンテナ一覧 + 詳細パネル）
  * @internal
  */
 function registerListContainers(server: McpServer): void {
-	server.registerTool(
+	registerAppTool(
+		server,
 		"list_containers",
 		{
 			title: "ストレージコンテナ一覧取得",
@@ -143,6 +146,11 @@ function registerListContainers(server: McpServer): void {
 					}),
 				),
 				total: z.number(),
+			},
+			_meta: {
+				ui: {
+					resourceUri: UI_RESOURCE_URI,
+				},
 			},
 		},
 		async () => {
