@@ -275,6 +275,20 @@ describe("get_container_public_state", () => {
 		expect(result.structuredContent.public).toBe(false);
 		expect(result.structuredContent.public_url).toBeUndefined();
 	});
+
+	it("公開コンテナは read_acl に .r:* を含み、誰でも読める設定であることを示す", async () => {
+		const result = await callTool(server, "get_container_public_state", {
+			container: "media-assets",
+		});
+		expect(result.structuredContent.read_acl).toContain(".r:*");
+	});
+
+	it("非公開コンテナは read_acl フィールドを返さない", async () => {
+		const result = await callTool(server, "get_container_public_state", {
+			container: "backups",
+		});
+		expect(result.structuredContent.read_acl).toBeUndefined();
+	});
 });
 
 describe("enable_web_publish", () => {
@@ -299,6 +313,25 @@ describe("enable_web_publish", () => {
 		expect(data.container.public).toBe(true);
 		expect(data.container.public_url).toContain("my-site");
 	});
+
+	it("公開URLが ConoHa オブジェクトストレージのスキーム + コンテナ名を含む形式で返る", async () => {
+		const result = await callTool(server, "enable_web_publish", {
+			container: "portfolio-site",
+		});
+		const data = JSON.parse(result.content[0].text);
+		expect(data.container.public_url).toMatch(
+			/^https:\/\/object-storage\.c3j1\.conoha\.io\/v1\/AUTH_[^/]+\/portfolio-site$/,
+		);
+	});
+
+	it("特殊文字を含むコンテナ名は URL エンコードされる", async () => {
+		const result = await callTool(server, "enable_web_publish", {
+			container: "site.with.dots",
+		});
+		const data = JSON.parse(result.content[0].text);
+		// ピリオドはエンコード対象外で、そのまま含まれる
+		expect(data.container.public_url).toContain("site.with.dots");
+	});
 });
 
 describe("disable_web_publish", () => {
@@ -321,5 +354,53 @@ describe("disable_web_publish", () => {
 		const data = JSON.parse(result.content[0].text);
 		expect(data.published).toBe(false);
 		expect(data.container.public).toBe(false);
+	});
+
+	it("非公開化レスポンスには public_url を含めない（公開状態の取り消しを明示）", async () => {
+		const result = await callTool(server, "disable_web_publish", {
+			container: "my-site",
+		});
+		const data = JSON.parse(result.content[0].text);
+		expect(data.container.public_url).toBeUndefined();
+	});
+});
+
+describe("Web公開トグルの往復シナリオ", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("enable → disable の順で呼んでも、それぞれ正しい published フラグを返す", async () => {
+		const enabled = await callTool(server, "enable_web_publish", {
+			container: "round-trip",
+		});
+		const disabled = await callTool(server, "disable_web_publish", {
+			container: "round-trip",
+		});
+		expect(JSON.parse(enabled.content[0].text).published).toBe(true);
+		expect(JSON.parse(disabled.content[0].text).published).toBe(false);
+	});
+
+	it("enable で返る public_url は disable で取り消され同じレスポンス内に持ち越されない", async () => {
+		const enabled = await callTool(server, "enable_web_publish", {
+			container: "round-trip",
+		});
+		const disabled = await callTool(server, "disable_web_publish", {
+			container: "round-trip",
+		});
+		expect(
+			JSON.parse(enabled.content[0].text).container.public_url,
+		).toBeDefined();
+		expect(
+			JSON.parse(disabled.content[0].text).container.public_url,
+		).toBeUndefined();
 	});
 });
