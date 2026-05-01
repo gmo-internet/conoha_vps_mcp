@@ -376,11 +376,18 @@ function renderContainerList(): void {
 		.map((c) => {
 			const sizeText = formatBytes(c.bytes);
 			const lm = c.last_modified ? `更新: ${c.last_modified.slice(0, 10)}` : "";
-			const publicBadge = c.is_public
-				? '<span class="public-badge"><span class="public-dot"></span>公開中</span>'
-				: '<span class="private-badge">非公開</span>';
-			const toggleAction = c.is_public ? "unpublish" : "publish";
-			const toggleLabel = c.is_public ? "非公開化" : "🌐 公開";
+			const switchOn = c.is_public ? "on" : "";
+			const switchTitle = c.is_public ? "Web公開を解除" : "Web公開する";
+			const switchAriaChecked = c.is_public ? "true" : "false";
+			const switchLabelText = c.is_public ? "公開中" : "非公開";
+			const publishSwitch = `
+				<span class="publish-switch-wrap">
+					<button type="button" class="container-action publish-switch ${switchOn}" role="switch" aria-checked="${switchAriaChecked}" data-action="toggle-publish" data-name="${esc(c.name)}" data-current-public="${switchAriaChecked}" title="${switchTitle}">
+						<span class="publish-switch-track"></span>
+						<span class="publish-switch-thumb"></span>
+					</button>
+					<span class="publish-switch-label ${switchOn}">${switchLabelText}</span>
+				</span>`;
 			const publicUrlBlock =
 				c.is_public && c.public_url
 					? `<div class="public-url" data-action="copy-url" data-url="${esc(c.public_url)}" title="クリックで URL をコピー">
@@ -393,9 +400,8 @@ function renderContainerList(): void {
 					<div class="container-card-head">
 						<div class="container-icon">📦</div>
 						<div class="container-name" title="${esc(c.name)}">${esc(c.name)}</div>
-						${publicBadge}
+						${publishSwitch}
 						<div class="container-actions">
-							<button type="button" class="container-action publish-toggle" data-action="${toggleAction}" data-name="${esc(c.name)}">${toggleLabel}</button>
 							<button type="button" class="container-action" data-action="delete" data-name="${esc(c.name)}">削除</button>
 						</div>
 					</div>
@@ -422,9 +428,12 @@ function renderContainerList(): void {
 			e.stopPropagation();
 			const name = btn.dataset.name ?? "";
 			const action = btn.dataset.action;
-			if (action === "delete") void confirmDeleteContainer(name);
-			else if (action === "publish") void togglePublish(name, true);
-			else if (action === "unpublish") void togglePublish(name, false);
+			if (action === "delete") {
+				void confirmDeleteContainer(name);
+			} else if (action === "toggle-publish") {
+				const isCurrentlyPublic = btn.dataset.currentPublic === "true";
+				void togglePublish(name, !isCurrentlyPublic);
+			}
 		});
 	}
 
