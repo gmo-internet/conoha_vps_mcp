@@ -13,8 +13,7 @@
 			"!**/reports",
 			"!**/dist",
 			"!**/.stryker-tmp",
-			"!**/skills/**/*.md",
-			"!**/conoha-brand.css"
+			"!**/skills/**/*.md"
 		]
 	},
 	"formatter": {
