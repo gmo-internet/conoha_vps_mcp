@@ -10,6 +10,7 @@
  */
 
 import { App } from "@modelcontextprotocol/ext-apps";
+import "./mcp-app.css";
 import { formatBytes } from "./format-bytes.js";
 
 // ──────────────────────────────────────────────
