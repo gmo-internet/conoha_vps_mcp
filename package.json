@@ -41,7 +41,9 @@
 		"registry": "https://registry.npmjs.org/"
 	},
 	"scripts": {
-		"build": "node esbuild.config.js",
+		"build": "vite build --config vite.config.server.ts && vite build",
+		"build:server": "vite build --config vite.config.server.ts",
+		"build:ui": "vite build",
 		"build:types": "tsc --emitDeclarationOnly",
 		"build:mcpb": "mcpb pack",
 		"start": "node dist/index.js",
@@ -62,6 +64,7 @@
 		"mutation": "stryker run"
 	},
 	"dependencies": {
+		"@modelcontextprotocol/ext-apps": "^1.6.0",
 		"@modelcontextprotocol/sdk": "^1.29.0",
 		"zod": "^4.3.6"
 	},
@@ -73,12 +76,13 @@
 		"@types/node": "^22.0.0",
 		"@vitest/coverage-v8": "4.1.5",
 		"dependency-cruiser": "17.3.10",
-		"esbuild": "0.28.0",
 		"jscpd": "4.0.9",
 		"knip": "5.88.1",
 		"tsx": "4.21.0",
 		"typedoc": "0.28.19",
 		"typescript": "5.9.3",
+		"vite": "8.0.9",
+		"vite-plugin-singlefile": "2.3.3",
 		"vitest": "4.1.5"
 	},
 	"engines": {

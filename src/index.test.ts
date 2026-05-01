@@ -35,10 +35,13 @@ const mockRegisterTool = vi.fn();
 const mockRegisterPrompt = vi.fn();
 const mockConnect = vi.fn();
 
+const mockRegisterResource = vi.fn();
+
 const mockMcpServer = vi.fn().mockImplementation(function () {
 	return {
 		registerTool: mockRegisterTool,
 		registerPrompt: mockRegisterPrompt,
+		registerResource: mockRegisterResource,
 		connect: mockConnect,
 	};
 });
