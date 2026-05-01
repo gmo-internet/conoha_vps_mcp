@@ -194,7 +194,7 @@ HTTP（80番）とHTTPS（443番）のみを許可してください。
 
 📄 ツールごとの全機能一覧は[こちら](docs/tool.md)を参照してください。
 
-📦 オブジェクトストレージを GUI で操作する MCP App の使い方は[MCP App: オブジェクトストレージ UI 利用ガイド](docs/mcp-app-storage.md)を参照してください。
+🌐 オブジェクトストレージで静的サイトを公開する MCP App の使い方は[MCP App: 静的ホスティング UI 利用ガイド](docs/mcp-app-storage.md)を参照してください。
 
 ## ⚠️ 注意事項
 
