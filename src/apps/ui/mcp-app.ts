@@ -22,6 +22,10 @@ interface ContainerData {
 	count: number;
 	bytes: number;
 	last_modified?: string;
+	/** Web 公開状態（取得後にセット） */
+	is_public?: boolean;
+	/** 公開URL（公開時のみ） */
+	public_url?: string;
 }
 
 interface ObjectData {
@@ -165,6 +169,75 @@ async function callUploadObject(
 	}
 }
 
+async function fetchContainerPublicState(
+	container: string,
+): Promise<{ is_public: boolean; public_url?: string }> {
+	try {
+		const result = await app.callServerTool({
+			name: "get_container_public_state",
+			arguments: { container },
+		});
+		const text = extractText(result);
+		if (text) {
+			const data = JSON.parse(text);
+			return {
+				is_public: Boolean(data.public),
+				...(data.public_url && { public_url: String(data.public_url) }),
+			};
+		}
+	} catch {
+		/* ignore */
+	}
+	return { is_public: false };
+}
+
+async function callEnableWebPublish(
+	container: string,
+): Promise<{ ok: boolean; public_url?: string; error?: string }> {
+	try {
+		const result = await app.callServerTool({
+			name: "enable_web_publish",
+			arguments: { container },
+		});
+		const text = extractText(result);
+		if (!text) return { ok: false, error: "応答が空でした" };
+		const data = JSON.parse(text);
+		if (data.error) return { ok: false, error: String(data.error) };
+		return {
+			ok: true,
+			...(data.container?.public_url && {
+				public_url: String(data.container.public_url),
+			}),
+		};
+	} catch (e) {
+		return {
+			ok: false,
+			error: e instanceof Error ? e.message : "不明なエラー",
+		};
+	}
+}
+
+async function callDisableWebPublish(
+	container: string,
+): Promise<{ ok: boolean; error?: string }> {
+	try {
+		const result = await app.callServerTool({
+			name: "disable_web_publish",
+			arguments: { container },
+		});
+		const text = extractText(result);
+		if (!text) return { ok: false, error: "応答が空でした" };
+		const data = JSON.parse(text);
+		if (data.error) return { ok: false, error: String(data.error) };
+		return { ok: true };
+	} catch (e) {
+		return {
+			ok: false,
+			error: e instanceof Error ? e.message : "不明なエラー",
+		};
+	}
+}
+
 async function callDeleteObject(
 	container: string,
 	objectName: string,
@@ -271,7 +344,15 @@ async function loadContainers(): Promise<void> {
 			'<div class="storage-empty"><div class="empty-icon">⏳</div><div class="empty-title">読み込み中…</div></div>';
 	}
 	const containers = await fetchContainers();
-	allContainers = containers;
+	// 各コンテナの Web 公開状態を並列取得
+	const states = await Promise.all(
+		containers.map((c) => fetchContainerPublicState(c.name)),
+	);
+	allContainers = containers.map((c, i) => ({
+		...c,
+		is_public: states[i].is_public,
+		...(states[i].public_url && { public_url: states[i].public_url }),
+	}));
 	renderContainerList();
 	updateTimestamp();
 }
@@ -295,12 +376,26 @@ function renderContainerList(): void {
 		.map((c) => {
 			const sizeText = formatBytes(c.bytes);
 			const lm = c.last_modified ? `更新: ${c.last_modified.slice(0, 10)}` : "";
+			const publicBadge = c.is_public
+				? '<span class="public-badge"><span class="public-dot"></span>公開中</span>'
+				: '<span class="private-badge">非公開</span>';
+			const toggleAction = c.is_public ? "unpublish" : "publish";
+			const toggleLabel = c.is_public ? "非公開化" : "🌐 公開";
+			const publicUrlBlock =
+				c.is_public && c.public_url
+					? `<div class="public-url" data-action="copy-url" data-url="${esc(c.public_url)}" title="クリックで URL をコピー">
+								<span class="public-url-icon">🔗</span>
+								<span class="public-url-text">${esc(c.public_url)}</span>
+							</div>`
+					: "";
 			return `
 				<div class="container-card" data-name="${esc(c.name)}">
 					<div class="container-card-head">
 						<div class="container-icon">📦</div>
 						<div class="container-name" title="${esc(c.name)}">${esc(c.name)}</div>
+						${publicBadge}
 						<div class="container-actions">
+							<button type="button" class="container-action publish-toggle" data-action="${toggleAction}" data-name="${esc(c.name)}">${toggleLabel}</button>
 							<button type="button" class="container-action" data-action="delete" data-name="${esc(c.name)}">削除</button>
 						</div>
 					</div>
@@ -314,6 +409,7 @@ function renderContainerList(): void {
 							<div class="container-stat-val">${sizeText}</div>
 						</div>
 					</div>
+					${publicUrlBlock}
 					${lm ? `<div class="container-meta">${esc(lm)}</div>` : ""}
 				</div>`;
 		})
@@ -325,7 +421,25 @@ function renderContainerList(): void {
 		btn.addEventListener("click", (e) => {
 			e.stopPropagation();
 			const name = btn.dataset.name ?? "";
-			if (btn.dataset.action === "delete") void confirmDeleteContainer(name);
+			const action = btn.dataset.action;
+			if (action === "delete") void confirmDeleteContainer(name);
+			else if (action === "publish") void togglePublish(name, true);
+			else if (action === "unpublish") void togglePublish(name, false);
+		});
+	}
+
+	// 公開URLクリックでクリップボードにコピー
+	for (const el of Array.from(
+		list.querySelectorAll<HTMLElement>('[data-action="copy-url"]'),
+	)) {
+		el.addEventListener("click", (e) => {
+			e.stopPropagation();
+			const url = el.dataset.url ?? "";
+			if (!url) return;
+			void navigator.clipboard
+				.writeText(url)
+				.then(() => showToast("URL をコピーしました", "success"))
+				.catch(() => showToast("URL のコピーに失敗しました", "error"));
 		});
 	}
 
@@ -340,6 +454,24 @@ function renderContainerList(): void {
 			switchView("objects");
 		});
 	}
+}
+
+async function togglePublish(name: string, makePublic: boolean): Promise<void> {
+	const action = makePublic ? "公開" : "非公開化";
+	const r = makePublic
+		? await callEnableWebPublish(name)
+		: await callDisableWebPublish(name);
+	if (!r.ok) {
+		showToast(r.error ?? `${action}に失敗しました`, "error");
+		return;
+	}
+	const url = "public_url" in r ? r.public_url : undefined;
+	if (makePublic && url) {
+		showToast(`${name} を公開しました（${url}）`, "success");
+	} else {
+		showToast(`${name} を${action}しました`, "success");
+	}
+	await loadContainers();
 }
 
 async function confirmDeleteContainer(name: string): Promise<void> {

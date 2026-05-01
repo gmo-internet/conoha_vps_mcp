@@ -43,7 +43,7 @@ describe("MCP Apps ツール登録", () => {
 		delete process.env.CONOHA_MCP_MOCK;
 	});
 
-	it("ストレージ系の全ツールが登録される", () => {
+	it("ストレージ系の全ツールが登録される（公開トグル含む）", () => {
 		// biome-ignore lint/suspicious/noExplicitAny: SDK内部の_registeredToolsへのアクセス
 		const registeredTools = (server as any)._registeredTools;
 		const toolNames = Object.keys(registeredTools);
@@ -53,6 +53,9 @@ describe("MCP Apps ツール登録", () => {
 		expect(toolNames).toContain("list_objects");
 		expect(toolNames).toContain("upload_object");
 		expect(toolNames).toContain("delete_object");
+		expect(toolNames).toContain("get_container_public_state");
+		expect(toolNames).toContain("enable_web_publish");
+		expect(toolNames).toContain("disable_web_publish");
 	});
 });
 
@@ -241,5 +244,82 @@ describe("delete_object", () => {
 		const data = JSON.parse(result.content[0].text);
 		expect(data.deleted).toBe(true);
 		expect(data.object.name).toBe("hello.txt");
+	});
+});
+
+describe("get_container_public_state", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("モック既定の公開コンテナ media-assets は public:true で公開URLを返す", async () => {
+		const result = await callTool(server, "get_container_public_state", {
+			container: "media-assets",
+		});
+		expect(result.structuredContent.public).toBe(true);
+		expect(result.structuredContent.public_url).toContain("media-assets");
+	});
+
+	it("非公開コンテナは public:false を返し、public_urlは含まれない", async () => {
+		const result = await callTool(server, "get_container_public_state", {
+			container: "backups",
+		});
+		expect(result.structuredContent.public).toBe(false);
+		expect(result.structuredContent.public_url).toBeUndefined();
+	});
+});
+
+describe("enable_web_publish", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("モックモードで公開成功応答を返し、public_urlが含まれる", async () => {
+		const result = await callTool(server, "enable_web_publish", {
+			container: "my-site",
+		});
+		const data = JSON.parse(result.content[0].text);
+		expect(data.published).toBe(true);
+		expect(data.container.public).toBe(true);
+		expect(data.container.public_url).toContain("my-site");
+	});
+});
+
+describe("disable_web_publish", () => {
+	let server: McpServer;
+
+	beforeEach(() => {
+		process.env.CONOHA_MCP_MOCK = "1";
+		server = new McpServer({ name: "test", version: "0.0.1" });
+		registerAppsTools(server);
+	});
+
+	afterEach(() => {
+		delete process.env.CONOHA_MCP_MOCK;
+	});
+
+	it("モックモードで非公開化成功応答を返す", async () => {
+		const result = await callTool(server, "disable_web_publish", {
+			container: "my-site",
+		});
+		const data = JSON.parse(result.content[0].text);
+		expect(data.published).toBe(false);
+		expect(data.container.public).toBe(false);
 	});
 });

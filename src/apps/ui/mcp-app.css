@@ -278,6 +278,76 @@ body {
 	font-size: 10px;
 	color: var(--text3);
 }
+.public-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 8px;
+	border-radius: 100vmax;
+	font-family: var(--mono);
+	font-size: 9px;
+	font-weight: 600;
+	color: var(--green);
+	background: var(--green-lt);
+	border: 1px solid var(--green);
+	letter-spacing: 0.04em;
+}
+.public-dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--green);
+	animation: blink 1.6s ease-in-out infinite;
+}
+.private-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	border-radius: 100vmax;
+	font-family: var(--mono);
+	font-size: 9px;
+	font-weight: 500;
+	color: var(--text3);
+	background: var(--bg);
+	border: 1px solid var(--border);
+	letter-spacing: 0.04em;
+}
+.publish-toggle:hover {
+	border-color: var(--cyan) !important;
+	color: var(--cyan-dk) !important;
+	background: var(--cyan-lt) !important;
+}
+.public-url {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: 8px;
+	padding: 6px 10px;
+	background: var(--cyan-lt);
+	border: 1px dashed var(--cyan);
+	border-radius: var(--radius);
+	font-family: var(--mono);
+	font-size: 10px;
+	color: var(--cyan-dk);
+	cursor: pointer;
+	transition: all 0.15s;
+	overflow: hidden;
+}
+.public-url:hover {
+	background: var(--cyan);
+	color: #fff;
+	border-style: solid;
+}
+.public-url-icon {
+	font-size: 12px;
+	flex-shrink: 0;
+}
+.public-url-text {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
 .storage-empty {
 	grid-column: 1 / -1;
 	display: flex;
