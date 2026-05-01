@@ -1,11 +1,13 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"entry": [
+		"src/apps/ui/mcp-app.ts"
+	],
 	"project": [
 		"src/**/*.ts"
 	],
 	"ignore": [
-		"**/*.test.ts",
-		"src/apps/ui/**"
+		"**/*.test.ts"
 	],
 	"ignoreBinaries": [
 		"renovate-config-validator",
