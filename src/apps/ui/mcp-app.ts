@@ -457,8 +457,11 @@ function renderObjectList(): void {
 			return `
 				<div class="object-row">
 					<div class="object-icon">${esc(iconForContentType(o.content_type))}</div>
-					<div class="object-name" title="${esc(o.name)}">${esc(o.name)}</div>
-					<div class="object-meta">${esc(o.content_type)}${lm ? ` · ${esc(lm)}` : ""}</div>
+					<div class="object-name-block">
+						<div class="object-name" title="${esc(o.name)}">${esc(o.name)}</div>
+						<div class="object-mime" title="${esc(o.content_type)}">${esc(o.content_type)}</div>
+					</div>
+					<div class="object-meta">${lm ? esc(lm) : ""}</div>
 					<div class="object-size">${esc(formatBytes(o.bytes))}</div>
 					<button type="button" class="object-action" data-name="${esc(o.name)}">削除</button>
 				</div>`;
