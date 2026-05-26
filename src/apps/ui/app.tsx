@@ -16,6 +16,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { copyToClipboard } from "./clipboard.js";
 import { ConfirmModal } from "./components/confirm-modal.js";
 import type { ContainerCardItem } from "./components/container-card.js";
 import { ContainerCard } from "./components/container-card.js";
@@ -187,12 +188,8 @@ export function App() {
 	};
 
 	const copyUrl = async (url: string) => {
-		try {
-			await navigator.clipboard.writeText(url);
-			flash("URLをコピーしました");
-		} catch {
-			flash("コピーできませんでした");
-		}
+		const ok = await copyToClipboard(url);
+		flash(ok ? "URLをコピーしました" : "コピーできませんでした");
 	};
 
 	const removeContainer = (name: string) => {
