@@ -48,7 +48,8 @@
 		"build:mcpb": "mcpb pack",
 		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
-		"typecheck": "tsc --noEmit",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.ui.json",
+		"typecheck:ui": "tsc --noEmit -p tsconfig.ui.json",
 		"biome:ci": "biome ci .",
 		"biome:fix": "biome check --write .",
 		"test": "vitest run --coverage",
@@ -66,6 +67,8 @@
 	"dependencies": {
 		"@modelcontextprotocol/ext-apps": "^1.6.0",
 		"@modelcontextprotocol/sdk": "^1.29.0",
+		"react": "18.3.1",
+		"react-dom": "18.3.1",
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
@@ -74,6 +77,9 @@
 		"@stryker-mutator/core": "9.6.1",
 		"@stryker-mutator/vitest-runner": "9.6.1",
 		"@types/node": "^22.0.0",
+		"@types/react": "18.3.29",
+		"@types/react-dom": "18.3.7",
+		"@vitejs/plugin-react": "6.0.2",
 		"@vitest/coverage-v8": "4.1.5",
 		"dependency-cruiser": "17.3.10",
 		"jscpd": "4.0.9",
