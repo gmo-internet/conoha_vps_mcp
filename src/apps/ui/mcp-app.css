@@ -19,6 +19,8 @@
 
 	/* Neutrals — light */
 	--bg: #f5f7fa;
+	/* App 外枠の色（カード外〜iframe端）。Claude Desktop ライトの地色に一致。 */
+	--outer-bg: #f8f8f6;
 	--surface: #ffffff;
 	--surface-2: #f4f6f9;
 	--border: #e4e8ee;
@@ -58,6 +60,8 @@
 	--danger-500: #ef5b5b;
 
 	--bg: #0a0d11;
+	/* App 外枠の色。Claude Desktop ダークの地色に一致させてシームレスに。 */
+	--outer-bg: #1f1f1e;
 	--surface: #14181f;
 	--surface-2: #191e26;
 	--border: #242a34;
@@ -82,7 +86,11 @@ body {
 }
 body {
 	font-family: var(--font-sans);
-	background: #000;
+	/* App 外の枠は Claude Desktop の地色に一致させた明示色を使う。
+	   data-theme（initHostTheming がホストの light/dark から設定）に応じて
+	   --outer-bg がライト #f8f8f6 / ダーク #1f1f1e に切り替わる。
+	   ホストの --color-background-primary には依存しない（実測と差があるため）。 */
+	background: var(--outer-bg);
 	color: var(--text);
 	font-size: 14px;
 	line-height: 1.5;

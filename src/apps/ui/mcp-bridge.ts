@@ -14,7 +14,7 @@
  * @packageDocumentation
  */
 
-import { App } from "@modelcontextprotocol/ext-apps";
+import { App, applyDocumentTheme } from "@modelcontextprotocol/ext-apps";
 import type { AppContainer, AppObject } from "../apps-types.js";
 
 // ──────────────────────────────────────────────
@@ -22,7 +22,56 @@ import type { AppContainer, AppObject } from "../apps-types.js";
 // ──────────────────────────────────────────────
 
 const app = new App({ name: "ConoHa VPS Storage", version: "0.2.0" });
-app.connect();
+const connected = app.connect();
+
+// ──────────────────────────────────────────────
+// ホストテーマ連携
+// ──────────────────────────────────────────────
+
+/**
+ * ホスト（Claude Desktop 等）のテーマ（light/dark）を document に適用する。
+ *
+ * @remarks
+ * `getHostContext()` の `theme` で `data-theme` を設定する。テーマが渡らない
+ * ホストでは OS の prefers-color-scheme にフォールバックする。
+ * 外枠の具体的な配色は CSS 側で `--outer-bg`（Claude の地色に一致させた明示値）
+ * を data-theme 別に持つため、ここでは色値そのものは扱わない。
+ *
+ * @internal
+ */
+function applyHostContext(): void {
+	const ctx = app.getHostContext();
+	if (ctx?.theme) {
+		applyDocumentTheme(ctx.theme);
+	} else {
+		const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+		applyDocumentTheme(dark ? "dark" : "light");
+	}
+}
+
+/**
+ * ホストのテーマを起動時とテーマ変更時に取り込む
+ *
+ * @remarks
+ * 1. 即時に一度適用（フォールバック/既取得分）
+ * 2. connect 完了後にホストコンテキストを適用
+ * 3. `onhostcontextchanged` でテーマ切替に追従
+ * 4. ホストがテーマ非対応のときのみ OS テーマ変更にも追従
+ *
+ * @returns 監視を解除するクリーンアップ関数
+ */
+export function initHostTheming(): () => void {
+	applyHostContext();
+	void connected.then(applyHostContext);
+	app.onhostcontextchanged = () => applyHostContext();
+
+	const mql = window.matchMedia("(prefers-color-scheme: dark)");
+	const onOsThemeChange = () => {
+		if (!app.getHostContext()?.theme) applyHostContext();
+	};
+	mql.addEventListener("change", onOsThemeChange);
+	return () => mql.removeEventListener("change", onOsThemeChange);
+}
 
 // ──────────────────────────────────────────────
 // 型定義

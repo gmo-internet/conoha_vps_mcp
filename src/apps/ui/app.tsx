@@ -39,6 +39,7 @@ import {
 	fetchContainers,
 	fetchObjects,
 	fileToBase64,
+	initHostTheming,
 	uploadObject,
 } from "./mcp-bridge.js";
 
@@ -94,19 +95,9 @@ export function App() {
 		};
 	}, []);
 
-	// ─── ダークモードの自動検出 ──────────────────────────────
+	// ─── テーマ/配色: ホスト(Claude Desktop)の値を取り込む ──────
 	useEffect(() => {
-		const mql = window.matchMedia("(prefers-color-scheme: dark)");
-		const apply = (matches: boolean) => {
-			document.documentElement.setAttribute(
-				"data-theme",
-				matches ? "dark" : "light",
-			);
-		};
-		apply(mql.matches);
-		const onChange = (e: MediaQueryListEvent) => apply(e.matches);
-		mql.addEventListener("change", onChange);
-		return () => mql.removeEventListener("change", onChange);
+		return initHostTheming();
 	}, []);
 
 	// ─── コンテナ一覧ロード ─────────────────────────────────

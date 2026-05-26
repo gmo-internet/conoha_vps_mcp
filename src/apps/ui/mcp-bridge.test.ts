@@ -16,9 +16,12 @@ const callServerToolMock = vi.hoisted(() => vi.fn());
 // vitest は constructable な実装（class / function 宣言）を要求するため class を渡す
 vi.mock("@modelcontextprotocol/ext-apps", () => ({
 	App: class MockApp {
-		connect = vi.fn();
+		connect = vi.fn().mockResolvedValue(undefined);
 		callServerTool = callServerToolMock;
+		getHostContext = vi.fn();
+		onhostcontextchanged: (() => void) | undefined = undefined;
 	},
+	applyDocumentTheme: vi.fn(),
 }));
 
 const {
