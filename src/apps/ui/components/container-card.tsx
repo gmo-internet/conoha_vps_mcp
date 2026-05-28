@@ -107,7 +107,7 @@ export function ContainerCard({
 				</div>
 			</div>
 
-			{url && (
+			{url ? (
 				// biome-ignore lint/a11y/noStaticElementInteractions: nested interactive zone uses stop-propagation handlers to keep its own anchor/copy button functional while the parent card remains clickable.
 				<div className="card__url" onClick={stop} onKeyDown={stop}>
 					<span className="card__url-label">URL</span>
@@ -130,7 +130,7 @@ export function ContainerCard({
 						<IconCopy />
 					</button>
 				</div>
-			)}
+			) : null}
 		</div>
 	);
 }

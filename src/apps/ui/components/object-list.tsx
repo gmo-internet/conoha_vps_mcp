@@ -99,7 +99,7 @@ export function ObjectList({
 				/>
 			</div>
 
-			{uploadingName && (
+			{uploadingName ? (
 				<div className="upload-row">
 					<div className="upload-row__main">
 						<span className="upload-row__icon">
@@ -111,7 +111,7 @@ export function ObjectList({
 						<span className="upload-row__hint">をアップロード中</span>
 					</div>
 				</div>
-			)}
+			) : null}
 
 			{objects.length === 0 ? (
 				<div className="empty">

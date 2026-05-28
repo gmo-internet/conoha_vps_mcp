@@ -399,18 +399,19 @@ export function App() {
 				</div>
 			</div>
 
-			{confirm && (
+			{confirm ? (
 				<ConfirmModal
 					title={confirm.title}
-					body={confirm.body}
 					{...(confirm.note && { note: confirm.note })}
 					confirmLabel={confirm.confirmLabel}
 					onCancel={() => setConfirm(null)}
 					onConfirm={confirm.onConfirm}
-				/>
-			)}
+				>
+					{confirm.body}
+				</ConfirmModal>
+			) : null}
 
-			{toast && <div className="toast">{toast}</div>}
+			{toast ? <div className="toast">{toast}</div> : null}
 		</div>
 	);
 }

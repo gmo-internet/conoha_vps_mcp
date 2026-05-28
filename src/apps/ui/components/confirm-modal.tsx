@@ -3,6 +3,11 @@
  *
  * デザイナー版 components.jsx の ConfirmModal を移植。
  * Escape キーでキャンセル、オーバーレイクリックでキャンセル。
+ *
+ * 本コンポーネントの本文は React の慣例どおり children で受ける。
+ * 用途は破壊的（削除系）操作の確認に限定しており、ボタンスタイルは
+ * 常時 `btn--danger` 固定。非破壊の確認モーダルが必要になった時は
+ * 別バリアントとして explicit に分離する（boolean prop で混在させない）。
  */
 
 import { type ReactNode, useEffect } from "react";
@@ -10,23 +15,20 @@ import { IconWarning, IconX } from "./icon.js";
 
 interface ConfirmModalProps {
 	title: string;
-	body?: ReactNode;
+	children?: ReactNode;
 	note?: string;
 	cancelLabel?: string;
 	confirmLabel?: string;
-	/** true なら破壊的（赤）ボタン */
-	danger?: boolean;
 	onCancel: () => void;
 	onConfirm: () => void;
 }
 
 export function ConfirmModal({
 	title,
-	body,
+	children,
 	note,
 	cancelLabel = "キャンセル",
 	confirmLabel = "削除する",
-	danger = true,
 	onCancel,
 	onConfirm,
 }: ConfirmModalProps) {
@@ -71,19 +73,15 @@ export function ConfirmModal({
 						<h3 className="modal__title" id="confirm-title">
 							{title}
 						</h3>
-						{body && <p className="modal__body">{body}</p>}
-						{note && <p className="modal__note">{note}</p>}
+						{children ? <p className="modal__body">{children}</p> : null}
+						{note ? <p className="modal__note">{note}</p> : null}
 					</div>
 				</div>
 				<div className="modal__actions">
 					<button type="button" className="btn btn--ghost" onClick={onCancel}>
 						{cancelLabel}
 					</button>
-					<button
-						type="button"
-						className={danger ? "btn btn--danger" : "btn btn--primary"}
-						onClick={onConfirm}
-					>
+					<button type="button" className="btn btn--danger" onClick={onConfirm}>
 						{confirmLabel}
 					</button>
 				</div>
