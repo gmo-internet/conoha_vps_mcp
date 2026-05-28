@@ -92,6 +92,10 @@
 		"vite-plugin-svgr": "5.2.0",
 		"vitest": "4.1.7"
 	},
+	"overrides": {
+		"qs": "^6.15.2",
+		"@inquirer/prompts": "^8.5.0"
+	},
 	"engines": {
 		"node": ">=22.0.0"
 	}
