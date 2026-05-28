@@ -36,7 +36,7 @@ jobs:
         if: success()
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: "24.15.0"
+          node-version: "24.16.0"
           registry-url: "https://registry.npmjs.org/"
 
       # 4) npm 11.5.1以降が必要 TODO: delete when nodejs updates to v24
