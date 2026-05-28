@@ -38,7 +38,9 @@ ConoHa VPS OpenStack APIへのアクセスをAIアシスタントに提供する
 - **PR作成前は必ず以下のスキルでセルフレビューを実施**（指摘があれば修正してから PR 作成すること）:
   - `vercel-react-best-practices` — React/Next.js パフォーマンス最適化（waterfall / bundle / re-render 等 70 ルール）。React/TSX を新規追加・変更した PR では必須
   - `vercel-composition-patterns` — React コンポジションパターン（boolean prop 乱立回避、compound components、React 19 API 等）。コンポーネント設計を伴う PR では必須
-  - Skill 本体: `~/.claude/skills/vercel-react-best-practices/` および `~/.claude/skills/vercel-composition-patterns/`（未インストールなら https://github.com/vercel-labs/agent-skills/tree/main/skills から取得）
+  - `review-security` — セキュリティ観点のレビュー（GMO 内製スキル、`ConoHaControlPanel/Frontend/skills/review-security`）。全 PR で必須
+  - Skill 本体の配置: `~/.claude/skills/vercel-react-best-practices/` / `~/.claude/skills/vercel-composition-patterns/` / `~/.claude/skills/review-security/`
+  - 取得元: vercel 系 = https://github.com/vercel-labs/agent-skills/tree/main/skills 、review-security = `github.com/ConoHaControlPanel/Frontend/tree/main/skills/review-security`（GMO 内部リポ、要アクセス権）
 
 ### コードスタイル
 - Biome: タブインデント、ダブルクォート、インポート整理有効（詳細: `harness/patterns/biome-rules.md`）
