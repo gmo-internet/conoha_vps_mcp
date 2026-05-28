@@ -29,7 +29,7 @@ import {
 	getStorageObjectList,
 	setPostStorageMetadata,
 	setPutStorageMetadata,
-	uploadStorageObject,
+	uploadStorageObjectDecoded,
 } from "../features/openstack/storage/storage-client.js";
 import type { AppContainer, AppObject } from "./apps-types.js";
 import { getMockContainers, getMockObjects, isMockMode } from "./mock-data.js";
@@ -464,7 +464,11 @@ function registerUploadObject(server: McpServer): void {
 				};
 			}
 			const path = `/v1/AUTH_${TENANT_ID}/${encodeURIComponent(container)}/${encodeURIComponent(object_name)}`;
-			const raw = await uploadStorageObject(path, content_base64, content_type);
+			const raw = await uploadStorageObjectDecoded(
+				path,
+				content_base64,
+				content_type,
+			);
 			const parsed = JSON.parse(raw) as { status: number };
 			// PUT は 201 Created（新規）または 202 Accepted（上書き）が成功
 			if (parsed.status !== 201 && parsed.status !== 202) {

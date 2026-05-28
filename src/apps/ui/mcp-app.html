@@ -1,93 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ConoHa VPS Storage — MCP App</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ConoHa VPS オブジェクトストレージ — MCP App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 </head>
 <body>
-
-<div class="header">
-  <div class="header-icon">C</div>
-  <span class="header-title">ConoHa VPS</span>
-  <span class="header-sep">/</span>
-  <span class="header-page" id="page-label">storage</span>
-  <span class="header-sp"></span>
-  <span class="header-badge">MCP App</span>
-</div>
-
-<div class="main">
-  <div class="nav">
-    <button type="button" class="nav-btn on" id="btn-storage">ストレージ</button>
-    <span class="nav-sp"></span>
-  </div>
-
-  <!-- ストレージ（コンテナ一覧）パネル -->
-  <div id="panel-storage" style="display:none;flex-direction:column;flex:1;min-height:0">
-    <div class="storage-bar">
-      <div class="storage-summary">
-        <span class="storage-label">コンテナ</span>
-        <span class="storage-count" id="storage-count">—</span>
-      </div>
-      <button type="button" class="btn btn-primary btn-sm" id="btn-create-container">+ コンテナ作成</button>
-    </div>
-    <div class="container-list" id="container-list"></div>
-  </div>
-
-  <!-- オブジェクト一覧パネル（コンテナ詳細） -->
-  <div id="panel-objects" style="display:none;flex-direction:column;flex:1;min-height:0">
-    <div class="storage-bar">
-      <div class="storage-summary">
-        <button type="button" class="back-link" id="btn-back-to-containers" title="コンテナ一覧へ戻る">← 戻る</button>
-        <span class="container-bc-icon">📦</span>
-        <span class="container-bc-name" id="objects-container-name">—</span>
-        <span class="storage-count" id="objects-count">—</span>
-      </div>
-      <div class="upload-controls">
-        <input type="file" id="f-upload-file" hidden>
-        <button type="button" class="btn btn-primary btn-sm" id="btn-upload-object">📤 ファイルをアップロード</button>
-      </div>
-    </div>
-    <div class="upload-progress" id="upload-progress" style="display:none">
-      <span class="progress-label" id="progress-label">アップロード中…</span>
-    </div>
-    <div class="object-list" id="object-list"></div>
-  </div>
-
-  <!-- コンテナ作成パネル -->
-  <div class="form-panel" id="panel-create-container">
-    <div class="form-section">
-      <div class="form-group">
-        <label class="form-label" for="f-container-name">コンテナ名 <span class="req">必須</span></label>
-        <input type="text" class="form-input" id="f-container-name" placeholder="例: backups" maxlength="256" autocomplete="off">
-        <span class="form-hint">英数字・ハイフン・アンダースコア・ピリオドのみ。スラッシュは不可。</span>
-        <span class="form-error" id="f-container-error" style="display:none"></span>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button type="button" class="btn btn-cancel" id="btn-create-container-cancel">キャンセル</button>
-      <button type="button" class="btn btn-primary" id="btn-create-container-submit" disabled>コンテナを作成</button>
-    </div>
-  </div>
-</div>
-
-<!-- 確認ダイアログ -->
-<div class="confirm-overlay" id="confirm-overlay">
-  <div class="confirm-panel">
-    <div class="confirm-title" id="confirm-title">削除しますか？</div>
-    <div class="confirm-body" id="confirm-body"></div>
-    <div class="confirm-btns">
-      <button type="button" class="btn btn-cancel" id="confirm-cancel">キャンセル</button>
-      <button type="button" class="btn btn-primary" id="confirm-ok">削除する</button>
-    </div>
-  </div>
-</div>
-
-<div class="footer">
-  <span><span class="status-dot"></span>MCP App 接続中</span>
-  <span>最終更新: <span id="last-update">—</span></span>
-</div>
-
-<script type="module" src="./mcp-app.ts"></script>
+  <div id="root"></div>
+  <script type="module" src="./mcp-app.tsx"></script>
 </body>
 </html>
