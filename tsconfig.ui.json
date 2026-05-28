@@ -12,7 +12,12 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
-		"noEmit": true
+		"noEmit": true,
+		"jsx": "react-jsx",
+		"types": [
+			"vite/client",
+			"vite-plugin-svgr/client"
+		]
 	},
 	"include": [
 		"src/apps/ui/**/*"

@@ -1,10 +1,11 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"entry": [
-		"src/apps/ui/mcp-app.ts"
+		"src/apps/ui/mcp-app.tsx"
 	],
 	"project": [
-		"src/**/*.ts"
+		"src/**/*.ts",
+		"src/**/*.tsx"
 	],
 	"ignore": [
 		"**/*.test.ts"

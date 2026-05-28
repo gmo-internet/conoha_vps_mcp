@@ -24,10 +24,12 @@ import { z } from "zod";
 import {
 	deleteStorageContainer,
 	deleteStorageObject,
+	getStorageContainerInfo,
 	getStorageContainerList,
 	getStorageObjectList,
+	setPostStorageMetadata,
 	setPutStorageMetadata,
-	uploadStorageObject,
+	uploadStorageObjectDecoded,
 } from "../features/openstack/storage/storage-client.js";
 import type { AppContainer, AppObject } from "./apps-types.js";
 import { getMockContainers, getMockObjects, isMockMode } from "./mock-data.js";
@@ -48,6 +50,18 @@ export function registerAppsTools(server: McpServer): void {
 	registerListObjects(server);
 	registerUploadObject(server);
 	registerDeleteObject(server);
+	registerGetContainerPublicState(server);
+	registerEnableWebPublish(server);
+	registerDisableWebPublish(server);
+}
+
+/**
+ * 公開URLを組み立てる
+ *
+ * @internal
+ */
+function buildPublicUrl(tenantId: string, container: string): string {
+	return `https://object-storage.c3j1.conoha.io/v1/AUTH_${tenantId}/${encodeURIComponent(container)}`;
 }
 
 /**
@@ -450,7 +464,11 @@ function registerUploadObject(server: McpServer): void {
 				};
 			}
 			const path = `/v1/AUTH_${TENANT_ID}/${encodeURIComponent(container)}/${encodeURIComponent(object_name)}`;
-			const raw = await uploadStorageObject(path, content_base64, content_type);
+			const raw = await uploadStorageObjectDecoded(
+				path,
+				content_base64,
+				content_type,
+			);
 			const parsed = JSON.parse(raw) as { status: number };
 			// PUT は 201 Created（新規）または 202 Accepted（上書き）が成功
 			if (parsed.status !== 201 && parsed.status !== 202) {
@@ -540,6 +558,260 @@ function registerDeleteObject(server: McpServer): void {
 						text: JSON.stringify({
 							object: { name: object_name },
 							deleted: true,
+						}),
+					},
+				],
+			};
+		},
+	);
+}
+
+/**
+ * get_container_public_state: コンテナのWeb公開状態を取得
+ *
+ * @remarks
+ * 冪等: はい（参照のみ）
+ * HEAD で X-Container-Read ヘッダを取得し、`.r:*` の有無で公開状態を判定する。
+ * @internal
+ */
+function registerGetContainerPublicState(server: McpServer): void {
+	server.registerTool(
+		"get_container_public_state",
+		{
+			title: "コンテナのWeb公開状態取得",
+			description:
+				"指定コンテナがWeb公開（匿名読み取り可）になっているか、公開URLとともに返します。",
+			inputSchema: {
+				container: z.string().min(1).describe("対象コンテナ名"),
+			},
+			outputSchema: {
+				container: z.string(),
+				public: z.boolean(),
+				public_url: z.string().optional(),
+				read_acl: z.string().optional(),
+			},
+		},
+		async ({ container }) => {
+			if (isMockMode()) {
+				// mock では media-assets だけ公開済みとして扱う（UIの動作確認用）
+				const isPublic = container === "media-assets";
+				const output: {
+					container: string;
+					public: boolean;
+					public_url?: string;
+					read_acl?: string;
+				} = { container, public: isPublic };
+				if (isPublic) {
+					output.public_url = `https://object-storage.c3j1.conoha.io/v1/AUTH_mock-tenant/${encodeURIComponent(container)}`;
+					output.read_acl = ".r:*,.rlistings";
+				}
+				return {
+					content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+					structuredContent: output,
+				};
+			}
+			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
+			if (!TENANT_ID) {
+				const output = { container, public: false };
+				return {
+					content: [{ type: "text", text: JSON.stringify(output) }],
+					structuredContent: output,
+				};
+			}
+			const raw = await getStorageContainerInfo(
+				`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(container)}`,
+			);
+			const parsed = JSON.parse(raw) as {
+				status: number;
+				headers?: Record<string, string>;
+			};
+			const readAcl = parsed.headers?.["x-container-read"] ?? "";
+			const isPublic = readAcl.includes(".r:*");
+			const output: {
+				container: string;
+				public: boolean;
+				public_url?: string;
+				read_acl?: string;
+			} = { container, public: isPublic };
+			if (isPublic) {
+				output.public_url = buildPublicUrl(TENANT_ID, container);
+			}
+			if (readAcl) {
+				output.read_acl = readAcl;
+			}
+			return {
+				content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
+				structuredContent: output,
+			};
+		},
+	);
+}
+
+/**
+ * enable_web_publish: コンテナをWeb公開する（匿名読み取り許可）
+ *
+ * @remarks
+ * 冪等: はい（同じ ACL を再設定しても結果は同じ）
+ * `X-Container-Read: .r:*,.rlistings` を設定し、コンテナ内のオブジェクトを
+ * 認証なしで取得可能にする。静的サイトホスティングの起点として利用する。
+ * @internal
+ */
+function registerEnableWebPublish(server: McpServer): void {
+	server.registerTool(
+		"enable_web_publish",
+		{
+			title: "コンテナのWeb公開を有効化",
+			description:
+				"コンテナを匿名読み取り可能にし、静的サイトとして配信できるようにします (X-Container-Read: .r:*,.rlistings)。",
+			inputSchema: {
+				container: z.string().min(1).describe("公開するコンテナ名"),
+			},
+		},
+		async ({ container }) => {
+			if (isMockMode()) {
+				const publicUrl = `https://object-storage.c3j1.conoha.io/v1/AUTH_mock-tenant/${encodeURIComponent(container)}`;
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								container: {
+									name: container,
+									public: true,
+									public_url: publicUrl,
+								},
+								published: true,
+							}),
+						},
+					],
+				};
+			}
+			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
+			if (!TENANT_ID) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: "OPENSTACK_TENANT_ID が設定されていません",
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			const raw = await setPostStorageMetadata(
+				`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(container)}`,
+				{ "X-Container-Read": ".r:*,.rlistings" },
+			);
+			const parsed = JSON.parse(raw) as { status: number };
+			// POST のメタデータ設定は 204 No Content が成功
+			if (parsed.status !== 204 && parsed.status !== 202) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: `Web公開の有効化に失敗しました (${parsed.status})`,
+								detail: raw,
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			const publicUrl = buildPublicUrl(TENANT_ID, container);
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify({
+							container: {
+								name: container,
+								public: true,
+								public_url: publicUrl,
+							},
+							published: true,
+						}),
+					},
+				],
+			};
+		},
+	);
+}
+
+/**
+ * disable_web_publish: コンテナのWeb公開を無効化する
+ *
+ * @remarks
+ * 冪等: はい（既に非公開でも同じ結果）
+ * `X-Container-Read` を空にして匿名アクセスを停止する。
+ * @internal
+ */
+function registerDisableWebPublish(server: McpServer): void {
+	server.registerTool(
+		"disable_web_publish",
+		{
+			title: "コンテナのWeb公開を無効化",
+			description: "コンテナの匿名読み取りを停止し、Web公開状態を解除します。",
+			inputSchema: {
+				container: z.string().min(1).describe("非公開化するコンテナ名"),
+			},
+		},
+		async ({ container }) => {
+			if (isMockMode()) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								container: { name: container, public: false },
+								published: false,
+							}),
+						},
+					],
+				};
+			}
+			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
+			if (!TENANT_ID) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: "OPENSTACK_TENANT_ID が設定されていません",
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			const raw = await setPostStorageMetadata(
+				`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(container)}`,
+				{ "X-Container-Read": "" },
+			);
+			const parsed = JSON.parse(raw) as { status: number };
+			if (parsed.status !== 204 && parsed.status !== 202) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify({
+								error: `Web公開の無効化に失敗しました (${parsed.status})`,
+								detail: raw,
+							}),
+						},
+					],
+					isError: true,
+				};
+			}
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify({
+							container: { name: container, public: false },
+							published: false,
 						}),
 					},
 				],
