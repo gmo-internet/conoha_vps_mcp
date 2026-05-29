@@ -3,8 +3,8 @@
  *
  * @remarks
  * 本番 `mcp-bridge.ts` と同一の export 面を提供する drop-in 代替。
- * `vite.config.dev.ts` の resolveId プラグインが `./mcp-bridge.js` の import を
- * 本ファイルへ差し替えることで、ConoHa の認証情報なしに `npm run dev:ui` で
+ * `vite.config.preview.ts` の resolveId プラグインが `./mcp-bridge.js` の import を
+ * 本ファイルへ差し替えることで、ConoHa の認証情報なしに `npm run preview:ui` で
  * UI 全体をブラウザ確認できる。サーバー実行時には一切使われない。
  *
  * サンプルデータは本ファイルに直書きし（旧 fixtures を集約）、create / delete /
@@ -15,7 +15,7 @@
  */
 
 import { applyDocumentTheme } from "@modelcontextprotocol/ext-apps";
-import type { AppContainer, AppObject } from "../apps-types.js";
+import type { AppContainer, AppObject } from "../../apps-types.js";
 
 // 変更系の結果（本番 mcp-bridge.ts の MutationResult と同形）
 type MutationResult =

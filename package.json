@@ -48,7 +48,7 @@
 		"build:mcpb": "mcpb pack",
 		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
-		"dev:ui": "vite --config vite.config.dev.ts",
+		"preview:ui": "vite --config vite.config.preview.ts",
 		"typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.ui.json",
 		"typecheck:ui": "tsc --noEmit -p tsconfig.ui.json",
 		"biome:ci": "biome ci .",

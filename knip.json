@@ -2,7 +2,7 @@
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"entry": [
 		"src/apps/ui/mcp-app.tsx",
-		"src/apps/ui/mock-bridge.ts"
+		"src/apps/ui/preview/mock-bridge.ts"
 	],
 	"project": [
 		"src/**/*.ts",

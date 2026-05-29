@@ -25,8 +25,9 @@ src/
 │       ├── mcp-app.html             # 本番エントリ
 │       ├── mcp-app.tsx
 │       ├── mcp-bridge.ts            # サーバーツール呼び出しラッパー
-│       ├── mcp-app.dev.html         # 開発プレビュー用エントリ（npm run dev:ui）
-│       └── mock-bridge.ts           # プレビュー用モックブリッジ（認証情報不要）
+│       └── preview/                 # 認証情報なしプレビュー（npm run preview:ui）
+│           ├── index.html           # プレビュー用エントリ
+│           └── mock-bridge.ts       # プレビュー用モックブリッジ
 └── features/openstack/
     ├── constants.ts             # API定数（ベースURL等）
     ├── common/                  # 共通モジュール
