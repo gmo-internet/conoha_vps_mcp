@@ -6,8 +6,7 @@
  * 各ツールは単一責務・冪等性・ドライラン対応を原則とします。
  *
  * - 参照系（list_containers / list_objects）と変更系（create / delete / upload）
- * - `CONOHA_MCP_MOCK=1` でフィクスチャ応答
- * - 実APIモードでは features/openstack/storage/storage-client を利用
+ * - features/openstack/storage/storage-client を介して実APIを呼び出す
  *
  * @packageDocumentation
  */
@@ -32,7 +31,6 @@ import {
 	uploadStorageObjectDecoded,
 } from "../features/openstack/storage/storage-client.js";
 import type { AppContainer, AppObject } from "./apps-types.js";
-import { getMockContainers, getMockObjects, isMockMode } from "./mock-data.js";
 
 /** UI リソース URI */
 const UI_RESOURCE_URI = "ui://conoha-vps/mcp-app.html";
@@ -94,15 +92,12 @@ function registerAppUiResource(server: McpServer): void {
 }
 
 /**
- * ストレージコンテナ一覧を解決（モックまたは実API）
+ * ストレージコンテナ一覧を解決（実API）
  *
  * @returns コンテナ情報の配列
  * @internal
  */
 async function resolveContainers(): Promise<AppContainer[]> {
-	if (isMockMode()) {
-		return getMockContainers();
-	}
 	const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 	if (!TENANT_ID) return [];
 	const raw = await getStorageContainerList(
@@ -205,16 +200,6 @@ function registerCreateContainer(server: McpServer): void {
 			},
 		},
 		async ({ name }) => {
-			if (isMockMode()) {
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify({ container: { name }, created: true }),
-						},
-					],
-				};
-			}
 			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 			if (!TENANT_ID) {
 				return {
@@ -284,16 +269,6 @@ function registerDeleteContainer(server: McpServer): void {
 			},
 		},
 		async ({ name }) => {
-			if (isMockMode()) {
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify({ container: { name }, deleted: true }),
-						},
-					],
-				};
-			}
 			const raw = await deleteStorageContainer(
 				`/v1/AUTH_{tenantId}/${encodeURIComponent(name)}`,
 			);
@@ -328,14 +303,11 @@ function registerDeleteContainer(server: McpServer): void {
 }
 
 /**
- * 指定コンテナ内のオブジェクト一覧を解決（モックまたは実API）
+ * 指定コンテナ内のオブジェクト一覧を解決（実API）
  *
  * @internal
  */
 async function resolveObjects(containerName: string): Promise<AppObject[]> {
-	if (isMockMode()) {
-		return getMockObjects(containerName);
-	}
 	const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 	if (!TENANT_ID) return [];
 	const raw = await getStorageObjectList(
@@ -432,23 +404,6 @@ function registerUploadObject(server: McpServer): void {
 			},
 		},
 		async ({ container, object_name, content_base64, content_type }) => {
-			if (isMockMode()) {
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify({
-								object: {
-									name: object_name,
-									bytes: Math.floor((content_base64.length * 3) / 4),
-									content_type: content_type ?? "application/octet-stream",
-								},
-								uploaded: true,
-							}),
-						},
-					],
-				};
-			}
 			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 			if (!TENANT_ID) {
 				return {
@@ -521,19 +476,6 @@ function registerDeleteObject(server: McpServer): void {
 			},
 		},
 		async ({ container, object_name }) => {
-			if (isMockMode()) {
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify({
-								object: { name: object_name },
-								deleted: true,
-							}),
-						},
-					],
-				};
-			}
 			const path = `/v1/AUTH_{tenantId}/${encodeURIComponent(container)}/${encodeURIComponent(object_name)}`;
 			const raw = await deleteStorageObject(path);
 			const parsed = JSON.parse(raw) as { status: number };
@@ -592,24 +534,6 @@ function registerGetContainerPublicState(server: McpServer): void {
 			},
 		},
 		async ({ container }) => {
-			if (isMockMode()) {
-				// mock では media-assets だけ公開済みとして扱う（UIの動作確認用）
-				const isPublic = container === "media-assets";
-				const output: {
-					container: string;
-					public: boolean;
-					public_url?: string;
-					read_acl?: string;
-				} = { container, public: isPublic };
-				if (isPublic) {
-					output.public_url = `https://object-storage.c3j1.conoha.io/v1/AUTH_mock-tenant/${encodeURIComponent(container)}`;
-					output.read_acl = ".r:*,.rlistings";
-				}
-				return {
-					content: [{ type: "text", text: JSON.stringify(output, null, 2) }],
-					structuredContent: output,
-				};
-			}
 			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 			if (!TENANT_ID) {
 				const output = { container, public: false };
@@ -668,24 +592,6 @@ function registerEnableWebPublish(server: McpServer): void {
 			},
 		},
 		async ({ container }) => {
-			if (isMockMode()) {
-				const publicUrl = `https://object-storage.c3j1.conoha.io/v1/AUTH_mock-tenant/${encodeURIComponent(container)}`;
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify({
-								container: {
-									name: container,
-									public: true,
-									public_url: publicUrl,
-								},
-								published: true,
-							}),
-						},
-					],
-				};
-			}
 			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 			if (!TENANT_ID) {
 				return {
@@ -759,19 +665,6 @@ function registerDisableWebPublish(server: McpServer): void {
 			},
 		},
 		async ({ container }) => {
-			if (isMockMode()) {
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify({
-								container: { name: container, public: false },
-								published: false,
-							}),
-						},
-					],
-				};
-			}
 			const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 			if (!TENANT_ID) {
 				return {

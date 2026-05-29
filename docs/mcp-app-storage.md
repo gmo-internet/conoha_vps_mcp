@@ -36,17 +36,7 @@ OPENSTACK_PASSWORD=your-password
 
 ConoHa コントロールパネル → **API → APIユーザー** で確認できます。
 
-### 2. （任意）動作確認だけしたい場合
-
-実 API を呼ばずモックフィクスチャで UI を試したい場合:
-
-```env
-CONOHA_MCP_MOCK=1
-```
-
-→ サンプルのコンテナ・オブジェクトが表示されます。`media-assets` コンテナだけ公開済み状態として表示されるので、公開・非公開トグルの挙動も確認できます。
-
-### 3. MCP クライアントから起動
+### 2. MCP クライアントから起動
 
 `list_containers` ツールを呼び出すと、Claude Desktop / 対応クライアント上で MCP App UI が開きます。
 
