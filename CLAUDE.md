@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm test` - テスト実行（カバレッジ付き）
 - `npm test -- <filename>` - 特定テスト実行
 
-その他: `npm run dev`（開発サーバー）, `npm run inspector`（MCPインスペクター）, `npm run generate:notice`（NOTICE生成）, `npm run docs:build`（APIドキュメント生成）
+その他: `npm run dev`（開発サーバー）, `npm run preview:ui`（MCP App UIをサンプルデータでプレビュー、認証情報不要）, `npm run inspector`（MCPインスペクター）, `npm run generate:notice`（NOTICE生成）, `npm run docs:build`（APIドキュメント生成）
 
 ## アーキテクチャ
 

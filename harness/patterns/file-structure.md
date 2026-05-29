@@ -21,12 +21,13 @@ src/
 │   ├── apps-tools.ts               # ツール定義・データ解決層
 │   ├── apps-tools.test.ts
 │   ├── apps-types.ts                # App用型定義
-│   ├── mock-data.ts                 # モックデータプロバイダー
-│   ├── mock-data.test.ts
-│   ├── fixtures/                    # モック用JSONフィクスチャ
 │   └── ui/                          # クライアントサイドUI（Viteビルド）
-│       ├── mcp-app.html
-│       └── mcp-app.ts
+│       ├── mcp-app.html             # 本番エントリ
+│       ├── mcp-app.tsx
+│       ├── mcp-bridge.ts            # サーバーツール呼び出しラッパー
+│       └── preview/                 # 認証情報なしプレビュー（npm run preview:ui）
+│           ├── index.html           # プレビュー用エントリ
+│           └── mock-bridge.ts       # プレビュー用モックブリッジ
 └── features/openstack/
     ├── constants.ts             # API定数（ベースURL等）
     ├── common/                  # 共通モジュール
