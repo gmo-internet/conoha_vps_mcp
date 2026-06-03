@@ -8,8 +8,12 @@ scripts/
 node_modules/
 
 # Source and test code
-src/
-test/
+# NOTE: leading slash anchors to bundle root. Without it, `src/` (gitignore
+# semantics) also matches `dist/ui/src/...`, which would strip the bundled MCP
+# App UI HTML (dist/ui/src/apps/ui/mcp-app.html) and break the storage UI in
+# Claude Desktop. Keep these anchored.
+/src/
+/test/
 
 # Docker files
 compose.yaml
