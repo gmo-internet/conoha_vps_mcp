@@ -95,7 +95,7 @@
 	},
 	"overrides": {
 		"qs": "^6.15.2",
-		"@inquirer/prompts": "^8.5.0"
+		"@inquirer/prompts": "^8.5.2"
 	},
 	"engines": {
 		"node": ">=22.0.0"
