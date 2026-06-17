@@ -1,7 +1,7 @@
 ---
 id: 10
 title: エラーハンドリングパターン
-last-reviewed: 2026-03-10
+last-reviewed: 2026-06-17
 enforcement-level: L2
 related-rules: []
 checked-by: [coding-pattern-check]

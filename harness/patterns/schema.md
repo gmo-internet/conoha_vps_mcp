@@ -1,7 +1,7 @@
 ---
 id: 3
 title: スキーマパターン
-last-reviewed: 2026-03-10
+last-reviewed: 2026-06-17
 enforcement-level: L4
 related-rules: [C-1, C-2, C-3, C-4]
 checked-by: [architecture.test.ts, coding-pattern-check]

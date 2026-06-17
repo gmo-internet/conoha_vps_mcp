@@ -1,7 +1,7 @@
 ---
 id: 1
 title: ファイル構成パターン
-last-reviewed: 2026-03-10
+last-reviewed: 2026-06-17
 enforcement-level: L4
 related-rules: [A-1, A-2, A-3, H-1]
 checked-by: [architecture.test.ts, coding-pattern-check]
@@ -21,10 +21,19 @@ src/
 │   ├── apps-tools.ts               # ツール定義・データ解決層
 │   ├── apps-tools.test.ts
 │   ├── apps-types.ts                # App用型定義
-│   └── ui/                          # クライアントサイドUI（Viteビルド）
+│   ├── build-config.test.ts        # ビルド構成テスト
+│   └── ui/                          # クライアントサイドUI（Viteビルド、tsconfig.ui.json）
 │       ├── mcp-app.html             # 本番エントリ
-│       ├── mcp-app.tsx
+│       ├── mcp-app.tsx              # マウント
+│       ├── mcp-app.css              # スタイル
+│       ├── app.tsx                  # ルートコンポーネント
 │       ├── mcp-bridge.ts            # サーバーツール呼び出しラッパー
+│       ├── clipboard.ts             # ユーティリティ（各 *.test.ts あり）
+│       ├── format-bytes.ts
+│       ├── validate-container-name.ts
+│       ├── conoha_vps.svg
+│       ├── components/              # UIコンポーネント（*.tsx）
+│       ├── icons/                   # SVGアイコン群
 │       └── preview/                 # 認証情報なしプレビュー（npm run preview:ui）
 │           ├── index.html           # プレビュー用エントリ
 │           └── mock-bridge.ts       # プレビュー用モックブリッジ

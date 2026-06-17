@@ -1,7 +1,7 @@
 ---
 id: 5
 title: 型定義パターン
-last-reviewed: 2026-03-10
+last-reviewed: 2026-06-17
 enforcement-level: L2
 related-rules: []
 checked-by: [coding-pattern-check]
