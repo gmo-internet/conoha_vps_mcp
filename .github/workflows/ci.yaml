@@ -30,6 +30,18 @@ jobs:
       - name: Run build
         run: npm run build
 
+      # PR レビュー時に install 検証ができるよう、tarball を artifact として保管する
+      - name: Pack tarball for review install
+        run: npm pack
+
+      - name: Upload tarball artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: package-tarball
+          path: "*.tgz"
+          retention-days: 7
+          if-no-files-found: error
+
   biome:
     runs-on: ubuntu-24.04
     permissions:

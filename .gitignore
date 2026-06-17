@@ -15,6 +15,9 @@ settings.local.json
 # mcpb
 *.mcpb
 
+# npm pack artifact
+*.tgz
+
 # mcp
 .mcp.json
 
