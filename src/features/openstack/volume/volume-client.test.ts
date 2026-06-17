@@ -24,14 +24,18 @@ const mockFormatResponse = vi.mocked(
 	await import("../common/response-formatter"),
 ).formatResponse;
 
+// beforeEach で設定するテナントID。ベースURLの解決は呼び出し時に行われるため、
+// 期待値もこの固定値から組み立てて describe 評価時の環境変数に依存しないようにする。
+const TEST_TENANT_ID = "test-tenant-id";
+
 describe("volume-client", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		// 環境変数を設定
-		process.env = { OPENSTACK_TENANT_ID: "test-tenant-id" };
+		process.env = { OPENSTACK_TENANT_ID: TEST_TENANT_ID };
 	});
 
-	const expectedBaseUrl = `https://block-storage.c3j1.conoha.io/v3/${process.env.OPENSTACK_TENANT_ID}`;
+	const expectedBaseUrl = `https://block-storage.c3j1.conoha.io/v3/${TEST_TENANT_ID}`;
 
 	describe("getVolume", () => {
 		const mockResponse = JSON.stringify({
@@ -337,6 +341,16 @@ describe("volume-client", () => {
 				expectedBaseUrl,
 				"",
 			);
+		});
+
+		it("OPENSTACK_TENANT_ID環境変数が未設定の場合に、ベースURLへの'undefined'混入を防ぐため、Volume APIを呼び出さずに日本語メッセージのエラーをスローする", async () => {
+			process.env = {};
+
+			await expect(getVolume("/volumes/detail")).rejects.toThrow(
+				"OPENSTACK_TENANT_ID が設定されていません。環境変数を確認してください",
+			);
+
+			expect(mockExecuteOpenstackApi).not.toHaveBeenCalled();
 		});
 	});
 });

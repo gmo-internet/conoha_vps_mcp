@@ -9,12 +9,23 @@
 
 import type { JsonObject } from "../../../types.js";
 import { executeOpenstackApi } from "../common/openstack-client.js";
+import { requireTenantId } from "../common/require-tenant-id.js";
 import { formatResponse } from "../common/response-formatter.js";
 import { OPENSTACK_VOLUME_BASE_URL } from "../constants.js";
 
-const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
-
-const OPENSTACK_VOLUME_TENANT_BASE_URL = `${OPENSTACK_VOLUME_BASE_URL}/${TENANT_ID}`;
+/**
+ * テナントIDを含むボリュームAPIのベースURLを取得する
+ *
+ * @remarks
+ * テナントIDは {@link requireTenantId} で都度解決し、未設定時は明示エラーとする。
+ * モジュール読み込み時ではなく呼び出し時に解決することで、`"undefined"` 混入を防ぐ。
+ *
+ * @returns テナントIDを含むベースURL
+ * @internal
+ */
+function volumeTenantBaseUrl(): string {
+	return `${OPENSTACK_VOLUME_BASE_URL}/${requireTenantId()}`;
+}
 
 /**
  * ボリューム情報を取得
@@ -25,7 +36,7 @@ const OPENSTACK_VOLUME_TENANT_BASE_URL = `${OPENSTACK_VOLUME_BASE_URL}/${TENANT_
 export async function getVolume(path: string) {
 	const response = await executeOpenstackApi(
 		"GET",
-		OPENSTACK_VOLUME_TENANT_BASE_URL,
+		volumeTenantBaseUrl(),
 		path,
 	);
 	return await formatResponse(response);
@@ -41,7 +52,7 @@ export async function getVolume(path: string) {
 export async function createVolume(path: string, requestBody: JsonObject) {
 	const response = await executeOpenstackApi(
 		"POST",
-		OPENSTACK_VOLUME_TENANT_BASE_URL,
+		volumeTenantBaseUrl(),
 		path,
 		requestBody,
 	);
@@ -63,7 +74,7 @@ export async function updateVolumeByParam(
 ) {
 	const response = await executeOpenstackApi(
 		"PUT",
-		OPENSTACK_VOLUME_TENANT_BASE_URL,
+		volumeTenantBaseUrl(),
 		`${path}/${param}`,
 		requestBody,
 	);
@@ -80,7 +91,7 @@ export async function updateVolumeByParam(
 export async function deleteVolumeByParam(path: string, param: string) {
 	const response = await executeOpenstackApi(
 		"DELETE",
-		OPENSTACK_VOLUME_TENANT_BASE_URL,
+		volumeTenantBaseUrl(),
 		`${path}/${param}`,
 	);
 	return await formatResponse(response);
