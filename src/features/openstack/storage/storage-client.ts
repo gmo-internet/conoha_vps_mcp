@@ -7,6 +7,7 @@
  * @packageDocumentation
  */
 
+import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import type { JsonObject } from "../../../types.js";
 import { generateApiToken } from "../common/generate-api-token.js";
@@ -193,7 +194,7 @@ export async function getStorageObjectInfo(path: string) {
 		headers,
 	});
 
-	const content = await response.text();
+	const content = Buffer.from(await response.arrayBuffer());
 
 	return formatObjectGetResponse(response, content);
 }

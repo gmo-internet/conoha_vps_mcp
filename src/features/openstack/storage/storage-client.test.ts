@@ -10,8 +10,11 @@
  * @packageDocumentation
  */
 
+import { Buffer } from "node:buffer";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { formatObjectGetResponse } from "./response-formatter";
 import {
+	getStorageObjectInfo,
 	uploadStorageObject,
 	uploadStorageObjectDecoded,
 } from "./storage-client";
@@ -112,5 +115,72 @@ describe("storage-client アップロード経路", () => {
 			const init = vi.mocked(fetch).mock.calls[0][1];
 			expect(init?.body).toEqual(new Uint8Array([65, 66, 67])); // "ABC"
 		});
+	});
+
+	describe("getStorageObjectInfo（ダウンロード経路・バイナリ無損失）", () => {
+		it("レスポンスボディを arrayBuffer で取得し、バイナリを破損させずBase64で返す", async () => {
+			// PNGシグネチャ先頭8バイト（UTF-8デコードでは破損する非テキストバイト列）
+			const rawBytes = new Uint8Array([
+				0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+			]);
+			const responseHeaders = new Headers();
+			responseHeaders.set("content-type", "image/png");
+			vi.stubGlobal(
+				"fetch",
+				vi.fn().mockResolvedValue({
+					status: 200,
+					statusText: "OK",
+					headers: responseHeaders,
+					arrayBuffer: vi.fn().mockResolvedValue(rawBytes.buffer),
+				} as unknown as Response),
+			);
+
+			const result = await getStorageObjectInfo(PATH);
+			const parsed = JSON.parse(result);
+
+			expect(parsed.encoding).toBe("base64");
+			expect(parsed.body).toBe(Buffer.from(rawBytes).toString("base64"));
+			// ラウンドトリップでバイト列が完全に復元できる
+			expect(new Uint8Array(Buffer.from(parsed.body, "base64"))).toEqual(
+				rawBytes,
+			);
+		});
+	});
+});
+
+describe("formatObjectGetResponse", () => {
+	function makeResponse(contentType: string): Response {
+		const headers = new Headers();
+		headers.set("content-type", contentType);
+		return {
+			status: 200,
+			statusText: "OK",
+			headers,
+		} as unknown as Response;
+	}
+
+	it("バイナリ Content-Type の場合は生バイト列を破損なくBase64エンコードして返す", () => {
+		const rawBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0xff, 0x00]);
+		const result = formatObjectGetResponse(
+			makeResponse("application/octet-stream"),
+			rawBytes,
+		);
+		const parsed = JSON.parse(result);
+
+		expect(parsed.encoding).toBe("base64");
+		expect(parsed.body).toBe(rawBytes.toString("base64"));
+		expect(Buffer.from(parsed.body, "base64")).toEqual(rawBytes);
+	});
+
+	it("テキスト Content-Type の場合はUTF-8文字列として body を返す", () => {
+		const text = "こんにちは、world";
+		const result = formatObjectGetResponse(
+			makeResponse("text/plain; charset=utf-8"),
+			Buffer.from(text, "utf8"),
+		);
+		const parsed = JSON.parse(result);
+
+		expect(parsed.encoding).toBe("utf8");
+		expect(parsed.body).toBe(text);
 	});
 });
