@@ -1,7 +1,7 @@
 ---
 id: 14
 title: Biome / フォーマッティングルール
-last-reviewed: 2026-03-10
+last-reviewed: 2026-06-18
 enforcement-level: L3
 related-rules: []
 checked-by: [biome.json]

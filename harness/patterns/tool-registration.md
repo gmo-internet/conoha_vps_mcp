@@ -1,7 +1,7 @@
 ---
 id: 11
 title: ツール登録パターン
-last-reviewed: 2026-03-10
+last-reviewed: 2026-06-18
 enforcement-level: L2
 related-rules: []
 checked-by: [coding-pattern-check]
