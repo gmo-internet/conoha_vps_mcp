@@ -30,10 +30,34 @@ import {
 	setPutStorageMetadata,
 	uploadStorageObjectDecoded,
 } from "../features/openstack/storage/storage-client.js";
-import type { AppContainer, AppObject } from "./apps-types.js";
+import {
+	type AppContainer,
+	AppContainerSchema,
+	type AppObject,
+	AppObjectSchema,
+} from "./apps-types.js";
+import {
+	CONTAINER_NAME_MAX_LENGTH,
+	CONTAINER_NAME_MIN_LENGTH,
+	CONTAINER_NAME_PATTERN,
+} from "./container-name-rules.js";
 
 /** UI リソース URI */
 const UI_RESOURCE_URI = "ui://conoha-vps/mcp-app.html";
+
+/**
+ * storage-client が返す JSON 文字列をパースした最小レスポンス型
+ *
+ * @remarks
+ * storage-client の各関数は `JSON.stringify({ status, body?, headers? })` 形式の
+ * 文字列を返す。ステータス判定のみを行う箇所はこの共通型で `JSON.parse` 結果を
+ * 受け、無名の inline 型（`as { status: number }`）の散在を防ぐ。
+ * body / headers を参照する箇所はこの型を拡張する。
+ */
+interface StorageRawResponse {
+	/** HTTP ステータスコード */
+	status: number;
+}
 
 /**
  * MCP Apps ツールをサーバーに登録
@@ -103,10 +127,7 @@ async function resolveContainers(): Promise<AppContainer[]> {
 	const raw = await getStorageContainerList(
 		`/v1/AUTH_${TENANT_ID}?format=json`,
 	);
-	const parsed = JSON.parse(raw) as {
-		status: number;
-		body: unknown;
-	};
+	const parsed = JSON.parse(raw) as StorageRawResponse & { body: unknown };
 	if (parsed.status !== 200) return [];
 	const list = Array.isArray(parsed.body) ? parsed.body : [];
 	return list.map(mapSwiftContainerToAppContainer);
@@ -146,14 +167,7 @@ function registerListContainers(server: McpServer): void {
 				"オブジェクトストレージのコンテナ一覧（名前・オブジェクト数・サイズ）を取得します。",
 			inputSchema: {},
 			outputSchema: {
-				containers: z.array(
-					z.object({
-						name: z.string(),
-						count: z.number(),
-						bytes: z.number(),
-						last_modified: z.string().optional(),
-					}),
-				),
+				containers: z.array(AppContainerSchema),
 				total: z.number(),
 			},
 			_meta: {
@@ -189,11 +203,14 @@ function registerCreateContainer(server: McpServer): void {
 			description:
 				"オブジェクトストレージにコンテナを新規作成します。既存名への PUT は 202 で no-op です。",
 			inputSchema: {
+				// 命名規則は container-name-rules.ts を単一の真実源とし、
+				// UI 側 validate-container-name.ts と規則を共有する
 				name: z
 					.string()
-					.min(1)
+					.min(CONTAINER_NAME_MIN_LENGTH)
+					.max(CONTAINER_NAME_MAX_LENGTH)
 					.regex(
-						/^[A-Za-z0-9._-]+$/,
+						CONTAINER_NAME_PATTERN,
 						"コンテナ名は英数字とハイフン・アンダースコア・ピリオドのみ使用できます",
 					)
 					.describe("作成するコンテナ名"),
@@ -217,7 +234,7 @@ function registerCreateContainer(server: McpServer): void {
 			const raw = await setPutStorageMetadata(
 				`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(name)}`,
 			);
-			const parsed = JSON.parse(raw) as { status: number };
+			const parsed = JSON.parse(raw) as StorageRawResponse;
 			// PUT は 201 Created（新規）または 202 Accepted（既存・no-op）が成功
 			if (parsed.status !== 201 && parsed.status !== 202) {
 				return {
@@ -272,7 +289,7 @@ function registerDeleteContainer(server: McpServer): void {
 			const raw = await deleteStorageContainer(
 				`/v1/AUTH_{tenantId}/${encodeURIComponent(name)}`,
 			);
-			const parsed = JSON.parse(raw) as { status: number };
+			const parsed = JSON.parse(raw) as StorageRawResponse;
 			if (parsed.status !== 204) {
 				return {
 					content: [
@@ -313,7 +330,7 @@ async function resolveObjects(containerName: string): Promise<AppObject[]> {
 	const raw = await getStorageObjectList(
 		`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(containerName)}?format=json`,
 	);
-	const parsed = JSON.parse(raw) as { status: number; body: unknown };
+	const parsed = JSON.parse(raw) as StorageRawResponse & { body: unknown };
 	if (parsed.status !== 200) return [];
 	const list = Array.isArray(parsed.body) ? parsed.body : [];
 	return list.map(mapSwiftObjectToAppObject);
@@ -352,15 +369,7 @@ function registerListObjects(server: McpServer): void {
 			},
 			outputSchema: {
 				container: z.string(),
-				objects: z.array(
-					z.object({
-						name: z.string(),
-						bytes: z.number(),
-						content_type: z.string(),
-						last_modified: z.string().optional(),
-						hash: z.string().optional(),
-					}),
-				),
+				objects: z.array(AppObjectSchema),
 				total: z.number(),
 			},
 		},
@@ -424,7 +433,7 @@ function registerUploadObject(server: McpServer): void {
 				content_base64,
 				content_type,
 			);
-			const parsed = JSON.parse(raw) as { status: number };
+			const parsed = JSON.parse(raw) as StorageRawResponse;
 			// PUT は 201 Created（新規）または 202 Accepted（上書き）が成功
 			if (parsed.status !== 201 && parsed.status !== 202) {
 				return {
@@ -478,7 +487,7 @@ function registerDeleteObject(server: McpServer): void {
 		async ({ container, object_name }) => {
 			const path = `/v1/AUTH_{tenantId}/${encodeURIComponent(container)}/${encodeURIComponent(object_name)}`;
 			const raw = await deleteStorageObject(path);
-			const parsed = JSON.parse(raw) as { status: number };
+			const parsed = JSON.parse(raw) as StorageRawResponse;
 			if (parsed.status !== 204) {
 				return {
 					content: [
@@ -545,8 +554,7 @@ function registerGetContainerPublicState(server: McpServer): void {
 			const raw = await getStorageContainerInfo(
 				`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(container)}`,
 			);
-			const parsed = JSON.parse(raw) as {
-				status: number;
+			const parsed = JSON.parse(raw) as StorageRawResponse & {
 				headers?: Record<string, string>;
 			};
 			const readAcl = parsed.headers?.["x-container-read"] ?? "";
@@ -610,7 +618,7 @@ function registerEnableWebPublish(server: McpServer): void {
 				`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(container)}`,
 				{ "X-Container-Read": ".r:*,.rlistings" },
 			);
-			const parsed = JSON.parse(raw) as { status: number };
+			const parsed = JSON.parse(raw) as StorageRawResponse;
 			// POST のメタデータ設定は 204 No Content が成功
 			if (parsed.status !== 204 && parsed.status !== 202) {
 				return {
@@ -683,7 +691,7 @@ function registerDisableWebPublish(server: McpServer): void {
 				`/v1/AUTH_${TENANT_ID}/${encodeURIComponent(container)}`,
 				{ "X-Container-Read": "" },
 			);
-			const parsed = JSON.parse(raw) as { status: number };
+			const parsed = JSON.parse(raw) as StorageRawResponse;
 			if (parsed.status !== 204 && parsed.status !== 202) {
 				return {
 					content: [

@@ -16,6 +16,7 @@
 
 import { applyDocumentTheme } from "@modelcontextprotocol/ext-apps";
 import type { AppContainer, AppObject } from "../../apps-types.js";
+import { fileToBase64 } from "../file-to-base64.js";
 
 // 変更系の結果（本番 mcp-bridge.ts の MutationResult と同形）
 type MutationResult =
@@ -292,28 +293,9 @@ export async function disableWebPublish(
 }
 
 // ──────────────────────────────────────────────
-// File API ヘルパー（本番と同一実装）
+// File API ヘルパー（本番と共有）
 // ──────────────────────────────────────────────
 
-/**
- * File オブジェクトを Base64 文字列に変換する
- *
- * @param file - ブラウザの File オブジェクト
- * @returns Base64 文字列（data: ヘッダ無し）
- */
-export function fileToBase64(file: File): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onload = () => {
-			const result = reader.result;
-			if (typeof result !== "string") {
-				reject(new Error("ファイル読み込みに失敗しました"));
-				return;
-			}
-			const comma = result.indexOf(",");
-			resolve(comma >= 0 ? result.slice(comma + 1) : result);
-		};
-		reader.onerror = () => reject(reader.error ?? new Error("読み込みエラー"));
-		reader.readAsDataURL(file);
-	});
-}
+// 本番 mcp-bridge.ts と同一の export 面を保つため再エクスポートする。
+// 純粋関数のため実装は file-to-base64.ts に一本化（プレビュー専用の差し替え不要）。
+export { fileToBase64 };
