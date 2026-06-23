@@ -83,7 +83,7 @@
 		"@vitejs/plugin-react": "6.0.2",
 		"@vitest/coverage-v8": "4.1.7",
 		"dependency-cruiser": "17.4.2",
-		"jscpd": "4.2.4",
+		"jscpd": "5.0.10",
 		"knip": "5.88.1",
 		"tsx": "4.22.3",
 		"typedoc": "0.28.19",
