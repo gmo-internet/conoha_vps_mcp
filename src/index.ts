@@ -80,6 +80,14 @@ const resourceIdSchema = z
 		"IDは英数字・ハイフン・アンダースコアのみ使用できます",
 	);
 
+// オブジェクトストレージの削除対象パス。conoha_get / conoha_post_put のストレージパスと同形式（/v1/AUTH_{tenantId}/{container}[/{object}]）を許可
+const storageObjectPathSchema = z
+	.string()
+	.regex(
+		/^\/v1\/AUTH_\{tenantId\}\/.+$/,
+		"オブジェクトストレージのパスは /v1/AUTH_{tenantId}/{container}[/{object}] の形式で指定してください",
+	);
+
 const server = new McpServer({
 	name: "ConoHa VPS MCP",
 	version: packageJson.version,
@@ -511,7 +519,7 @@ server.registerTool(
 				"/v1/AUTH_{tenantId}/{container}",
 				"/v1/AUTH_{tenantId}/{container}/{object}",
 			]),
-			param: resourceIdSchema,
+			param: z.union([resourceIdSchema, storageObjectPathSchema]),
 		},
 		outputSchema: {
 			response: z.string(),
@@ -519,8 +527,15 @@ server.registerTool(
 	},
 	async ({ path, param }) => {
 		try {
+			// ストレージ削除はフルパス、それ以外はリソースIDのみ許可（非ストレージ経路へのパストラバーサルを防止）
+			const isStorageDeletePath =
+				path === "/v1/AUTH_{tenantId}/{container}" ||
+				path === "/v1/AUTH_{tenantId}/{container}/{object}";
+			const validatedParam = isStorageDeletePath
+				? storageObjectPathSchema.parse(param)
+				: resourceIdSchema.parse(param);
 			const handler = conohaDeleteByParamHandlers[path];
-			const response = await handler(param);
+			const response = await handler(validatedParam);
 			const output = { response };
 			return {
 				content: [{ type: "text", text: JSON.stringify(output) }],
