@@ -7,8 +7,18 @@
  * - 文字数・文字種・重複違反 → `error`（メッセージ付き）
  * - すべての条件を満たす → `ok`
  *
+ * 命名規則（文字数下限・上限・許可文字）は単一の真実源
+ * `../container-name-rules.js` から取り込み、サーバ側 zod スキーマ
+ * （apps-tools.ts の create_container）と規則を共有する。
+ *
  * @packageDocumentation
  */
+
+import {
+	CONTAINER_NAME_MAX_LENGTH,
+	CONTAINER_NAME_MIN_LENGTH,
+	CONTAINER_NAME_PATTERN,
+} from "../container-name-rules.js";
 
 /** バリデーション結果の状態 */
 type ContainerNameValidationState = "empty" | "ok" | "error";
@@ -25,8 +35,8 @@ interface ContainerNameValidation {
  * コンテナ名を 1 回の評価でバリデーションする
  *
  * @remarks
- * - 3 文字以上 63 文字以下
- * - 英数字・ハイフン・アンダースコア・ピリオドのみ
+ * - 文字数・許可文字は container-name-rules.ts の定数に従う
+ *   （CONTAINER_NAME_MIN_LENGTH 以上 CONTAINER_NAME_MAX_LENGTH 以下・CONTAINER_NAME_PATTERN）
  * - 既存名と重複しない
  *
  * @param name - 入力されたコンテナ名（未トリム）
@@ -38,13 +48,19 @@ export function validateContainerName(
 	existingNames: readonly string[],
 ): ContainerNameValidation {
 	if (!name) return { state: "empty" };
-	if (name.length < 3) {
-		return { state: "error", message: "3文字以上で入力してください" };
+	if (name.length < CONTAINER_NAME_MIN_LENGTH) {
+		return {
+			state: "error",
+			message: `${CONTAINER_NAME_MIN_LENGTH}文字以上で入力してください`,
+		};
 	}
-	if (name.length > 63) {
-		return { state: "error", message: "63文字以下で入力してください" };
+	if (name.length > CONTAINER_NAME_MAX_LENGTH) {
+		return {
+			state: "error",
+			message: `${CONTAINER_NAME_MAX_LENGTH}文字以下で入力してください`,
+		};
 	}
-	if (!/^[A-Za-z0-9._-]+$/.test(name)) {
+	if (!CONTAINER_NAME_PATTERN.test(name)) {
 		return { state: "error", message: "使用できない文字が含まれています" };
 	}
 	if (existingNames.includes(name)) {

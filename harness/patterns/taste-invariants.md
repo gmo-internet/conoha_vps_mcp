@@ -1,7 +1,7 @@
 ---
 id: 16
 title: Taste Invariants（主観的品質基準）
-last-reviewed: 2026-06-17
+last-reviewed: 2026-06-18
 enforcement-level: L2
 related-rules: [B-5, B-6, E-2, F-3]
 checked-by: [coding-pattern-check]

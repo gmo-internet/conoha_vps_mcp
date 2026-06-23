@@ -66,10 +66,10 @@
 		"mutation": "stryker run"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/ext-apps": "^1.7.2",
+		"@modelcontextprotocol/ext-apps": "^1.7.4",
 		"@modelcontextprotocol/sdk": "^1.29.0",
-		"react": "19.2.6",
-		"react-dom": "19.2.6",
+		"react": "19.2.7",
+		"react-dom": "19.2.7",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
@@ -78,20 +78,20 @@
 		"@stryker-mutator/core": "9.6.1",
 		"@stryker-mutator/vitest-runner": "9.6.1",
 		"@types/node": "^22.0.0",
-		"@types/react": "19.2.15",
+		"@types/react": "19.2.17",
 		"@types/react-dom": "19.2.3",
 		"@vitejs/plugin-react": "6.0.2",
-		"@vitest/coverage-v8": "4.1.7",
-		"dependency-cruiser": "17.4.2",
-		"jscpd": "4.2.4",
+		"@vitest/coverage-v8": "4.1.9",
+		"dependency-cruiser": "17.4.3",
+		"jscpd": "5.0.11",
 		"knip": "5.88.1",
-		"tsx": "4.22.3",
+		"tsx": "4.22.4",
 		"typedoc": "0.28.19",
 		"typescript": "6.0.3",
-		"vite": "8.0.14",
+		"vite": "8.0.16",
 		"vite-plugin-singlefile": "2.3.3",
 		"vite-plugin-svgr": "5.2.0",
-		"vitest": "4.1.7"
+		"vitest": "4.1.9"
 	},
 	"overrides": {
 		"qs": "^6.15.2",
