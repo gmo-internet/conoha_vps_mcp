@@ -175,6 +175,25 @@ describe("create_container", () => {
 		const nameSchema = tool.inputSchema?.shape?.name ?? tool.inputSchema?.name;
 		expect(nameSchema).toBeDefined();
 	});
+
+	it("zod inputSchema が UI と同じ規則で 3 文字未満のコンテナ名を拒否する", () => {
+		// biome-ignore lint/suspicious/noExplicitAny: SDK内部の_registeredToolsへのアクセス
+		const registeredTools = (server as any)._registeredTools;
+		const inputSchema = registeredTools.create_container.inputSchema;
+		// 1〜2 文字は不可（旧 .min(1) ではすり抜けていた境界を検証）
+		expect(inputSchema.safeParse({ name: "a" }).success).toBe(false);
+		expect(inputSchema.safeParse({ name: "ab" }).success).toBe(false);
+	});
+
+	it("zod inputSchema が 3 文字以上 63 文字以下の正当なコンテナ名を受理する", () => {
+		// biome-ignore lint/suspicious/noExplicitAny: SDK内部の_registeredToolsへのアクセス
+		const registeredTools = (server as any)._registeredTools;
+		const inputSchema = registeredTools.create_container.inputSchema;
+		expect(inputSchema.safeParse({ name: "abc" }).success).toBe(true);
+		expect(inputSchema.safeParse({ name: "a".repeat(63) }).success).toBe(true);
+		// 64 文字超過は不可
+		expect(inputSchema.safeParse({ name: "a".repeat(64) }).success).toBe(false);
+	});
 });
 
 describe("delete_container", () => {

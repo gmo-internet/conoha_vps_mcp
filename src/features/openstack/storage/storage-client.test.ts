@@ -11,9 +11,11 @@
  */
 
 import { Buffer } from "node:buffer";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { formatObjectGetResponse } from "./response-formatter";
 import {
+	deleteStorageContainer,
+	deleteStorageObject,
 	getStorageObjectInfo,
 	uploadStorageObject,
 	uploadStorageObjectDecoded,
@@ -144,6 +146,54 @@ describe("storage-client アップロード経路", () => {
 			expect(new Uint8Array(Buffer.from(parsed.body, "base64"))).toEqual(
 				rawBytes,
 			);
+		});
+	});
+
+	describe("削除経路のテナントID解決", () => {
+		const originalEnv = process.env;
+
+		afterEach(() => {
+			process.env = originalEnv;
+		});
+
+		it("OPENSTACK_TENANT_ID が設定済みの場合、deleteStorageContainer は path 内の {tenantId} を解決して DELETE する", async () => {
+			process.env = { ...originalEnv, OPENSTACK_TENANT_ID: "tenant-xyz" };
+
+			await deleteStorageContainer("/v1/AUTH_{tenantId}/my-container");
+
+			const fetchMock = vi.mocked(fetch);
+			expect(fetchMock).toHaveBeenCalledTimes(1);
+			const [calledUrl, init] = fetchMock.mock.calls[0];
+			expect(calledUrl).toBe(
+				"https://object-storage.c3j1.conoha.io/v1/AUTH_tenant-xyz/my-container",
+			);
+			expect(init?.method).toBe("DELETE");
+		});
+
+		it("OPENSTACK_TENANT_ID が未設定の場合、deleteStorageContainer は壊れた AUTH_ パスを生成せず日本語メッセージのエラーをスローする", async () => {
+			process.env = { ...originalEnv };
+			process.env.OPENSTACK_TENANT_ID = undefined;
+
+			await expect(
+				deleteStorageContainer("/v1/AUTH_{tenantId}/my-container"),
+			).rejects.toThrow(
+				"OPENSTACK_TENANT_ID が設定されていません。環境変数を確認してください",
+			);
+
+			expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+		});
+
+		it("OPENSTACK_TENANT_ID が未設定の場合、deleteStorageObject も同様に日本語メッセージのエラーをスローする", async () => {
+			process.env = { ...originalEnv };
+			process.env.OPENSTACK_TENANT_ID = undefined;
+
+			await expect(
+				deleteStorageObject("/v1/AUTH_{tenantId}/my-container/hello.txt"),
+			).rejects.toThrow(
+				"OPENSTACK_TENANT_ID が設定されていません。環境変数を確認してください",
+			);
+
+			expect(vi.mocked(fetch)).not.toHaveBeenCalled();
 		});
 	});
 });
