@@ -84,7 +84,7 @@
 		"@vitest/coverage-v8": "4.1.9",
 		"dependency-cruiser": "17.4.3",
 		"jscpd": "5.0.11",
-		"knip": "5.88.1",
+		"knip": "6.17.1",
 		"tsx": "4.22.4",
 		"typedoc": "0.28.19",
 		"typescript": "6.0.3",
