@@ -33,6 +33,7 @@ import {
 	OperateServerRequestSchema,
 	RemoteConsoleRequestSchema,
 } from "./features/openstack/compute/compute-schema.js";
+import { USER_AGENT } from "./features/openstack/constants.js";
 import {
 	CreateSecurityGroupRequestSchema,
 	CreateSecurityGroupRuleRequestSchema,
@@ -66,16 +67,19 @@ import {
 	conohaPostPutByParamHandlers,
 	conohaPostPutHandlers,
 } from "./tool-routing-tables.js";
-import type {
-	ConoHaGetPaths,
-	ConoHaHeadPaths,
-	ConoHaPostPutByParamByHeaderparamPaths,
-	ConoHaPostPutPaths,
-} from "./types.js";
+import type { ConoHaGetPaths, ConoHaPostPutPaths } from "./types.js";
 
 const require = createRequire(import.meta.url);
 const packageJson = require("../package.json");
-const USER_AGENT = `conoha-vps-mcp/${packageJson.version}`;
+
+// リソースID（UUID等）。パストラバーサルやエンドポイント逸脱を防ぐため英数・ハイフン・アンダースコアのみ許可
+const resourceIdSchema = z
+	.string()
+	.regex(
+		/^[A-Za-z0-9_-]+$/,
+		"IDは英数字・ハイフン・アンダースコアのみ使用できます",
+	);
+
 const server = new McpServer({
 	name: "ConoHa VPS MCP",
 	version: packageJson.version,
@@ -233,7 +237,7 @@ server.registerTool(
 				"/v2.0/security-groups",
 				"/v2.0/security-group-rules",
 			]),
-			param: z.string(),
+			param: resourceIdSchema,
 		},
 		outputSchema: {
 			response: z.string(),
@@ -387,32 +391,32 @@ server.registerTool(
 			input: z.discriminatedUnion("path", [
 				z.object({
 					path: z.literal("/action"),
-					param: z.string(),
+					param: resourceIdSchema,
 					requestBody: OperateServerRequestSchema,
 				}),
 				z.object({
 					path: z.literal("/remote-consoles"),
-					param: z.string(),
+					param: resourceIdSchema,
 					requestBody: RemoteConsoleRequestSchema,
 				}),
 				z.object({
 					path: z.literal("/os-volume_attachments"),
-					param: z.string(),
+					param: resourceIdSchema,
 					requestBody: AttachVolumeRequestSchema,
 				}),
 				z.object({
 					path: z.literal("/v2.0/security-groups"),
-					param: z.string(),
+					param: resourceIdSchema,
 					requestBody: UpdateSecurityGroupRequestSchema,
 				}),
 				z.object({
 					path: z.literal("/v2.0/ports"),
-					param: z.string(),
+					param: resourceIdSchema,
 					requestBody: UpdatePortRequestSchema,
 				}),
 				z.object({
 					path: z.literal("/volumes"),
-					param: z.string(),
+					param: resourceIdSchema,
 					requestBody: UpdateVolumeRequestSchema,
 				}),
 			]),
@@ -475,11 +479,7 @@ server.registerTool(
 
 			const path = input.path.replace("{tenantId}", TENANT_ID);
 
-			const pathPrefix = path.startsWith("/v1") ? "/v1" : "";
-			const handler =
-				conohaPostPutByHeaderparamHandlers[
-					pathPrefix as ConoHaPostPutByParamByHeaderparamPaths
-				];
+			const handler = conohaPostPutByHeaderparamHandlers["/v1"];
 			const response = await handler(path, input.headerparam);
 			const output = { response };
 			return {
@@ -511,7 +511,7 @@ server.registerTool(
 				"/v1/AUTH_{tenantId}/{container}",
 				"/v1/AUTH_{tenantId}/{container}/{object}",
 			]),
-			param: z.string(),
+			param: resourceIdSchema,
 		},
 		outputSchema: {
 			response: z.string(),
@@ -560,8 +560,7 @@ server.registerTool(
 
 			const resolvedPath = path.replace("{tenantId}", TENANT_ID);
 
-			const pathPrefix = resolvedPath.startsWith("/v1") ? "/v1" : "";
-			const handler = conohaHeadHandlers[pathPrefix as ConoHaHeadPaths];
+			const handler = conohaHeadHandlers["/v1"];
 			const response = await handler(resolvedPath);
 			const output = { response };
 			return {

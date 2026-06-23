@@ -1,7 +1,7 @@
 ---
 id: 13
 title: インポートルール
-last-reviewed: 2026-06-17
+last-reviewed: 2026-06-18
 enforcement-level: L3/L4
 related-rules: [G-1, G-2, G-3, G-4]
 checked-by: [architecture.test.ts, coding-pattern-check]

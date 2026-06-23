@@ -1,7 +1,7 @@
 ---
 id: 1
 title: ファイル構成パターン
-last-reviewed: 2026-06-17
+last-reviewed: 2026-06-18
 enforcement-level: L4
 related-rules: [A-1, A-2, A-3, H-1]
 checked-by: [architecture.test.ts, coding-pattern-check]

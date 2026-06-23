@@ -10,14 +10,13 @@
 import { readFile } from "node:fs/promises";
 import type { JsonObject } from "../../../types.js";
 import { generateApiToken } from "../common/generate-api-token.js";
+import { requireTenantId } from "../common/require-tenant-id.js";
 import { formatResponse } from "../common/response-formatter.js";
 import { OPENSTACK_OBJECT_STORAGE_BASE_URL } from "../constants.js";
 import {
 	formatHeadResponse,
 	formatObjectGetResponse,
 } from "./response-formatter.js";
-
-const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 
 /**
  * ストレージメタデータを設定（POST）
@@ -206,7 +205,7 @@ export async function getStorageObjectInfo(path: string) {
  */
 export async function deleteStorageObject(path: string) {
 	const apiToken = await generateApiToken();
-	const tenantId = TENANT_ID || "";
+	const tenantId = requireTenantId();
 
 	const pathWithTenantId = path.replace("{tenantId}", tenantId);
 
@@ -233,7 +232,7 @@ export async function deleteStorageObject(path: string) {
  */
 export async function deleteStorageContainer(path: string) {
 	const apiToken = await generateApiToken();
-	const tenantId = TENANT_ID || "";
+	const tenantId = requireTenantId();
 
 	const pathWithTenantId = path.replace("{tenantId}", tenantId);
 

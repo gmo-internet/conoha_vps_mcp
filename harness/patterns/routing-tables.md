@@ -1,7 +1,7 @@
 ---
 id: 6
 title: ルーティングテーブルパターン
-last-reviewed: 2026-06-17
+last-reviewed: 2026-06-18
 enforcement-level: L2
 related-rules: []
 checked-by: [coding-pattern-check]
