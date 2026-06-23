@@ -47,7 +47,7 @@ jobs:
 
       - name: Run Claude Code Review
         id: claude-review
-        uses: anthropics/claude-code-action@806af32823ef69c8ef357086c573a902af641307 # v1
+        uses: anthropics/claude-code-action@30544b674398ee15c84819bd87caf8a87e8c7b55 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -215,7 +215,7 @@ jobs:
         if: steps.check.outputs.has-violations == 'true' && steps.guard.outputs.skip != 'true'
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: "24.16.0"
+          node-version: "24.17.0"
           cache: "npm"
 
       - name: Install dependencies
@@ -231,7 +231,7 @@ jobs:
       - name: Run Claude Code Auto-fix
         if: steps.check.outputs.has-violations == 'true' && steps.guard.outputs.skip != 'true'
         id: autofix
-        uses: anthropics/claude-code-action@806af32823ef69c8ef357086c573a902af641307 # v1
+        uses: anthropics/claude-code-action@30544b674398ee15c84819bd87caf8a87e8c7b55 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
