@@ -21,10 +21,19 @@ src/
 │   ├── apps-tools.ts               # ツール定義・データ解決層
 │   ├── apps-tools.test.ts
 │   ├── apps-types.ts                # App用型定義
-│   └── ui/                          # クライアントサイドUI（Viteビルド）
+│   ├── build-config.test.ts        # ビルド構成テスト
+│   └── ui/                          # クライアントサイドUI（Viteビルド、tsconfig.ui.json）
 │       ├── mcp-app.html             # 本番エントリ
-│       ├── mcp-app.tsx
+│       ├── mcp-app.tsx              # マウント
+│       ├── mcp-app.css              # スタイル
+│       ├── app.tsx                  # ルートコンポーネント
 │       ├── mcp-bridge.ts            # サーバーツール呼び出しラッパー
+│       ├── clipboard.ts             # ユーティリティ（各 *.test.ts あり）
+│       ├── format-bytes.ts
+│       ├── validate-container-name.ts
+│       ├── conoha_vps.svg
+│       ├── components/              # UIコンポーネント（*.tsx）
+│       ├── icons/                   # SVGアイコン群
 │       └── preview/                 # 認証情報なしプレビュー（npm run preview:ui）
 │           ├── index.html           # プレビュー用エントリ
 │           └── mock-bridge.ts       # プレビュー用モックブリッジ

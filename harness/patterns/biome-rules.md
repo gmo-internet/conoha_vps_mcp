@@ -15,7 +15,7 @@ checked-by: [biome.json]
 |------|------|
 | インデント | タブ（幅2） |
 | クォート | ダブルクォート |
-| インポート整理 | 有効（`organizeImports: "on"`） |
+| インポート整理 | 有効（`assist.actions.source.organizeImports: "on"`） |
 | リンター | `recommended: true` |
 | `noExplicitAny` | off |
 | テストファイルのリンティング | 除外（`!**/src/**/*.test.ts`） |
@@ -46,3 +46,5 @@ checked-by: [biome.json]
 - `useNumberNamespace` — Number名前空間の使用
 - `noInferrableTypes` — 推論可能な型注釈の禁止
 - `noUselessElse` — 不要なelse禁止
+- `useImportType` — 型のみのインポートは `import type` を使用
+- `useNodejsImportProtocol` — Node.js組み込みは `node:` プレフィックスを使用
