@@ -67,8 +67,13 @@ async function fetchOpenstackAuthHeaders(path: string) {
  * // token: "gAAAAABl..."
  * ```
  */
-export async function generateApiToken() {
+export async function generateApiToken(): Promise<string> {
 	const response = await fetchOpenstackAuthHeaders("/auth/tokens");
-	const apiToken = response.get("x-subject-token") as string;
+	const apiToken = response.get("x-subject-token");
+	if (!apiToken) {
+		throw new Error(
+			"認証トークンを取得できませんでした。OPENSTACK_USER_ID / OPENSTACK_PASSWORD / OPENSTACK_TENANT_ID が正しいか確認してください",
+		);
+	}
 	return apiToken;
 }
