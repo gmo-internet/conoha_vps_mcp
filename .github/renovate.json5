@@ -29,7 +29,7 @@
   ],
   rangeStrategy: 'bump',
   lockFileMaintenance: {
-    enabled: true,
+    enabled: false,
   },
   packageRules: [
     {
