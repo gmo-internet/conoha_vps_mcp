@@ -14,7 +14,7 @@ export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 /**
  * JSONプリミティブ型
  */
-export type JsonPrimitive = string | number | boolean | null;
+type JsonPrimitive = string | number | boolean | null;
 
 /**
  * JSONオブジェクト型
