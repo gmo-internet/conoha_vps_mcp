@@ -13,7 +13,8 @@
 			"!**/reports",
 			"!**/dist",
 			"!**/.stryker-tmp",
-			"!**/skills/**/*.md"
+			"!**/skills/**/*.md",
+			"!**/*.svg"
 		]
 	},
 	"formatter": {
@@ -31,7 +32,6 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
 			"suspicious": {
 				"noExplicitAny": "off"
 			},
