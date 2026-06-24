@@ -74,7 +74,7 @@
 	},
 	"devDependencies": {
 		"@anthropic-ai/mcpb": "2.1.2",
-		"@biomejs/biome": "2.4.15",
+		"@biomejs/biome": "2.5.0",
 		"@stryker-mutator/core": "9.6.1",
 		"@stryker-mutator/vitest-runner": "9.6.1",
 		"@types/node": "^22.0.0",
