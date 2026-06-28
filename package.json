@@ -94,7 +94,7 @@
 		"vitest": "4.1.9"
 	},
 	"overrides": {
-		"qs": "^6.15.2",
+		"qs": "^6.15.3",
 		"@inquirer/prompts": "^8.5.2",
 		"js-yaml": "<=4.1.1"
 	},
