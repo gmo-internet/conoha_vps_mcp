@@ -149,12 +149,14 @@ describe("アーキテクチャ制約", () => {
 			"tool-descriptions.ts",
 		];
 		const featurePattern = /^features\/openstack\//;
+		const appsPattern = /^apps\//;
 
 		it.each(sourceFiles)("%s が許可されたパスに配置されていること", (file) => {
 			const isRootFile = !file.includes("/") && allowedRootFiles.includes(file);
 			const isFeatureFile = featurePattern.test(file);
+			const isAppsFile = appsPattern.test(file);
 			expect(
-				isRootFile || isFeatureFile,
+				isRootFile || isFeatureFile || isAppsFile,
 				`${file} はfeatureディレクトリまたは許可されたルートファイルではありません。修正: src/features/openstack/{service}/ 配下に移動するか、srcルートの許可リスト（${allowedRootFiles.join(", ")}）を更新してください。参照: harness/patterns/file-structure.md`,
 			).toBe(true);
 		});

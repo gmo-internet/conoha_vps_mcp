@@ -1,6 +1,6 @@
 {
 	"name": "@gmo-internet/conoha-vps-mcp",
-	"version": "0.5.2",
+	"version": "0.6.0",
 	"description": "日本語対応のConoHa VPS Model Context Protocol (MCP) サーバー",
 	"author": "GMO Internet",
 	"license": "Apache-2.0",
@@ -41,12 +41,16 @@
 		"registry": "https://registry.npmjs.org/"
 	},
 	"scripts": {
-		"build": "node esbuild.config.js",
+		"build": "vite build --config vite.config.server.ts && vite build",
+		"build:server": "vite build --config vite.config.server.ts",
+		"build:ui": "vite build",
 		"build:types": "tsc --emitDeclarationOnly",
 		"build:mcpb": "mcpb pack",
 		"start": "node dist/index.js",
 		"dev": "tsx src/index.ts",
-		"typecheck": "tsc --noEmit",
+		"preview:ui": "vite --config vite.config.preview.ts",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.ui.json",
+		"typecheck:ui": "tsc --noEmit -p tsconfig.ui.json",
 		"biome:ci": "biome ci .",
 		"biome:fix": "biome check --write .",
 		"test": "vitest run --coverage",
@@ -55,31 +59,44 @@
 		"docs:build": "typedoc",
 		"docs:watch": "typedoc --watch",
 		"docs:serve": "npx serve reports/docs",
-		"audit:ci": "npm audit --audit-level=high",
+		"audit:ci": "npm audit --audit-level=high --omit=dev",
 		"knip": "knip",
 		"depcruise": "depcruise src --config .dependency-cruiser.cjs",
 		"jscpd": "jscpd src/",
 		"mutation": "stryker run"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.27.1",
-		"zod": "^4.3.6"
+		"@modelcontextprotocol/ext-apps": "^1.7.4",
+		"@modelcontextprotocol/sdk": "^1.29.0",
+		"react": "19.2.7",
+		"react-dom": "19.2.7",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@anthropic-ai/mcpb": "2.1.2",
-		"@biomejs/biome": "2.4.5",
-		"@stryker-mutator/core": "9.6.0",
-		"@stryker-mutator/vitest-runner": "9.6.0",
+		"@biomejs/biome": "2.5.0",
+		"@stryker-mutator/core": "9.6.1",
+		"@stryker-mutator/vitest-runner": "9.6.1",
 		"@types/node": "^22.0.0",
-		"@vitest/coverage-v8": "4.0.18",
-		"dependency-cruiser": "17.3.8",
-		"esbuild": "0.27.3",
-		"jscpd": "4.0.8",
-		"knip": "5.86.0",
-		"tsx": "4.21.0",
-		"typedoc": "0.28.17",
-		"typescript": "5.9.3",
-		"vitest": "4.0.18"
+		"@types/react": "19.2.17",
+		"@types/react-dom": "19.2.3",
+		"@vitejs/plugin-react": "6.0.2",
+		"@vitest/coverage-v8": "4.1.9",
+		"dependency-cruiser": "17.4.3",
+		"jscpd": "5.0.11",
+		"knip": "6.17.1",
+		"tsx": "4.22.4",
+		"typedoc": "0.28.19",
+		"typescript": "6.0.3",
+		"vite": "8.0.16",
+		"vite-plugin-singlefile": "2.3.3",
+		"vite-plugin-svgr": "5.2.0",
+		"vitest": "4.1.9"
+	},
+	"overrides": {
+		"qs": "^6.15.2",
+		"@inquirer/prompts": "^8.5.2",
+		"js-yaml": "<=4.1.1"
 	},
 	"engines": {
 		"node": ">=22.0.0"

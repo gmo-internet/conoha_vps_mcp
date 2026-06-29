@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm test` - テスト実行（カバレッジ付き）
 - `npm test -- <filename>` - 特定テスト実行
 
-その他: `npm run dev`（開発サーバー）, `npm run inspector`（MCPインスペクター）, `npm run generate:notice`（NOTICE生成）, `npm run docs:build`（APIドキュメント生成）
+その他: `npm run dev`（開発サーバー）, `npm run preview:ui`（MCP App UIをサンプルデータでプレビュー、認証情報不要）, `npm run inspector`（MCPインスペクター）, `npm run generate:notice`（NOTICE生成）, `npm run docs:build`（APIドキュメント生成）
 
 ## アーキテクチャ
 
@@ -35,6 +35,12 @@ ConoHa VPS OpenStack APIへのアクセスをAIアシスタントに提供する
 ### コミット・PR
 - Conventional Commits 必須（例: `feat:`, `fix:`, `docs:`, `test:`, `chore:`）
 - PRチェックリスト: CI通過、NOTICE更新（`npm run generate:notice`）、リリース時はバージョン更新（`package.json` + `manifest.json`）
+- **PR作成前は必ず以下のスキルでセルフレビューを実施**（指摘があれば修正してから PR 作成すること）:
+  - `vercel-react-best-practices` — React/Next.js パフォーマンス最適化（waterfall / bundle / re-render 等 70 ルール）。React/TSX を新規追加・変更した PR では必須
+  - `vercel-composition-patterns` — React コンポジションパターン（boolean prop 乱立回避、compound components、React 19 API 等）。コンポーネント設計を伴う PR では必須
+  - `review-security` — セキュリティ観点のレビュー（GMO 内製スキル、`ConoHaControlPanel/Frontend/skills/review-security`）。全 PR で必須
+  - Skill 本体の配置: `~/.claude/skills/vercel-react-best-practices/` / `~/.claude/skills/vercel-composition-patterns/` / `~/.claude/skills/review-security/`
+  - 取得元: vercel 系 = https://github.com/vercel-labs/agent-skills/tree/main/skills 、review-security = `github.com/ConoHaControlPanel/Frontend/tree/main/skills/review-security`（GMO 内部リポ、要アクセス権）
 
 ### コードスタイル
 - Biome: タブインデント、ダブルクォート、インポート整理有効（詳細: `harness/patterns/biome-rules.md`）

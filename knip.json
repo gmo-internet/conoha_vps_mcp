@@ -1,10 +1,12 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"entry": [
-		"src/index.ts"
+		"src/apps/ui/mcp-app.tsx",
+		"src/apps/ui/preview/mock-bridge.ts"
 	],
 	"project": [
-		"src/**/*.ts"
+		"src/**/*.ts",
+		"src/**/*.tsx"
 	],
 	"ignore": [
 		"**/*.test.ts"

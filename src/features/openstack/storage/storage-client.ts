@@ -7,17 +7,17 @@
  * @packageDocumentation
  */
 
+import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import type { JsonObject } from "../../../types.js";
 import { generateApiToken } from "../common/generate-api-token.js";
+import { requireTenantId } from "../common/require-tenant-id.js";
 import { formatResponse } from "../common/response-formatter.js";
 import { OPENSTACK_OBJECT_STORAGE_BASE_URL } from "../constants.js";
 import {
 	formatHeadResponse,
 	formatObjectGetResponse,
 } from "./response-formatter.js";
-
-const TENANT_ID = process.env.OPENSTACK_TENANT_ID;
 
 /**
  * ストレージメタデータを設定（POST）
@@ -193,7 +193,7 @@ export async function getStorageObjectInfo(path: string) {
 		headers,
 	});
 
-	const content = await response.text();
+	const content = Buffer.from(await response.arrayBuffer());
 
 	return formatObjectGetResponse(response, content);
 }
@@ -206,7 +206,7 @@ export async function getStorageObjectInfo(path: string) {
  */
 export async function deleteStorageObject(path: string) {
 	const apiToken = await generateApiToken();
-	const tenantId = TENANT_ID || "";
+	const tenantId = requireTenantId();
 
 	const pathWithTenantId = path.replace("{tenantId}", tenantId);
 
@@ -233,7 +233,7 @@ export async function deleteStorageObject(path: string) {
  */
 export async function deleteStorageContainer(path: string) {
 	const apiToken = await generateApiToken();
-	const tenantId = TENANT_ID || "";
+	const tenantId = requireTenantId();
 
 	const pathWithTenantId = path.replace("{tenantId}", tenantId);
 
@@ -253,7 +253,54 @@ export async function deleteStorageContainer(path: string) {
 }
 
 /**
- * ストレージオブジェクトをアップロード
+ * Base64 文字列をバイト列へデコードする
+ *
+ * @internal
+ */
+function decodeBase64ToBytes(base64: string): Uint8Array {
+	const binaryString = Buffer.from(base64, "base64").toString("binary");
+	const bytes = new Uint8Array(binaryString.length);
+	for (let i = 0; i < binaryString.length; i++) {
+		bytes[i] = binaryString.charCodeAt(i);
+	}
+	return bytes;
+}
+
+/**
+ * オブジェクト本体を PUT してレスポンスを整形する
+ *
+ * @internal
+ */
+async function putStorageObjectBody(
+	path: string,
+	body: Uint8Array,
+	contentType?: string,
+) {
+	const apiToken = await generateApiToken();
+	const url = `${OPENSTACK_OBJECT_STORAGE_BASE_URL}${path}`;
+	const headers: Record<string, string> = {
+		Accept: "application/json",
+		"X-Auth-Token": apiToken,
+	};
+	if (contentType) {
+		headers["Content-Type"] = contentType;
+	}
+	const response = await fetch(url, {
+		method: "PUT",
+		headers,
+		body,
+	});
+	return await formatResponse(response);
+}
+
+/**
+ * ストレージオブジェクトをアップロード（ファイルパスまたはBase64）
+ *
+ * @remarks
+ * `conoha_post_put` 汎用ツール用。`content` がローカルの絶対パスを指す場合は
+ * そのファイルを読み込んでアップロードし、読めなければ Base64 とみなしてデコードする。
+ * この二段挙動は tool-descriptions.ts に記載のある正規仕様。埋め込み UI からの
+ * アップロードはファイルシステムを触らない {@link uploadStorageObjectDecoded} を使うこと。
  *
  * @param path - APIパス
  * @param content - ファイルパス（絶対パス）またはBase64エンコードされた文字列
@@ -265,40 +312,39 @@ export async function uploadStorageObject(
 	content: string,
 	contentType?: string,
 ) {
-	const apiToken = await generateApiToken();
-
-	const url = `${OPENSTACK_OBJECT_STORAGE_BASE_URL}${path}`;
-
-	const headers: Record<string, string> = {
-		Accept: "application/json",
-		"X-Auth-Token": apiToken,
-	};
-
-	if (contentType) {
-		headers["Content-Type"] = contentType;
-	}
-
 	let body: Uint8Array;
 	try {
 		const fileContent = await readFile(content);
 		body = new Uint8Array(fileContent);
 	} catch {
 		try {
-			const binaryString = Buffer.from(content, "base64").toString("binary");
-			body = new Uint8Array(binaryString.length);
-			for (let i = 0; i < binaryString.length; i++) {
-				body[i] = binaryString.charCodeAt(i);
-			}
+			body = decodeBase64ToBytes(content);
 		} catch {
 			body = new TextEncoder().encode(content);
 		}
 	}
+	return putStorageObjectBody(path, body, contentType);
+}
 
-	const response = await fetch(url, {
-		method: "PUT",
-		headers,
-		body,
-	});
-
-	return await formatResponse(response);
+/**
+ * ストレージオブジェクトをアップロード（Base64専用・ファイルシステム不使用）
+ *
+ * @remarks
+ * MCP App の埋め込み UI 由来のアップロード用。ブラウザの File API で得た本体を
+ * Base64 化した文字列のみを受け取り、サーバーローカルファイルの読み込みは一切
+ * 行わない。これにより、UI 経路から `content` をパスとして解釈させて任意ファイルを
+ * 読ませる経路（多層防御）を塞ぐ。
+ *
+ * @param path - APIパス
+ * @param base64Content - Base64エンコードされたオブジェクト本体
+ * @param contentType - MIMEタイプ（省略可）
+ * @returns アップロード結果を含むJSONレスポンス
+ */
+export async function uploadStorageObjectDecoded(
+	path: string,
+	base64Content: string,
+	contentType?: string,
+) {
+	const body = decodeBase64ToBytes(base64Content);
+	return putStorageObjectBody(path, body, contentType);
 }

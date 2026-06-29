@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: L2違反ラベル集計・エスカレーション候補検出
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             // ESCALATION.md の L2 ルール一覧

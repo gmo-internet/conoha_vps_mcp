@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -12,7 +12,9 @@
 			"!**/node_modules",
 			"!**/reports",
 			"!**/dist",
-			"!**/.stryker-tmp"
+			"!**/.stryker-tmp",
+			"!**/skills/**/*.md",
+			"!**/*.svg"
 		]
 	},
 	"formatter": {
@@ -30,7 +32,6 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
 			"suspicious": {
 				"noExplicitAny": "off"
 			},

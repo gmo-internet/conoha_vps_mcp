@@ -52,6 +52,7 @@ import type {
 	ConoHaPostPutByParamByHeaderparamPaths,
 	ConoHaPostPutByParamPaths,
 	ConoHaPostPutPaths,
+	JsonObject,
 } from "./types.js";
 
 /**
@@ -63,7 +64,7 @@ import type {
  */
 export const conohaGetHandlers: Record<
 	ConoHaGetPaths,
-	(path?: string) => Promise<string>
+	(path: string) => Promise<string>
 > = {
 	"/servers/detail": () => getCompute("/servers/detail"),
 	"/flavors/detail": () => getFlavor("/flavors/detail"),
@@ -75,12 +76,10 @@ export const conohaGetHandlers: Record<
 	"/v2.0/security-group-rules": () => getNetwork("/v2.0/security-group-rules"),
 	"/v2.0/ports": () => getNetwork("/v2.0/ports"),
 	"/startup-scripts": () => getCompute("/startup-scripts"),
-	"/v1/AUTH_{tenantId}": (path) =>
-		getStorageContainerList(path || "/v1/AUTH_{tenantId}"),
-	"/v1/AUTH_{tenantId}/{container}": (path) =>
-		getStorageObjectList(path || "/v1/AUTH_{tenantId}/{container}"),
+	"/v1/AUTH_{tenantId}": (path) => getStorageContainerList(path),
+	"/v1/AUTH_{tenantId}/{container}": (path) => getStorageObjectList(path),
 	"/v1/AUTH_{tenantId}/{container}/{object}": (path) =>
-		getStorageObjectInfo(path || "/v1/AUTH_{tenantId}/{container}/{object}"),
+		getStorageObjectInfo(path),
 };
 
 /**
@@ -112,7 +111,7 @@ export const conohaGetByParamHandlers: Record<
  */
 export const conohaPostHandlers: Record<
 	ConoHaPostPaths,
-	(requestBody: any) => Promise<string>
+	(requestBody: JsonObject) => Promise<string>
 > = {
 	"/servers": (requestBody) => createCompute("/servers", requestBody),
 	"/os-keypairs": (requestBody) => createCompute("/os-keypairs", requestBody),
@@ -123,6 +122,12 @@ export const conohaPostHandlers: Record<
 		createNetwork("/v2.0/security-group-rules", requestBody),
 };
 
+/**
+ * ConoHa POST/PUT APIのハンドラーマッピング
+ *
+ * @remarks
+ * オブジェクトストレージのコンテナ作成およびオブジェクトアップロード用のハンドラーです。
+ */
 export const conohaPostPutHandlers: Record<
 	ConoHaPostPutPaths,
 	(path: string, content?: string, contentType?: string) => Promise<string>
@@ -144,7 +149,7 @@ export const conohaPostPutHandlers: Record<
  */
 export const conohaPostPutByParamHandlers: Record<
 	ConoHaPostPutByParamPaths,
-	(param: string, requestBody: any) => Promise<string>
+	(param: string, requestBody: JsonObject) => Promise<string>
 > = {
 	"/action": (param, requestBody) =>
 		createComputeByParam("/action", param, requestBody),
@@ -160,9 +165,15 @@ export const conohaPostPutByParamHandlers: Record<
 		updateVolumeByParam("/volumes", param, requestBody),
 };
 
+/**
+ * ヘッダーパラメータ付きConoHa POST APIのハンドラーマッピング
+ *
+ * @remarks
+ * リクエストヘッダーでメタデータを設定するハンドラーです。アカウント容量設定やコンテナのWeb公開設定を行います。
+ */
 export const conohaPostPutByHeaderparamHandlers: Record<
 	ConoHaPostPutByParamByHeaderparamPaths,
-	(path: string, headerparam: any) => Promise<string>
+	(path: string, headerparam: JsonObject) => Promise<string>
 > = {
 	"/v1": (path, headerparam) => setPostStorageMetadata(path, headerparam),
 };

@@ -13,12 +13,12 @@ jobs:
       group: ${{ github.workflow }}-build-${{ github.ref }}
     steps:
       - name: Checkout files
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: "24.13.0"
+          node-version: "24.17.0"
           cache: "npm"
 
       - name: Install dependencies
@@ -30,6 +30,18 @@ jobs:
       - name: Run build
         run: npm run build
 
+      # PR レビュー時に install 検証ができるよう、tarball を artifact として保管する
+      - name: Pack tarball for review install
+        run: npm pack
+
+      - name: Upload tarball artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: package-tarball
+          path: "*.tgz"
+          retention-days: 7
+          if-no-files-found: error
+
   biome:
     runs-on: ubuntu-24.04
     permissions:
@@ -40,12 +52,12 @@ jobs:
       group: ${{ github.workflow }}-biome-${{ github.ref }}
     steps:
       - name: Checkout files
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: "24.13.0"
+          node-version: "24.17.0"
           cache: "npm"
 
       - name: Install dependencies
@@ -63,12 +75,12 @@ jobs:
       group: ${{ github.workflow }}-typecheck-${{ github.ref }}
     steps:
       - name: Checkout files
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: "24.13.0"
+          node-version: "24.17.0"
           cache: "npm"
 
       - name: Install dependencies
@@ -87,12 +99,12 @@ jobs:
       group: ${{ github.workflow }}-test-${{ github.ref }}
     steps:
       - name: Checkout files
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: "24.13.0"
+          node-version: "24.17.0"
           cache: "npm"
 
       - name: Install dependencies
@@ -128,7 +140,7 @@ jobs:
 
       - name: Comment test results and coverage on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |
             const fs = require('fs');
@@ -193,7 +205,7 @@ jobs:
             }
 
       - name: Upload test and coverage artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: test-and-coverage-report
           path: |
@@ -210,12 +222,12 @@ jobs:
       group: ${{ github.workflow }}-knip-${{ github.ref }}
     steps:
       - name: Checkout files
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: "24.13.0"
+          node-version: "24.17.0"
           cache: "npm"
 
       - name: Install dependencies
@@ -233,12 +245,12 @@ jobs:
       group: ${{ github.workflow }}-depcruise-${{ github.ref }}
     steps:
       - name: Checkout files
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: "24.13.0"
+          node-version: "24.17.0"
           cache: "npm"
 
       - name: Install dependencies
@@ -256,16 +268,19 @@ jobs:
       group: ${{ github.workflow }}-audit-${{ github.ref }}
     steps:
       - name: Checkout files
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: "24.13.0"
+          node-version: "24.17.0"
           cache: "npm"
 
       - name: Run security audit
-        run: npm audit --audit-level=high
+        # devDeps（ビルド/テスト専用ツール、ランタイムにバンドルされない）の
+        # 脆弱性は対象外。@anthropic-ai/mcpb 推移的依存の tmp 等 No fix available
+        # な dev-only CVE で CI が落ちないようにする。
+        run: npm audit --audit-level=high --omit=dev
 
   docker-build:
     runs-on: ubuntu-24.04
@@ -276,13 +291,13 @@ jobs:
       group: ${{ github.workflow }}-docker-build-${{ github.ref }}
     steps:
       - name: Checkout files
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
 
       - name: Build Docker image
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
         with:
           context: .
           push: false

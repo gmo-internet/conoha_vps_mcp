@@ -1,7 +1,7 @@
 ---
 id: 15
 title: アーキテクチャレイヤーパターン
-last-reviewed: 2026-03-10
+last-reviewed: 2026-06-18
 enforcement-level: L3
 related-rules: [I-1, I-2, I-3, I-4, I-5]
 checked-by: [dependency-cruiser]

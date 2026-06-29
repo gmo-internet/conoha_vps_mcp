@@ -35,10 +35,13 @@ const mockRegisterTool = vi.fn();
 const mockRegisterPrompt = vi.fn();
 const mockConnect = vi.fn();
 
+const mockRegisterResource = vi.fn();
+
 const mockMcpServer = vi.fn().mockImplementation(function () {
 	return {
 		registerTool: mockRegisterTool,
 		registerPrompt: mockRegisterPrompt,
+		registerResource: mockRegisterResource,
 		connect: mockConnect,
 	};
 });
@@ -269,6 +272,88 @@ describe("index", () => {
 					structuredContent: output,
 				});
 			}
+		});
+	});
+
+	describe("conoha_delete_by_param のストレージパス対応", () => {
+		let deleteParamSchema: { safeParse: (v: unknown) => { success: boolean } };
+		let deleteHandler: Function;
+
+		beforeEach(async () => {
+			vi.clearAllMocks();
+			// モジュールキャッシュを破棄して index.ts を再評価し、registerTool の登録内容を取得する
+			vi.resetModules();
+			await import("./index");
+			const deleteCall = mockRegisterTool.mock.calls.find(
+				(call) => call[0] === "conoha_delete_by_param",
+			);
+			deleteParamSchema = deleteCall?.[1]?.inputSchema?.param;
+			deleteHandler = deleteCall?.[2];
+		});
+
+		it("paramスキーマがオブジェクトストレージのコンテナパス(/v1/AUTH_{tenantId}/{container})を受け入れることを確認する", () => {
+			expect(
+				deleteParamSchema.safeParse("/v1/AUTH_{tenantId}/mycontainer").success,
+			).toBe(true);
+		});
+
+		it("paramスキーマがオブジェクトストレージのオブジェクトパス(/v1/AUTH_{tenantId}/{container}/{object})を受け入れることを確認する", () => {
+			expect(
+				deleteParamSchema.safeParse(
+					"/v1/AUTH_{tenantId}/mycontainer/myfile.txt",
+				).success,
+			).toBe(true);
+		});
+
+		it("paramスキーマが従来のリソースID(英数・ハイフン)を引き続き受け入れることを確認する", () => {
+			expect(deleteParamSchema.safeParse("0a1b2c3d-server-id").success).toBe(
+				true,
+			);
+		});
+
+		it("paramスキーマがストレージパス形式でもリソースID形式でもない不正値(/etc/passwd)を拒否することを確認する", () => {
+			expect(deleteParamSchema.safeParse("/etc/passwd").success).toBe(false);
+		});
+
+		it("ハンドラーがストレージコンテナパスをdeleteStorageContainerにそのまま渡して削除を実行することを確認する", async () => {
+			mockDeleteStorageContainer.mockResolvedValue("deleted");
+			const result = await deleteHandler({
+				path: "/v1/AUTH_{tenantId}/{container}",
+				param: "/v1/AUTH_{tenantId}/mycontainer",
+			});
+			expect(mockDeleteStorageContainer).toHaveBeenCalledWith(
+				"/v1/AUTH_{tenantId}/mycontainer",
+			);
+			const output = { response: "deleted" };
+			expect(result).toEqual({
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			});
+		});
+
+		it("ハンドラーがストレージオブジェクトパスをdeleteStorageObjectにそのまま渡して削除を実行することを確認する", async () => {
+			mockDeleteStorageObject.mockResolvedValue("deleted");
+			const result = await deleteHandler({
+				path: "/v1/AUTH_{tenantId}/{container}/{object}",
+				param: "/v1/AUTH_{tenantId}/mycontainer/myfile.txt",
+			});
+			expect(mockDeleteStorageObject).toHaveBeenCalledWith(
+				"/v1/AUTH_{tenantId}/mycontainer/myfile.txt",
+			);
+			const output = { response: "deleted" };
+			expect(result).toEqual({
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			});
+		});
+
+		it("ハンドラーが非ストレージ経路(/servers)にストレージ形式のパスを渡された場合はパストラバーサル防止のため検証エラーを返すことを確認する", async () => {
+			const result = await deleteHandler({
+				path: "/servers",
+				param: "/v1/AUTH_{tenantId}/../../v2.0/ports",
+			});
+			expect(result.isError).toBe(true);
+			expect(mockDeleteComputeByParam).not.toHaveBeenCalled();
 		});
 	});
 

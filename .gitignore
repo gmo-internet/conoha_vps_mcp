@@ -9,9 +9,14 @@ dist/**
 
 # claude
 settings.local.json
+*.jsonl
+.orchestra/
 
 # mcpb
 *.mcpb
+
+# npm pack artifact
+*.tgz
 
 # mcp
 .mcp.json
@@ -19,11 +24,18 @@ settings.local.json
 # stryker
 .stryker-tmp/**
 
+# vscode
+.vscode/
+
 # cursor
 .cursor/
 
 # npm
 .npmrc
+
+# env
+.env
+.env.local
 
 # outputs
 test-results

@@ -70,7 +70,7 @@ describe("generate-api-token", () => {
 			);
 		});
 
-		it("認証API（/v3/auth/tokens）へのAPIトークン発行リクエストのレスポンスに、x-subject-tokenヘッダーが存在しない場合にnullを返す", async () => {
+		it("認証API（/v3/auth/tokens）へのAPIトークン発行リクエストのレスポンスに、x-subject-tokenヘッダーが存在しない場合に、'認証トークンを取得できませんでした'エラーを正しくスローできる", async () => {
 			const mockHeaders = new Headers();
 			// x-subject-tokenヘッダーを設定しない
 
@@ -80,9 +80,11 @@ describe("generate-api-token", () => {
 
 			mockFetch.mockResolvedValueOnce(mockResponse);
 
-			const result = await generateApiToken();
+			await expect(generateApiToken()).rejects.toThrow(
+				"認証トークンを取得できませんでした",
+			);
 
-			expect(result).toBeNull();
+			expect(mockFetch).toHaveBeenCalledTimes(1);
 		});
 
 		it("OPENSTACK_USER_ID環境変数が未設定の場合に、認証API（/v3/auth/tokens）へのAPIトークン発行リクエストが行われず、'USER_ID, PASSWORD, or TENANT_ID envs are not defined'エラーを正しくスローできる", async () => {

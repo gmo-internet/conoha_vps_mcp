@@ -46,11 +46,11 @@ export async function formatGetImageResponse(response: Response) {
 				const slim = {
 					id: img?.id,
 					name: img?.name,
-					osType: img?.os_type,
-					arch: img?.architecture,
+					os_type: img?.os_type,
+					architecture: img?.architecture,
 					tags: img?.tags,
-					minDisk: img?.min_disk,
-					minRam: img?.min_ram,
+					min_disk: img?.min_disk,
+					min_ram: img?.min_ram,
 				};
 				return slim;
 			}),
