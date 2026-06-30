@@ -357,6 +357,61 @@ describe("index", () => {
 		});
 	});
 
+	describe("非2xxレスポンスのisErrorマッピング (#451)", () => {
+		let toolHandlers: { [key: string]: Function } = {};
+
+		beforeEach(async () => {
+			vi.clearAllMocks();
+			// モジュールキャッシュを破棄して index.ts を再評価し、registerTool の登録内容を取得する
+			vi.resetModules();
+			await import("./index");
+			const toolCalls = mockRegisterTool.mock.calls;
+			toolHandlers = {
+				conoha_get: toolCalls.find((call) => call[0] === "conoha_get")?.[2],
+				conoha_delete_by_param: toolCalls.find(
+					(call) => call[0] === "conoha_delete_by_param",
+				)?.[2],
+			};
+		});
+
+		it("conoha_delete_by_paramハンドラーがHTTP409を含むレスポンス文字列を受け取った場合にisError:trueを付与して返し、非空コンテナ削除のゾンビ化を防ぐことを確認する", async () => {
+			const response = JSON.stringify({
+				status: 409,
+				statusText: "Conflict",
+				body: {
+					message: "There was a conflict when trying to complete your request.",
+				},
+			});
+			mockDeleteComputeByParam.mockResolvedValue(response);
+			const handler = toolHandlers["conoha_delete_by_param"];
+
+			const result = await handler({ path: "/servers", param: "test-param" });
+			const output = { response };
+			expect(result).toEqual({
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+				isError: true,
+			});
+		});
+
+		it("conoha_getハンドラーがHTTP200を含むレスポンス文字列を受け取った場合はisErrorを付与せず従来どおり成功として返すことを確認する", async () => {
+			const response = JSON.stringify({
+				status: 200,
+				statusText: "OK",
+				body: { servers: [] },
+			});
+			mockGetCompute.mockResolvedValue(response);
+			const handler = toolHandlers["conoha_get"];
+
+			const result = await handler({ path: "/servers/detail" });
+			const output = { response };
+			expect(result).toEqual({
+				content: [{ type: "text", text: JSON.stringify(output) }],
+				structuredContent: output,
+			});
+		});
+	});
+
 	describe("プロンプトハンドラーの基本動作", () => {
 		let promptHandler: Function;
 
