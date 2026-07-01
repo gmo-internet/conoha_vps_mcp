@@ -2,9 +2,7 @@
 
 ![ConoHa VPS Logo](assets/conoha_logo.svg)
 
-# ConoHa VPS MCP Server
-
-**日本語対応のConoHa VPS Model Context Protocol (MCP) サーバー**
+# ConoHa VPS Model Context Protocol (MCP) サーバー
 
 [![GitHub Stars](https://img.shields.io/github/stars/gmo-internet/conoha_vps_mcp?style=flat-square&logo=github)](https://github.com/gmo-internet/conoha_vps_mcp/stargazers)
 [![GitHub License](https://img.shields.io/github/license/gmo-internet/conoha_vps_mcp?style=flat-square)](LICENSE)
@@ -21,20 +19,19 @@
 
 ---
 
+> [!IMPORTANT]
+> **🧪 ローカル版 MCP は実験的機能です — リモート版 MCP（ https://api.conoha.jp/vps/mcp ）のご利用を推奨します**
+>
+> 本リポジトリで配布しているローカル版 MCP / MCP Apps は **実験的機能** として提供しています。
+> ローカル版は引き続きご利用いただけますが、ベータ版の扱いであり、機能や動作が予告なく変更される場合があります。
+> 本番環境での使用前には十分なテストを行ってください。
+> また、ローカル版 ConoHa VPS MCP を使用することで、これらの条件に同意したものとみなされます。
+>
+> 👉 リモート版について: https://vps.conoha.jp/function/mcp/
+
 ## 🌟 概要
 
 ConoHa VPS MCPは、ConoHa VPSの[公開API](https://doc.conoha.jp/reference/api-vps3/)を日本語で操作できるオープンソースのMCPサーバーです。AIエージェント（Claude Code、Claude Desktop、GitHub Copilot、Clineなど）と連携し、自然言語でインフラ操作ができます。
-
-⚠️ 注意: 本ソフトウェアは現在ベータ版です。機能や動作が予告なく変更される場合があります。本番環境での使用前には十分なテストを行ってください。このベータ版 ConoHa VPS MCP を使用することで、これらの条件に同意したものとみなされます。
-
-> [!IMPORTANT]
-> **🧪 ローカル版 MCP は実験的機能です — リモート版 MCP のご利用を推奨します**
->
-> 本リポジトリで配布しているローカル版 MCP / MCP App は **実験的機能** として提供しています。
-> リモート版はこれらの後継となるマネージド版で、本番ではリモート版を推奨します。
-> ローカル版は引き続きご利用いただけますが、今後主要機能をリモート版へ順次移行していきます。
->
-> 👉 リモート版について: https://vps.conoha.jp/function/mcp/
 
 ## ✨ 主な特徴
 
