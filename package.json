@@ -1,6 +1,6 @@
 {
 	"name": "@gmo-internet/conoha-vps-mcp",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"description": "日本語対応のConoHa VPS Model Context Protocol (MCP) サーバー",
 	"author": "GMO Internet",
 	"license": "Apache-2.0",
@@ -74,7 +74,7 @@
 	},
 	"devDependencies": {
 		"@anthropic-ai/mcpb": "2.1.2",
-		"@biomejs/biome": "2.5.0",
+		"@biomejs/biome": "2.5.1",
 		"@stryker-mutator/core": "9.6.1",
 		"@stryker-mutator/vitest-runner": "9.6.1",
 		"@types/node": "^22.0.0",
@@ -82,19 +82,19 @@
 		"@types/react-dom": "19.2.3",
 		"@vitejs/plugin-react": "6.0.2",
 		"@vitest/coverage-v8": "4.1.9",
-		"dependency-cruiser": "17.4.3",
+		"dependency-cruiser": "18.0.0",
 		"jscpd": "5.0.11",
-		"knip": "6.17.1",
+		"knip": "6.23.0",
 		"tsx": "4.22.4",
 		"typedoc": "0.28.19",
 		"typescript": "6.0.3",
-		"vite": "8.0.16",
+		"vite": "8.1.0",
 		"vite-plugin-singlefile": "2.3.3",
 		"vite-plugin-svgr": "5.2.0",
 		"vitest": "4.1.9"
 	},
 	"overrides": {
-		"qs": "^6.15.2",
+		"qs": "^6.15.3",
 		"@inquirer/prompts": "^8.5.2",
 		"js-yaml": "<=4.1.1"
 	},

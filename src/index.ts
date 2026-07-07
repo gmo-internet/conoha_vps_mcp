@@ -93,6 +93,35 @@ const server = new McpServer({
 	version: packageJson.version,
 });
 
+/**
+ * ConoHa APIレスポンス文字列をMCPツール結果に変換する
+ *
+ * @param response - {@link formatResponse} が返す `{ status, statusText, body }` を含むJSON文字列
+ * @returns MCPツール結果。HTTPステータスが400以上の場合は `isError: true` を付与する
+ *
+ * @remarks
+ * `fetch` は4xx/5xxでは例外を投げず、`formatResponse` も全ステータスを成功文字列として包むため、
+ * 非2xx応答が「成功」として返り、消費側がゾンビリソースを生む問題があった（issue #451）。
+ * ここでステータスを判定して400以上をMCPの `isError` にマッピングする。
+ * `response` がJSONとしてパースできない（ステータス情報を持たない）場合は、従来どおり成功として扱う。
+ */
+function buildToolResponse(response: string) {
+	const output = { response };
+	const result = {
+		content: [{ type: "text" as const, text: JSON.stringify(output) }],
+		structuredContent: output,
+	};
+	try {
+		const parsed = JSON.parse(response) as { status?: unknown };
+		if (typeof parsed.status === "number" && parsed.status >= 400) {
+			return { ...result, isError: true as const };
+		}
+	} catch {
+		// JSONとしてパースできないレスポンスはステータスを持たないため成功として扱う
+	}
+	return result;
+}
+
 // MCP Apps ツール登録（参照系6ツール）
 registerAppsTools(server);
 
@@ -216,11 +245,7 @@ server.registerTool(
 
 			const handler = conohaGetHandlers[handlerKey];
 			const response = await handler(resolvedPath);
-			const output = { response };
-			return {
-				content: [{ type: "text", text: JSON.stringify(output) }],
-				structuredContent: output,
-			};
+			return buildToolResponse(response);
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -255,11 +280,7 @@ server.registerTool(
 		try {
 			const handler = conohaGetByParamHandlers[path];
 			const response = await handler(param);
-			const output = { response };
-			return {
-				content: [{ type: "text", text: JSON.stringify(output) }],
-				structuredContent: output,
-			};
+			return buildToolResponse(response);
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -308,11 +329,7 @@ server.registerTool(
 			const { path, requestBody } = input;
 			const handler = conohaPostHandlers[path];
 			const response = await handler(requestBody);
-			const output = { response };
-			return {
-				content: [{ type: "text", text: JSON.stringify(output) }],
-				structuredContent: output,
-			};
+			return buildToolResponse(response);
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -375,11 +392,7 @@ server.registerTool(
 				base64Content,
 				"contentType" in input ? input.contentType : undefined,
 			);
-			const output = { response };
-			return {
-				content: [{ type: "text", text: JSON.stringify(output) }],
-				structuredContent: output,
-			};
+			return buildToolResponse(response);
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -438,11 +451,7 @@ server.registerTool(
 			const { path, param, requestBody } = input;
 			const handler = conohaPostPutByParamHandlers[path];
 			const response = await handler(param, requestBody);
-			const output = { response };
-			return {
-				content: [{ type: "text", text: JSON.stringify(output) }],
-				structuredContent: output,
-			};
+			return buildToolResponse(response);
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -489,11 +498,7 @@ server.registerTool(
 
 			const handler = conohaPostPutByHeaderparamHandlers["/v1"];
 			const response = await handler(path, input.headerparam);
-			const output = { response };
-			return {
-				content: [{ type: "text", text: JSON.stringify(output) }],
-				structuredContent: output,
-			};
+			return buildToolResponse(response);
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -536,11 +541,7 @@ server.registerTool(
 				: resourceIdSchema.parse(param);
 			const handler = conohaDeleteByParamHandlers[path];
 			const response = await handler(validatedParam);
-			const output = { response };
-			return {
-				content: [{ type: "text", text: JSON.stringify(output) }],
-				structuredContent: output,
-			};
+			return buildToolResponse(response);
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
@@ -577,11 +578,7 @@ server.registerTool(
 
 			const handler = conohaHeadHandlers["/v1"];
 			const response = await handler(resolvedPath);
-			const output = { response };
-			return {
-				content: [{ type: "text", text: JSON.stringify(output) }],
-				structuredContent: output,
-			};
+			return buildToolResponse(response);
 		} catch (error) {
 			const errorMessage = formatErrorMessage(error);
 			return {
