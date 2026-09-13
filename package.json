@@ -66,37 +66,37 @@
 		"mutation": "stryker run"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/ext-apps": "^1.7.4",
-		"@modelcontextprotocol/sdk": "^1.29.0",
-		"react": "19.2.7",
-		"react-dom": "19.2.7",
-		"zod": "^4.4.3"
+		"@modelcontextprotocol/ext-apps": "^1.7.5",
+		"@modelcontextprotocol/sdk": "^1.30.0",
+		"react": "19.3.0",
+		"react-dom": "19.3.0",
+		"zod": "^4.6.5"
 	},
 	"devDependencies": {
 		"@anthropic-ai/mcpb": "2.1.2",
-		"@biomejs/biome": "2.5.1",
+		"@biomejs/biome": "2.5.13",
 		"@stryker-mutator/core": "9.6.1",
 		"@stryker-mutator/vitest-runner": "9.6.1",
 		"@types/node": "^22.0.0",
-		"@types/react": "19.2.17",
-		"@types/react-dom": "19.2.3",
+		"@types/react": "19.3.0",
+		"@types/react-dom": "19.3.0",
 		"@vitejs/plugin-react": "6.0.2",
-		"@vitest/coverage-v8": "4.1.9",
-		"dependency-cruiser": "18.0.0",
-		"jscpd": "5.0.11",
-		"knip": "6.23.0",
-		"tsx": "4.22.4",
-		"typedoc": "0.28.19",
+		"@vitest/coverage-v8": "5.0.0",
+		"dependency-cruiser": "18.3.0",
+		"jscpd": "5.2.0",
+		"knip": "6.35.1",
+		"tsx": "4.23.13",
+		"typedoc": "0.28.20",
 		"typescript": "6.0.3",
-		"vite": "8.1.0",
+		"vite": "8.3.0",
 		"vite-plugin-singlefile": "2.3.3",
 		"vite-plugin-svgr": "5.2.0",
-		"vitest": "4.1.9"
+		"vitest": "5.0.0"
 	},
 	"overrides": {
 		"qs": "^6.15.3",
 		"@inquirer/prompts": "^8.5.2",
-		"js-yaml": "<=4.1.1"
+		"js-yaml": "^4.3.2"
 	},
 	"engines": {
 		"node": ">=22.0.0"

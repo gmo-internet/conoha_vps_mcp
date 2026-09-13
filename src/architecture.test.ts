@@ -34,31 +34,33 @@ describe("アーキテクチャ制約", () => {
 
 	// 参照: harness/patterns/file-structure.md
 	describe("A-2: テストファイルはソースと同一ディレクトリに配置", () => {
-		it.each(
-			testFiles,
-		)("%s の同一ディレクトリに非テスト.tsが存在すること", (testFile) => {
-			const dir = dirname(testFile);
-			const siblingSources = sourceFiles.filter((f) => dirname(f) === dir);
-			expect(
-				siblingSources.length,
-				`${testFile} の同一ディレクトリにソースファイルがありません。修正: テストファイルは対応するソースファイルと同じディレクトリに配置してください。参照: harness/patterns/file-structure.md`,
-			).toBeGreaterThan(0);
-		});
+		it.each(testFiles)(
+			"%s の同一ディレクトリに非テスト.tsが存在すること",
+			(testFile) => {
+				const dir = dirname(testFile);
+				const siblingSources = sourceFiles.filter((f) => dirname(f) === dir);
+				expect(
+					siblingSources.length,
+					`${testFile} の同一ディレクトリにソースファイルがありません。修正: テストファイルは対応するソースファイルと同じディレクトリに配置してください。参照: harness/patterns/file-structure.md`,
+				).toBeGreaterThan(0);
+			},
+		);
 	});
 
 	// 参照: harness/patterns/schema.md
 	describe("C-1: スキーマのz.object()に.strict()が付与されている", () => {
-		it.each(
-			schemaFiles,
-		)("%s のz.object()数が.strict()数以下であること", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const objectCount = (content.match(/z\.object\(\s*\{/g) || []).length;
-			const strictCount = (content.match(/\.strict\(\)/g) || []).length;
-			expect(
-				strictCount,
-				`${file}: z.object()が${objectCount}個に対し.strict()が${strictCount}個です。修正: すべてのz.object({...})に.strict()をチェーンしてください（例: z.object({...}).strict()）。参照: harness/patterns/schema.md`,
-			).toBeGreaterThanOrEqual(objectCount);
-		});
+		it.each(schemaFiles)(
+			"%s のz.object()数が.strict()数以下であること",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const objectCount = (content.match(/z\.object\(\s*\{/g) || []).length;
+				const strictCount = (content.match(/\.strict\(\)/g) || []).length;
+				expect(
+					strictCount,
+					`${file}: z.object()が${objectCount}個に対し.strict()が${strictCount}個です。修正: すべてのz.object({...})に.strict()をチェーンしてください（例: z.object({...}).strict()）。参照: harness/patterns/schema.md`,
+				).toBeGreaterThanOrEqual(objectCount);
+			},
+		);
 	});
 
 	// 参照: harness/patterns/import-rules.md
@@ -86,26 +88,27 @@ describe("アーキテクチャ制約", () => {
 		const relativeImportPattern = /from\s+["'](\.[^"']+)["']/g;
 		const viMockPattern = /vi\.mock\(\s*["'](\.[^"']+)["']/g;
 
-		it.each(
-			testFiles,
-		)("%s のインポートとvi.mock()パスに.jsがないこと", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const importMatches = [...content.matchAll(relativeImportPattern)];
-			const mockMatches = [...content.matchAll(viMockPattern)];
+		it.each(testFiles)(
+			"%s のインポートとvi.mock()パスに.jsがないこと",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const importMatches = [...content.matchAll(relativeImportPattern)];
+				const mockMatches = [...content.matchAll(viMockPattern)];
 
-			for (const m of importMatches) {
-				expect(
-					m[1],
-					`import "${m[1]}" に.jsが付いています。修正: テストファイルの相対インポートから.js拡張子を削除してください。参照: harness/patterns/import-rules.md`,
-				).not.toMatch(/\.js$/);
-			}
-			for (const m of mockMatches) {
-				expect(
-					m[1],
-					`vi.mock("${m[1]}") に.jsが付いています。修正: vi.mock()のパスから.js拡張子を削除してください。参照: harness/patterns/test-patterns.md`,
-				).not.toMatch(/\.js$/);
-			}
-		});
+				for (const m of importMatches) {
+					expect(
+						m[1],
+						`import "${m[1]}" に.jsが付いています。修正: テストファイルの相対インポートから.js拡張子を削除してください。参照: harness/patterns/import-rules.md`,
+					).not.toMatch(/\.js$/);
+				}
+				for (const m of mockMatches) {
+					expect(
+						m[1],
+						`vi.mock("${m[1]}") に.jsが付いています。修正: vi.mock()のパスから.js拡張子を削除してください。参照: harness/patterns/test-patterns.md`,
+					).not.toMatch(/\.js$/);
+				}
+			},
+		);
 	});
 
 	// 参照: harness/patterns/jsdoc.md
@@ -125,19 +128,20 @@ describe("アーキテクチャ制約", () => {
 			/export\s+(?:async\s+)?function\s+([a-zA-Z0-9_]+)/g;
 		const camelCasePattern = /^[a-z][a-zA-Z0-9]*$/;
 
-		it.each(
-			sourceFiles,
-		)("%s のエクスポート関数名がcamelCaseであること", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const matches = [...content.matchAll(exportFunctionPattern)];
+		it.each(sourceFiles)(
+			"%s のエクスポート関数名がcamelCaseであること",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const matches = [...content.matchAll(exportFunctionPattern)];
 
-			for (const m of matches) {
-				expect(
-					m[1],
-					`関数名 "${m[1]}" がcamelCaseではありません。修正: 小文字始まりのcamelCaseにリネームしてください（例: GetData → getData）。参照: harness/patterns/naming-conventions.md`,
-				).toMatch(camelCasePattern);
-			}
-		});
+				for (const m of matches) {
+					expect(
+						m[1],
+						`関数名 "${m[1]}" がcamelCaseではありません。修正: 小文字始まりのcamelCaseにリネームしてください（例: GetData → getData）。参照: harness/patterns/naming-conventions.md`,
+					).toMatch(camelCasePattern);
+				}
+			},
+		);
 	});
 
 	// 参照: harness/patterns/file-structure.md
@@ -164,16 +168,17 @@ describe("アーキテクチャ制約", () => {
 
 	// 参照: harness/patterns/schema.md
 	describe("C-2: スキーマフィールドに.describe()が付与されている", () => {
-		it.each(
-			schemaFiles,
-		)("%s のスキーマフィールドに.describe()があること", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const describeCount = (content.match(/\.describe\(/g) || []).length;
-			expect(
-				describeCount,
-				`${file} にスキーマフィールドの.describe()がありません。修正: 各フィールドに.describe("日本語の説明")を追加してください（例: z.string().describe("サーバー名")）。参照: harness/patterns/schema.md`,
-			).toBeGreaterThan(0);
-		});
+		it.each(schemaFiles)(
+			"%s のスキーマフィールドに.describe()があること",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const describeCount = (content.match(/\.describe\(/g) || []).length;
+				expect(
+					describeCount,
+					`${file} にスキーマフィールドの.describe()がありません。修正: 各フィールドに.describe("日本語の説明")を追加してください（例: z.string().describe("サーバー名")）。参照: harness/patterns/schema.md`,
+				).toBeGreaterThan(0);
+			},
+		);
 	});
 
 	// 参照: harness/patterns/schema.md
@@ -182,68 +187,72 @@ describe("アーキテクチャ制約", () => {
 		const validNamePattern =
 			/^(Create|Update|Operate|Attach|RemoteConsole)([A-Z][a-zA-Z]+)?RequestSchema$/;
 
-		it.each(
-			schemaFiles,
-		)("%s のスキーマ名が{Action}{Resource}RequestSchema形式であること", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const matches = [...content.matchAll(schemaExportPattern)];
-			expect(
-				matches.length,
-				`${file} にexport constスキーマが見つかりません。修正: スキーマは export const {Action}{Resource}RequestSchema の形式でエクスポートしてください。参照: harness/patterns/schema.md`,
-			).toBeGreaterThan(0);
-			for (const m of matches) {
+		it.each(schemaFiles)(
+			"%s のスキーマ名が{Action}{Resource}RequestSchema形式であること",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const matches = [...content.matchAll(schemaExportPattern)];
 				expect(
-					m[1],
-					`スキーマ名 "${m[1]}" が命名パターンに従っていません。修正: {Create|Update|Operate|Attach|RemoteConsole}{Resource}RequestSchema 形式にリネームしてください。参照: harness/patterns/schema.md`,
-				).toMatch(validNamePattern);
-			}
-		});
+					matches.length,
+					`${file} にexport constスキーマが見つかりません。修正: スキーマは export const {Action}{Resource}RequestSchema の形式でエクスポートしてください。参照: harness/patterns/schema.md`,
+				).toBeGreaterThan(0);
+				for (const m of matches) {
+					expect(
+						m[1],
+						`スキーマ名 "${m[1]}" が命名パターンに従っていません。修正: {Create|Update|Operate|Attach|RemoteConsole}{Resource}RequestSchema 形式にリネームしてください。参照: harness/patterns/schema.md`,
+					).toMatch(validNamePattern);
+				}
+			},
+		);
 	});
 
 	// 参照: harness/patterns/schema.md
 	describe("C-4: z.enum()にmessageオプションが付与されている", () => {
-		it.each(
-			schemaFiles,
-		)("%s のz.enum()にmessageオプションがあること", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const lines = content.split("\n");
-			const enumLineIndices: number[] = [];
-			for (let i = 0; i < lines.length; i++) {
-				if (lines[i].includes(".enum(")) {
-					enumLineIndices.push(i);
+		it.each(schemaFiles)(
+			"%s のz.enum()にmessageオプションがあること",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const lines = content.split("\n");
+				const enumLineIndices: number[] = [];
+				for (let i = 0; i < lines.length; i++) {
+					if (lines[i].includes(".enum(")) {
+						enumLineIndices.push(i);
+					}
 				}
-			}
-			for (const lineIdx of enumLineIndices) {
-				const nearby = lines.slice(lineIdx, lineIdx + 5).join("\n");
-				expect(
-					nearby,
-					`${file} の z.enum() (行${lineIdx + 1}) にmessageオプションがありません。修正: z.enum([...], { message: "許可された値: ..." }) の形式でエラーメッセージを追加してください。参照: harness/patterns/schema.md`,
-				).toContain("message");
-			}
-		});
+				for (const lineIdx of enumLineIndices) {
+					const nearby = lines.slice(lineIdx, lineIdx + 5).join("\n");
+					expect(
+						nearby,
+						`${file} の z.enum() (行${lineIdx + 1}) にmessageオプションがありません。修正: z.enum([...], { message: "許可された値: ..." }) の形式でエラーメッセージを追加してください。参照: harness/patterns/schema.md`,
+					).toContain("message");
+				}
+			},
+		);
 	});
 
 	// 参照: harness/patterns/response-formatter.md
 	describe("D-1/D-2/D-3/D-4: カスタムレスポンスフォーマッターのパターン", () => {
-		it.each(
-			customFormatterFiles,
-		)("%s にinterface定義があること (D-1)", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			expect(
-				content,
-				`${file} にinterface定義がありません。修正: APIレスポンス型のinterfaceを定義してフィールドをスリム化してください。参照: harness/patterns/response-formatter.md`,
-			).toContain("interface ");
-		});
+		it.each(customFormatterFiles)(
+			"%s にinterface定義があること (D-1)",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				expect(
+					content,
+					`${file} にinterface定義がありません。修正: APIレスポンス型のinterfaceを定義してフィールドをスリム化してください。参照: harness/patterns/response-formatter.md`,
+				).toContain("interface ");
+			},
+		);
 
-		it.each(
-			customFormatterFiles,
-		)("%s にJSON.stringifyがあること (D-2)", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			expect(
-				content,
-				`${file} にJSON.stringifyがありません。修正: フォーマット結果をJSON.stringify()で文字列化して返却してください。参照: harness/patterns/response-formatter.md`,
-			).toContain("JSON.stringify");
-		});
+		it.each(customFormatterFiles)(
+			"%s にJSON.stringifyがあること (D-2)",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				expect(
+					content,
+					`${file} にJSON.stringifyがありません。修正: フォーマット結果をJSON.stringify()で文字列化して返却してください。参照: harness/patterns/response-formatter.md`,
+				).toContain("JSON.stringify");
+			},
+		);
 
 		it.each(customFormatterFiles)("%s にtry/catchがあること (D-3)", (file) => {
 			const content = readFileSync(join(SRC_DIR, file), "utf-8");
@@ -307,18 +316,19 @@ describe("アーキテクチャ制約", () => {
 		const typePattern = /export\s+(?:type|interface)\s+([A-Za-z0-9_]+)/g;
 		const pascalCasePattern = /^[A-Z][a-zA-Z0-9]*$/;
 
-		it.each(
-			sourceFiles,
-		)("%s のエクスポート型名がPascalCaseであること", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const matches = [...content.matchAll(typePattern)];
-			for (const m of matches) {
-				expect(
-					m[1],
-					`型名 "${m[1]}" がPascalCaseではありません。修正: 大文字始まりのPascalCaseにリネームしてください（例: serverResponse → ServerResponse）。参照: harness/patterns/naming-conventions.md`,
-				).toMatch(pascalCasePattern);
-			}
-		});
+		it.each(sourceFiles)(
+			"%s のエクスポート型名がPascalCaseであること",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const matches = [...content.matchAll(typePattern)];
+				for (const m of matches) {
+					expect(
+						m[1],
+						`型名 "${m[1]}" がPascalCaseではありません。修正: 大文字始まりのPascalCaseにリネームしてください（例: serverResponse → ServerResponse）。参照: harness/patterns/naming-conventions.md`,
+					).toMatch(pascalCasePattern);
+				}
+			},
+		);
 	});
 
 	// 参照: harness/patterns/jsdoc.md
@@ -327,27 +337,28 @@ describe("アーキテクチャ制約", () => {
 			/\/\*\*[\s\S]*?\*\/\s*\nexport\s+(?:async\s+)?function/g;
 		const exportFuncPattern = /export\s+(?:async\s+)?function\s+[a-zA-Z0-9_]+/g;
 
-		it.each(
-			sourceFiles,
-		)("%s のエクスポート関数にJSDocの@param/@returnsがあること", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const exportFuncs = [...content.matchAll(exportFuncPattern)];
-			if (exportFuncs.length === 0) return;
+		it.each(sourceFiles)(
+			"%s のエクスポート関数にJSDocの@param/@returnsがあること",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const exportFuncs = [...content.matchAll(exportFuncPattern)];
+				if (exportFuncs.length === 0) return;
 
-			const jsDocBlocks = [...content.matchAll(funcWithJsDocPattern)];
-			expect(
-				jsDocBlocks.length,
-				`${file}: JSDocブロック数 (${jsDocBlocks.length}) がエクスポート関数数 (${exportFuncs.length}) と一致しません。修正: 各export functionの直前に /** @param / @returns を含むJSDocブロックを追加してください。参照: harness/patterns/jsdoc.md`,
-			).toBe(exportFuncs.length);
-
-			for (const block of jsDocBlocks) {
-				const jsdoc = block[0];
+				const jsDocBlocks = [...content.matchAll(funcWithJsDocPattern)];
 				expect(
-					jsdoc.includes("@param") || jsdoc.includes("@returns"),
-					`${file}: JSDocに@paramまたは@returnsがありません。修正: JSDocブロックに@paramまたは@returnsタグを追加してください。参照: harness/patterns/jsdoc.md`,
-				).toBe(true);
-			}
-		});
+					jsDocBlocks.length,
+					`${file}: JSDocブロック数 (${jsDocBlocks.length}) がエクスポート関数数 (${exportFuncs.length}) と一致しません。修正: 各export functionの直前に /** @param / @returns を含むJSDocブロックを追加してください。参照: harness/patterns/jsdoc.md`,
+				).toBe(exportFuncs.length);
+
+				for (const block of jsDocBlocks) {
+					const jsdoc = block[0];
+					expect(
+						jsdoc.includes("@param") || jsdoc.includes("@returns"),
+						`${file}: JSDocに@paramまたは@returnsがありません。修正: JSDocブロックに@paramまたは@returnsタグを追加してください。参照: harness/patterns/jsdoc.md`,
+					).toBe(true);
+				}
+			},
+		);
 	});
 
 	// 参照: harness/patterns/client-module.md
@@ -360,49 +371,51 @@ describe("アーキテクチャ制約", () => {
 		const clientFuncPattern =
 			/^(get|create|delete|update|operate|set|upload)[A-Z][a-zA-Z]*(ByParam)?$/;
 
-		it.each(
-			featureClientFiles,
-		)("%s のエクスポート関数名が{verb}{Resource}パターンに従うこと", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const matches = [...content.matchAll(exportFunctionPattern)];
-			expect(
-				matches.length,
-				`${file} にエクスポート関数が見つかりません。`,
-			).toBeGreaterThan(0);
-			for (const m of matches) {
+		it.each(featureClientFiles)(
+			"%s のエクスポート関数名が{verb}{Resource}パターンに従うこと",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const matches = [...content.matchAll(exportFunctionPattern)];
 				expect(
-					m[1],
-					`関数名 "${m[1]}" が命名パターンに従っていません。修正: {get|create|delete|update|operate}{Resource}(ByParam)? 形式にリネームしてください（例: fetchServer → getCompute）。参照: harness/patterns/client-module.md`,
-				).toMatch(clientFuncPattern);
-			}
-		});
+					matches.length,
+					`${file} にエクスポート関数が見つかりません。`,
+				).toBeGreaterThan(0);
+				for (const m of matches) {
+					expect(
+						m[1],
+						`関数名 "${m[1]}" が命名パターンに従っていません。修正: {get|create|delete|update|operate}{Resource}(ByParam)? 形式にリネームしてください（例: fetchServer → getCompute）。参照: harness/patterns/client-module.md`,
+					).toMatch(clientFuncPattern);
+				}
+			},
+		);
 	});
 
 	// 参照: harness/patterns/response-formatter.md
 	describe("D-5: カスタムフォーマッターのcatchブロックがstatus/statusTextを含むJSON.stringifyを返す", () => {
-		it.each(
-			customFormatterFiles,
-		)("%s のcatchブロックにstatus/statusTextを含むJSON.stringifyがあること", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const catchIndex = content.indexOf("catch");
-			expect(
-				catchIndex,
-				`${file} にcatchブロックが見つかりません。修正: try/catchを追加し、catchでJSON.stringify({ status, statusText, body: "<error>" })を返却してください。参照: harness/patterns/response-formatter.md`,
-			).toBeGreaterThan(-1);
-			const catchBlock = content.slice(catchIndex, catchIndex + 300);
-			expect(
-				catchBlock,
-				`${file} のcatchブロックにJSON.stringifyがありません。修正: catch内でJSON.stringify({ status, statusText, body: "<error>" })を返却してください。参照: harness/patterns/response-formatter.md`,
-			).toContain("JSON.stringify");
-			expect(
-				catchBlock,
-				`${file} のcatchブロックにstatusがありません。修正: JSON.stringifyの引数にstatusを含めてください。参照: harness/patterns/response-formatter.md`,
-			).toMatch(/status/);
-			expect(
-				catchBlock,
-				`${file} のcatchブロックにstatusTextがありません。修正: JSON.stringifyの引数にstatusTextを含めてください。参照: harness/patterns/response-formatter.md`,
-			).toMatch(/statusText/);
-		});
+		it.each(customFormatterFiles)(
+			"%s のcatchブロックにstatus/statusTextを含むJSON.stringifyがあること",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const catchIndex = content.indexOf("catch");
+				expect(
+					catchIndex,
+					`${file} にcatchブロックが見つかりません。修正: try/catchを追加し、catchでJSON.stringify({ status, statusText, body: "<error>" })を返却してください。参照: harness/patterns/response-formatter.md`,
+				).toBeGreaterThan(-1);
+				const catchBlock = content.slice(catchIndex, catchIndex + 300);
+				expect(
+					catchBlock,
+					`${file} のcatchブロックにJSON.stringifyがありません。修正: catch内でJSON.stringify({ status, statusText, body: "<error>" })を返却してください。参照: harness/patterns/response-formatter.md`,
+				).toContain("JSON.stringify");
+				expect(
+					catchBlock,
+					`${file} のcatchブロックにstatusがありません。修正: JSON.stringifyの引数にstatusを含めてください。参照: harness/patterns/response-formatter.md`,
+				).toMatch(/status/);
+				expect(
+					catchBlock,
+					`${file} のcatchブロックにstatusTextがありません。修正: JSON.stringifyの引数にstatusTextを含めてください。参照: harness/patterns/response-formatter.md`,
+				).toMatch(/statusText/);
+			},
+		);
 	});
 
 	// 参照: harness/patterns/naming-conventions.md
@@ -413,22 +426,23 @@ describe("アーキテクチャ制約", () => {
 		const upperSnakePattern = /^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$/;
 		const exportConstPattern = /export\s+const\s+([A-Za-z_][A-Za-z0-9_]*)/g;
 
-		it.each(
-			constantsFiles,
-		)("%s のexport constがUPPER_SNAKE_CASEであること", (file) => {
-			const content = readFileSync(join(SRC_DIR, file), "utf-8");
-			const matches = [...content.matchAll(exportConstPattern)];
-			expect(
-				matches.length,
-				`${file} にexport constが見つかりません。`,
-			).toBeGreaterThan(0);
-			for (const m of matches) {
+		it.each(constantsFiles)(
+			"%s のexport constがUPPER_SNAKE_CASEであること",
+			(file) => {
+				const content = readFileSync(join(SRC_DIR, file), "utf-8");
+				const matches = [...content.matchAll(exportConstPattern)];
 				expect(
-					m[1],
-					`定数名 "${m[1]}" がUPPER_SNAKE_CASEではありません。修正: 大文字・アンダースコア区切りにリネームしてください（例: baseUrl → BASE_URL）。参照: harness/patterns/naming-conventions.md`,
-				).toMatch(upperSnakePattern);
-			}
-		});
+					matches.length,
+					`${file} にexport constが見つかりません。`,
+				).toBeGreaterThan(0);
+				for (const m of matches) {
+					expect(
+						m[1],
+						`定数名 "${m[1]}" がUPPER_SNAKE_CASEではありません。修正: 大文字・アンダースコア区切りにリネームしてください（例: baseUrl → BASE_URL）。参照: harness/patterns/naming-conventions.md`,
+					).toMatch(upperSnakePattern);
+				}
+			},
+		);
 	});
 
 	// 参照: harness/ESCALATION.md
@@ -447,14 +461,15 @@ describe("アーキテクチャ制約", () => {
 				),
 			];
 
-			it.each(
-				claudeRuleIds,
-			)("ルールID %s がESCALATION.mdに存在すること", (ruleId) => {
-				expect(
-					escalationContent,
-					`ルールID "${ruleId}" がCLAUDE.mdに記載されていますがESCALATION.mdに見つかりません。修正: ESCALATION.mdのルール→レベル対応表に "${ruleId}" を追加してください。参照: harness/ESCALATION.md`,
-				).toContain(`| ${ruleId} |`);
-			});
+			it.each(claudeRuleIds)(
+				"ルールID %s がESCALATION.mdに存在すること",
+				(ruleId) => {
+					expect(
+						escalationContent,
+						`ルールID "${ruleId}" がCLAUDE.mdに記載されていますがESCALATION.mdに見つかりません。修正: ESCALATION.mdのルール→レベル対応表に "${ruleId}" を追加してください。参照: harness/ESCALATION.md`,
+					).toContain(`| ${ruleId} |`);
+				},
+			);
 		});
 
 		describe("パターンファイルのrelated-rulesがESCALATION.mdに存在すること", () => {
@@ -479,17 +494,15 @@ describe("アーキテクチャ制約", () => {
 				}
 			}
 
-			it.each(
-				patternRuleEntries,
-			)("$file のrelated-rule $ruleId がESCALATION.mdに存在すること", ({
-				file,
-				ruleId,
-			}) => {
-				expect(
-					escalationContent,
-					`パターンファイル "${file}" のrelated-rulesに含まれる "${ruleId}" がESCALATION.mdに見つかりません。修正: ESCALATION.mdのルール→レベル対応表に "${ruleId}" を追加するか、パターンファイルのrelated-rulesを修正してください。参照: harness/ESCALATION.md`,
-				).toContain(`| ${ruleId} |`);
-			});
+			it.each(patternRuleEntries)(
+				"$file のrelated-rule $ruleId がESCALATION.mdに存在すること",
+				({ file, ruleId }) => {
+					expect(
+						escalationContent,
+						`パターンファイル "${file}" のrelated-rulesに含まれる "${ruleId}" がESCALATION.mdに見つかりません。修正: ESCALATION.mdのルール→レベル対応表に "${ruleId}" を追加するか、パターンファイルのrelated-rulesを修正してください。参照: harness/ESCALATION.md`,
+					).toContain(`| ${ruleId} |`);
+				},
+			);
 		});
 
 		describe("ESCALATION.mdで参照されるルールIDに対応するパターンファイルが存在すること", () => {
@@ -526,14 +539,15 @@ describe("アーキテクチャ制約", () => {
 				),
 			].filter((id) => !CI_ONLY_CATEGORIES.has(id.split("-")[0]));
 
-			it.each(
-				escalationRuleIds,
-			)("ESCALATION.mdのルールID %s に対応するパターンファイルが存在すること", (ruleId) => {
-				expect(
-					allPatternRuleIds.has(ruleId),
-					`ESCALATION.mdのルールID "${ruleId}" を related-rules に含むパターンファイルが harness/patterns/ に見つかりません。修正: 対応するパターンファイルの related-rules に "${ruleId}" を追加してください。参照: harness/ESCALATION.md`,
-				).toBe(true);
-			});
+			it.each(escalationRuleIds)(
+				"ESCALATION.mdのルールID %s に対応するパターンファイルが存在すること",
+				(ruleId) => {
+					expect(
+						allPatternRuleIds.has(ruleId),
+						`ESCALATION.mdのルールID "${ruleId}" を related-rules に含むパターンファイルが harness/patterns/ に見つかりません。修正: 対応するパターンファイルの related-rules に "${ruleId}" を追加してください。参照: harness/ESCALATION.md`,
+					).toBe(true);
+				},
+			);
 		});
 	});
 });
