@@ -213,12 +213,6 @@
 - PR時に jscpd を実行し、コード重複率を検出
 - 結果を PR コメントで報告（advisory: CI ブロックなし）
 
-### ミューテーションテスト（mutation.yaml）
-
-- PR時に `src/**/*.ts`（テスト除く）変更があれば Stryker を実行
-- ミューテーションスコアを PR コメントで報告（advisory: CI ブロックなし）
-- レポートをアーティファクト保存（30日保持）
-
 ### その他
 
 - **renovate-config-validator.yaml**: Renovate 設定ファイル変更時にバリデーション実行
@@ -256,8 +250,6 @@
   - `knip.json` で設定、`npm run knip` で実行
 - **jscpd** — コード重複検出（閾値10%、`reports/jscpd/` に出力）
   - `.jscpd.json` で設定、`npm run jscpd` で実行
-- **Stryker** — ミューテーションテスト（break=40%, low=60%, high=80%、`reports/mutation/` に出力）
-  - `stryker.config.js` で設定、`npm run mutation` で実行
 
 ---
 
