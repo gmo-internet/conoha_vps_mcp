@@ -19,7 +19,6 @@ OpenAIのハーネスエンジニアリングアプローチ（機械的執行�
 | knip | 未使用ファイル・エクスポート・依存 | blocking | `ci.yaml` (knip job) |
 | dependency-cruiser | 循環依存・feature間インポート違反 | blocking | `ci.yaml` (depcruise job) |
 | jscpd | コード重複 (10%閾値) | advisory | `jscpd.yaml` |
-| Stryker | ミューテーションスコア (50%閾値) | advisory | `mutation.yaml` |
 
 加えて、週次エントロピースキャン（`entropy-scan.yaml`）でPR間のドリフトを検出する。
 
@@ -28,3 +27,7 @@ OpenAIのハーネスエンジニアリングアプローチ（機械的執行�
 - **blocking ツール**: ci.yaml内のジョブとして実行。違反時はPRマージをブロック
 - **advisory ツール**: 独立ワークフローとして実行。PRコメントで結果を報告（CIブロックなし）
 - **エントロピー管理**: 週次スケジュールで自動実行。違反検出時にGitHub Issueを自動作成
+
+## 撤回（2026-09-14）
+
+Strykerは導入後、実運用でミューテーションスコアが改善アクションに結びつかず効果的に運用できなかったため撤回した。`mutation.yaml`、`stryker.config.js`、関連devDependency（`@stryker-mutator/core`、`@stryker-mutator/vitest-runner`）を削除し、`harness/ESCALATION.md` のK-3ルールも削除した。
