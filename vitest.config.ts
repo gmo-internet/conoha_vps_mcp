@@ -1,5 +1,5 @@
 import { defineConfig } from "vitest/config";
-import { CSVReporter } from "./scripts/csv-reporter";
+import { CSVReporter } from "./scripts/csv-reporter.ts";
 
 export default defineConfig({
 	test: {

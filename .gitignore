@@ -21,9 +21,6 @@ settings.local.json
 # mcp
 .mcp.json
 
-# stryker
-.stryker-tmp/**
-
 # vscode
 .vscode/
 

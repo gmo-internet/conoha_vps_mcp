@@ -10,7 +10,7 @@
 |--------|-----------|---------|
 | **L1: ドキュメント** | `CODING_PATTERN.md` / `harness/patterns/` | 初期状態 |
 | **L2: AIスキルチェック** | `CLAUDE.md`（開発時予防）+ Claude Code Review CI（PR時検知） | PRレビューで1回以上違反検出 + セマンティック |
-| **L3: CIルール** | Biome / dependency-cruiser / knip / jscpd / npm audit / actionlint / Stryker | スキルチェックで3回以上検出 + 自動検出手段あり |
+| **L3: CIルール** | Biome / dependency-cruiser / knip / jscpd / npm audit / actionlint | スキルチェックで3回以上検出 + 自動検出手段あり |
 | **L4: 構造テスト** | `src/architecture.test.ts` | アーキテクチャ不変条件 |
 
 ### 昇格フロー
@@ -135,7 +135,6 @@ L4 (構造テスト)
 |----|--------|--------|--------|
 | K-1 | 高リスク脆弱性なし | L3 | npm audit |
 | K-2 | GitHub Actionsワークフロー構文検証 | L3 | actionlint |
-| K-3 | ミューテーションスコア ≥ 50% | L3 (advisory) | Stryker |
 
 ### カテゴリ L: ドキュメント整合性
 
